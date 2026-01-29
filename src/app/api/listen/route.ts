@@ -33,61 +33,19 @@ export async function GET(request: Request) {
       controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'connected' })}\n\n`))
 
       let listener: ((snapshot: any) => void) | null = null
+      let cleanedUp = false
       
-      // Listen to session changes
-      listener = sessionRef.on('value', (snapshot) => {
-        const session = snapshot.val()
-
-        if (!session) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'expired' })}\n\n`))
-          return
-        }
-
-        // Check expiry
-        if (session.expiresAt < Date.now()) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'expired' })}\n\n`))
-          sessionRef.remove()
-          return
-        }
-
-        // Send update based on role
-        if (role === 'sender') {
-          // Sender needs answer and receiver's ICE candidates
-          const update = {
-            type: 'update',
-            status: session.status,
-            answer: session.receiver?.answer || null,
-            candidates: session.receiver?.candidates 
-              ? Object.values(session.receiver.candidates)
-              : [],
-          }
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(update)}\n\n`))
-        } else {
-          // Receiver needs sender's ICE candidates
-          const update = {
-            type: 'update',
-            status: session.status,
-            candidates: session.sender?.candidates 
-              ? Object.values(session.sender.candidates)
-              : [],
-          }
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(update)}\n\n`))
-        }
-      })
-
-      // Cleanup on stream close
-      interval = setInterval(() => {
-        controller.enqueue(encoder.encode(': heartbeat\n\n'))
-      }, 30000)
-
-      // Handle cleanup
-      const abortHandler = () => {
+      const cleanup = () => {
+        if (cleanedUp) return
+        cleanedUp = true
+        
         if (listener) {
           sessionRef.off('value', listener)
           listener = null
         }
         if (interval) {
           clearInterval(interval)
+          interval = undefined as any
         }
         try {
           controller.close()
@@ -96,7 +54,69 @@ export async function GET(request: Request) {
         }
       }
       
-      request.signal.addEventListener('abort', abortHandler)
+      // Listen to session changes
+      listener = sessionRef.on('value', (snapshot) => {
+        if (cleanedUp) return
+        
+        try {
+          const session = snapshot.val()
+
+          if (!session) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'expired' })}\n\n`))
+            cleanup()
+            return
+          }
+
+          // Check expiry
+          if (session.expiresAt < Date.now()) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'expired' })}\n\n`))
+            sessionRef.remove()
+            cleanup()
+            return
+          }
+
+          // Send update based on role
+          if (role === 'sender') {
+            // Sender needs answer and receiver's ICE candidates
+            const update = {
+              type: 'update',
+              status: session.status,
+              answer: session.receiver?.answer || null,
+              candidates: session.receiver?.candidates 
+                ? Object.values(session.receiver.candidates)
+                : [],
+            }
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(update)}\n\n`))
+          } else {
+            // Receiver needs sender's ICE candidates
+            const update = {
+              type: 'update',
+              status: session.status,
+              candidates: session.sender?.candidates 
+                ? Object.values(session.sender.candidates)
+                : [],
+            }
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(update)}\n\n`))
+          }
+        } catch (err) {
+          // If enqueue fails, clean up
+          cleanup()
+        }
+      })
+
+      // Cleanup on stream close
+      interval = setInterval(() => {
+        if (cleanedUp) return
+        try {
+          controller.enqueue(encoder.encode(': heartbeat\n\n'))
+        } catch (err) {
+          // If heartbeat fails, connection is closed
+          cleanup()
+        }
+      }, 30000)
+
+      // Handle cleanup
+      request.signal.addEventListener('abort', cleanup)
     },
 
     cancel() {

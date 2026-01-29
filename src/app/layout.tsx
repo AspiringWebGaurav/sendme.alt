@@ -9,7 +9,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://sendme.alt'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://www.send2me.site'),
   title: {
     default: 'sendme.alt - Fast P2P File Transfer | Send Files Up to 3GB',
     template: '%s | sendme.alt',
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://sendme.alt',
+    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://www.send2me.site',
     siteName: 'sendme.alt',
     title: 'sendme.alt - Fast P2P File Transfer',
     description: 'Send files up to 3GB directly between devices. No signup required. Free forever.',
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     creator: '@gauravpatil',
   },
   alternates: {
-    canonical: 'https://sendme.alt',
+    canonical: process.env.NEXT_PUBLIC_BASE_URL || 'https://www.send2me.site',
   },
   category: 'File Transfer',
 }

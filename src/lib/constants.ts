@@ -7,8 +7,8 @@
 
 // App Configuration
 export const APP_CONFIG = {
-  MAX_FILE_SIZE: parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE || '3221225472'), // 3GB default
-  TOKEN_EXPIRY_MINUTES: parseInt(process.env.NEXT_PUBLIC_TOKEN_EXPIRY_MINUTES || '5'),
+  MAX_FILE_SIZE: parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE || '10737418240'), // 10GB default
+  TOKEN_EXPIRY_MINUTES: parseInt(process.env.NEXT_PUBLIC_TOKEN_EXPIRY_MINUTES || '10'),
   CHUNK_SIZE: 32 * 1024, // 32KB chunks (increased for better speed)
   BUFFER_THRESHOLD: 1 * 1024 * 1024, // 1MB buffer
 } as const

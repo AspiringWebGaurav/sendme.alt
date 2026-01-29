@@ -13,6 +13,14 @@ if (!admin.apps.length) {
     ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
     : undefined
 
+  if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !privateKey) {
+    throw new Error('Missing required Firebase Admin environment variables. Please check your .env configuration.')
+  }
+
+  if (!process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL) {
+    throw new Error('Missing NEXT_PUBLIC_FIREBASE_DATABASE_URL environment variable.')
+  }
+
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,

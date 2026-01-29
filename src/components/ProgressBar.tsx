@@ -41,24 +41,37 @@ export function ProgressBar({ progress }: ProgressBarProps) {
   }, [progress.percentage])
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {/* Progress Bar */}
-      <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
+      <div className="relative h-3 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm border border-white/30">
         <div
           ref={barRef}
-          className="absolute inset-0 bg-gradient-to-r from-accent to-accent-light origin-left will-change-transform"
+          className="absolute inset-0 bg-gradient-to-r from-purple-400 via-pink-400 to-pink-300 origin-left will-change-transform shadow-lg shadow-pink-500/50"
           style={{ transform: 'scaleX(0)' }}
         />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
       </div>
 
       {/* Stats */}
-      <div className="flex justify-between text-xs sm:text-sm text-white/80">
-        <span>{Math.round(progress.percentage)}%</span>
-        <span className="hidden sm:inline">{formatSpeed(progress.speed)}</span>
-        <span>
-          {formatBytes(progress.bytesTransferred)} / {formatBytes(progress.totalBytes)}
-        </span>
-        <span className="hidden sm:inline">ETA: {formatTime(progress.eta)}</span>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+        <div className="bg-white/20 rounded-lg px-3 py-2 border border-white/30 backdrop-blur-sm">
+          <div className="text-white/80 text-[10px] mb-0.5">Progress</div>
+          <div className="font-semibold text-white">{Math.round(progress.percentage)}%</div>
+        </div>
+        <div className="bg-white/20 rounded-lg px-3 py-2 border border-white/30 backdrop-blur-sm">
+          <div className="text-white/80 text-[10px] mb-0.5">Speed</div>
+          <div className="font-semibold text-white">{formatSpeed(progress.speed)}</div>
+        </div>
+        <div className="bg-white/20 rounded-lg px-3 py-2 border border-white/30 backdrop-blur-sm">
+          <div className="text-white/80 text-[10px] mb-0.5">Transferred</div>
+          <div className="font-semibold text-white truncate">
+            {formatBytes(progress.bytesTransferred)}
+          </div>
+        </div>
+        <div className="bg-white/20 rounded-lg px-3 py-2 border border-white/30 backdrop-blur-sm">
+          <div className="text-white/80 text-[10px] mb-0.5">ETA</div>
+          <div className="font-semibold text-white">{formatTime(progress.eta)}</div>
+        </div>
       </div>
     </div>
   )

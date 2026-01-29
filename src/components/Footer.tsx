@@ -11,34 +11,39 @@ import Link from 'next/link'
 
 export function Footer() {
   return (
-    <footer className="w-full py-3 sm:py-4 px-4 sm:px-6 lg:px-8 border-t border-white/10">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-xs sm:text-sm text-white/40">
-          <p className="text-center sm:text-left">
-            Created by{' '}
+    <footer className="w-full border-t border-white/20 bg-white/5 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-sm text-white/90">
+            <span>Built with</span>
+            <span className="text-pink-300">♥</span>
+            <span>by</span>
             <a
               href="https://gauravpatil.online"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-accent hover:text-accent-light transition-colors"
+              className="text-white hover:text-pink-200 font-medium transition-colors"
             >
               Gaurav Patil
             </a>
-          </p>
-          <div className="flex items-center gap-3 sm:gap-4">
+          </div>
+          
+          <div className="flex items-center gap-6 text-sm">
             <Link
               href="/privacy"
-              className="hover:text-white/60 transition-colors"
+              className="text-slate-400 hover:text-white transition-colors"
             >
-              Privacy
+              Privacy Policy
             </Link>
-            <span className="text-white/20">•</span>
+            <span className="text-slate-700">•</span>
             <Link
               href="/terms"
-              className="hover:text-white/60 transition-colors"
+              className="text-slate-400 hover:text-white transition-colors"
             >
-              Terms
+              Terms of Service
             </Link>
+            <span className="text-slate-700">•</span>
+            <span className="text-slate-500">© 2026</span>
           </div>
         </div>
       </div>
