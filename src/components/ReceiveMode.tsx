@@ -48,7 +48,7 @@ export function ReceiveMode() {
         </button>
 
         {error && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400"
@@ -145,10 +145,10 @@ export function ReceiveMode() {
 
   // Error
   if (state === 'error') {
-    const hasManualDownload = typeof window !== 'undefined' && 
-      window.lastReceivedBlob && 
+    const hasManualDownload = typeof window !== 'undefined' &&
+      window.lastReceivedBlob &&
       window.lastReceivedFileName
-    
+
     return (
       <div className="text-center space-y-6 py-8">
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-red-500/20 to-red-600/20 border-2 border-red-500/30">
@@ -157,7 +157,9 @@ export function ReceiveMode() {
           </svg>
         </div>
         <div>
-          <p className="text-2xl font-bold text-white mb-2">Transfer Failed</p>
+          <p className="text-2xl font-bold text-white mb-2">
+            {error?.toLowerCase().includes('cancelled') ? 'Transfer Cancelled' : 'Transfer Failed'}
+          </p>
           <p className="text-slate-400 px-4">{error}</p>
           {hasManualDownload && (
             <p className="text-sm text-green-400 mt-3 px-4">

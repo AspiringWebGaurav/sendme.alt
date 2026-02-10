@@ -42,7 +42,10 @@ Make sure ALL these environment variables are set in your hosting platform:
 - `FIREBASE_CLIENT_EMAIL`
 - `FIREBASE_PRIVATE_KEY` (must include \n for line breaks)
 
-**Optional**:
+**Optional (Highly Recommended for P2P Reliability)**:
+- `NEXT_PUBLIC_TURN_URL`
+- `NEXT_PUBLIC_TURN_USERNAME`
+- `NEXT_PUBLIC_TURN_CREDENTIAL`
 - `CLEANUP_SECRET` (recommended for production)
 - `NEXT_PUBLIC_TOKEN_EXPIRY_MINUTES` (default: 5)
 - `NEXT_PUBLIC_MAX_FILE_SIZE` (default: 3GB)

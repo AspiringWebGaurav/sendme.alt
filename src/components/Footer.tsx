@@ -27,23 +27,23 @@ export function Footer() {
               Gaurav Patil
             </a>
           </div>
-          
+
           <div className="flex items-center gap-6 text-sm">
             <Link
               href="/privacy"
-              className="text-slate-400 hover:text-white transition-colors"
+              className="text-white/60 hover:text-white transition-colors"
             >
               Privacy Policy
             </Link>
-            <span className="text-slate-700">•</span>
+            <span className="text-white/30">•</span>
             <Link
               href="/terms"
-              className="text-slate-400 hover:text-white transition-colors"
+              className="text-white/60 hover:text-white transition-colors"
             >
               Terms of Service
             </Link>
-            <span className="text-slate-700">•</span>
-            <span className="text-slate-500">© 2026</span>
+            <span className="text-white/30">•</span>
+            <span className="text-white/40">© 2026</span>
           </div>
         </div>
       </div>

@@ -49,11 +49,11 @@ export function SendMode() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold truncate text-white">{file.name}</p>
-              <p className="text-sm text-slate-400 mt-0.5">{formatBytes(file.size)}</p>
+              <p className="text-sm text-white/80 mt-0.5">{formatBytes(file.size)}</p>
             </div>
             <button
               onClick={removeFile}
-              className="flex-shrink-0 p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white"
+              className="flex-shrink-0 p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-white/80 hover:text-white"
               aria-label="Remove file"
               type="button"
             >
@@ -108,13 +108,13 @@ export function SendMode() {
             <p className="text-lg font-semibold mb-2 text-white">
               Drop your file here
             </p>
-            <p className="text-sm text-slate-400 mb-1">or click to browse</p>
-            <p className="text-xs text-slate-500">Maximum file size: 3GB</p>
+            <p className="text-sm text-white/80 mb-1">or click to browse</p>
+            <p className="text-xs text-white/60">Maximum file size: 3GB</p>
           </label>
         </div>
 
         {error && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400"
@@ -196,11 +196,10 @@ export function SendMode() {
           </motion.div>
           <motion.button
             onClick={() => token && handleCopyToken(token)}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-              copySuccess 
-                ? 'bg-green-500/20 text-green-400 border-2 border-green-500/50' 
-                : 'bg-slate-800/40 hover:bg-slate-700/50 border-2 border-slate-700/50 text-white'
-            }`}
+            className={`px-6 py-3 rounded-xl font-semibold transition-all ${copySuccess
+              ? 'bg-green-500/20 text-green-400 border-2 border-green-500/50'
+              : 'bg-slate-800/40 hover:bg-slate-700/50 border-2 border-slate-700/50 text-white'
+              }`}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             type="button"
@@ -245,7 +244,7 @@ export function SendMode() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold truncate text-white">{file?.name}</p>
-              <p className="text-sm text-slate-400 mt-0.5">{file && formatBytes(file.size)}</p>
+              <p className="text-sm text-white/80 mt-0.5">{file && formatBytes(file.size)}</p>
             </div>
           </div>
           <ProgressBar progress={progress} />
@@ -276,7 +275,7 @@ export function SendMode() {
         </div>
         <div>
           <p className="text-2xl font-bold text-white mb-2">Transfer Complete!</p>
-          <p className="text-slate-400">Your file was sent successfully</p>
+          <p className="text-white/80">Your file was sent successfully</p>
         </div>
         <button
           onClick={cancel}
@@ -299,8 +298,10 @@ export function SendMode() {
           </svg>
         </div>
         <div>
-          <p className="text-2xl font-bold text-white mb-2">Transfer Failed</p>
-          <p className="text-slate-400 px-4">{error}</p>
+          <p className="text-2xl font-bold text-white mb-2">
+            {error?.toLowerCase().includes('cancelled') ? 'Transfer Cancelled' : 'Transfer Failed'}
+          </p>
+          <p className="text-white/80 px-4">{error}</p>
         </div>
         <button
           onClick={cancel}

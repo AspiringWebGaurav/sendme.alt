@@ -21,7 +21,7 @@ export function useSend() {
   const [error, setError] = useState<string | null>(null)
   const [isGeneratingToken, setIsGeneratingToken] = useState<boolean>(false)
   const [copySuccess, setCopySuccess] = useState<boolean>(false)
-  
+
   const connectionRef = useRef<P2PConnection | null>(null)
   const sseRef = useRef<EventSource | null>(null)
   const processedCandidatesRef = useRef<Set<string>>(new Set())
@@ -50,19 +50,29 @@ export function useSend() {
       const connection = new P2PConnection()
       connectionRef.current = connection
 
+      // Handle connection state changes for better UX
+      connection.onConnectionStateChange((state) => {
+        if (state === 'failed') {
+          setError('Connection failed. Please check your network or try again.')
+          setState('error')
+        } else if (state === 'connected') {
+          // Connection established
+        }
+      })
+
       // Create offer
       const offer = await connection.createOffer()
 
       // Collect ICE candidates
       const iceCandidates: RTCIceCandidateInit[] = []
-      
+
       connection.onIceCandidate((candidate) => {
         if (candidate) {
           iceCandidates.push(candidate)
         }
       })
 
-      // Wait a bit for ICE gathering
+      // Wait a bit for ICE gathering (essential for local testing/fast connections)
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       // Create session
@@ -148,8 +158,7 @@ export function useSend() {
                 try {
                   await connection.addIceCandidate(candidate)
                 } catch (err) {
-                  // Ignore candidate errors (might be duplicates or invalid)
-                  // Silent fail - these are non-critical
+                  // Ignore candidate errors
                 }
               }
             }
@@ -163,18 +172,26 @@ export function useSend() {
       // Wait for channel to open
       connection.onChannelOpen(async () => {
         setState('transferring')
-        
+
         try {
           await connection.sendFile(file, (progressInfo) => {
             setProgress(progressInfo)
           })
-          
+
           setState('complete')
-          setTimeout(() => cleanup(), 3000)
+          // cleanup called by user action or timeout
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : ERROR_MESSAGES.TRANSFER_FAILED
-          if (errorMessage.includes('cancelled')) {
-            setError('Transfer cancelled')
+
+          // Handle cancellation specifically
+          if (errorMessage.includes('cancelled') || errorMessage.includes('closed unexpectedly')) {
+            if (errorMessage.includes('receiver')) {
+              // Peer cancelled
+              setError('Receiver cancelled the transfer')
+            } else {
+              // Self cancelled
+              setError('Transfer cancelled')
+            }
           } else {
             setError(ERROR_MESSAGES.TRANSFER_FAILED)
           }
@@ -209,8 +226,10 @@ export function useSend() {
         // Ignore errors during cancellation
       }
     }
-    
-    cleanup()
+
+    // Delay cleanup to allow cancel message to be sent
+    setTimeout(cleanup, 200)
+
     setState('idle')
     setFile(null)
     setToken(null)
@@ -228,7 +247,7 @@ export function useSend() {
         setTimeout(() => setCopySuccess(false), 2000)
       }
     } catch (err) {
-      // Silent fail - user can try again
+      // Silent fail
     }
   }, [])
 

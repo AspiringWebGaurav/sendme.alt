@@ -20,7 +20,7 @@ export function useReceive() {
   const [progress, setProgress] = useState<ProgressInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [receivedFileName, setReceivedFileName] = useState<string>('')
-  
+
   const connectionRef = useRef<P2PConnection | null>(null)
   const sseRef = useRef<EventSource | null>(null)
   const processedCandidatesRef = useRef<Set<string>>(new Set())
@@ -34,7 +34,7 @@ export function useReceive() {
 
       // Validate token
       const normalizedToken = token.trim().toLowerCase()
-      
+
       if (!normalizedToken) {
         throw new Error('Please enter a token')
       }
@@ -69,6 +69,16 @@ export function useReceive() {
       // Create WebRTC connection
       const connection = new P2PConnection()
       connectionRef.current = connection
+
+      // Handle connection state changes
+      connection.onConnectionStateChange((state) => {
+        if (state === 'failed') {
+          setError('Connection failed. Please check your network or try again.')
+          setState('error')
+        } else if (state === 'connected') {
+          // Connection established
+        }
+      })
 
       // Create answer
       const answer = await connection.createAnswer(session.sender.offer)
@@ -120,8 +130,7 @@ export function useReceive() {
                 try {
                   await connection.addIceCandidate(candidate)
                 } catch (err) {
-                  // Ignore candidate errors (might be duplicates or invalid)
-                  // Silent fail - these are non-critical
+                  // Ignore candidate errors
                 }
               }
             }
@@ -135,22 +144,22 @@ export function useReceive() {
       // Wait for channel and receive file
       connection.onChannelOpen(async () => {
         setState('transferring')
-        
+
         try {
           const blob = await connection.receiveFile((progressInfo) => {
             setProgress(progressInfo)
           })
-          
+
           // Verify blob is valid
           if (!blob || blob.size === 0) {
             throw new Error('Received empty or invalid file')
           }
-          
-            // Verify size matches expected (silent check)
-            if (session.file.size && blob.size !== session.file.size) {
-              // Size mismatch - might be due to rounding, but continue anyway
-            }
-          
+
+          // Verify size matches expected (silent check)
+          if (session.file.size && blob.size !== session.file.size) {
+            // Size mismatch
+          }
+
           // Download file with error handling
           try {
             await downloadFile(blob, session.file.name)
@@ -170,8 +179,15 @@ export function useReceive() {
           }
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : ERROR_MESSAGES.TRANSFER_FAILED
-          if (errorMessage.includes('cancelled')) {
-            setError('Transfer cancelled')
+
+          if (errorMessage.includes('cancelled') || errorMessage.includes('closed unexpectedly')) {
+            if (errorMessage.includes('receiver')) {
+              // Self cancelled
+              setError('Transfer cancelled')
+            } else {
+              // Peer cancelled
+              setError('Sender cancelled the transfer')
+            }
           } else {
             setError(errorMessage)
           }
@@ -200,8 +216,10 @@ export function useReceive() {
         // Ignore errors during cancellation
       }
     }
-    
-    cleanup()
+
+    // Delay cleanup to allow cancel message to be sent
+    setTimeout(cleanup, 200)
+
     setState('idle')
     setToken('')
     setFileInfo(null)

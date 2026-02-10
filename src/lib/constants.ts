@@ -14,6 +14,7 @@ export const APP_CONFIG = {
 } as const
 
 // WebRTC Configuration with STUN/TURN
+// WebRTC Configuration with STUN/TURN
 export const RTC_CONFIG: RTCConfiguration = {
   iceServers: [
     // FREE STUN servers (Google) - Multiple for redundancy
@@ -25,11 +26,16 @@ export const RTC_CONFIG: RTCConfiguration = {
     
     // Additional free STUN servers for better connectivity
     { urls: 'stun:stun.stunprotocol.org:3478' },
-    { urls: 'stun:stun.voiparound.com' },
-    { urls: 'stun:stun.voipbuster.com' },
     
-    // FREE TURN fallback (Metered.ca - 50GB/month free)
-    {
+    // Custom TURN server from Environment Variables (Recommended for Production)
+    ...(process.env.NEXT_PUBLIC_TURN_URL ? [{
+      urls: process.env.NEXT_PUBLIC_TURN_URL,
+      username: process.env.NEXT_PUBLIC_TURN_USERNAME,
+      credential: process.env.NEXT_PUBLIC_TURN_CREDENTIAL,
+    }] : []),
+
+    // Fallback: Free Metered.ca TURN (Use with caution in production due to limits)
+    ...(process.env.NEXT_PUBLIC_TURN_URL ? [] : [{
       urls: 'turn:a.relay.metered.ca:443',
       username: 'e8dd65b92c62d5e98c3b8d4b',
       credential: 'uWdWNmkhvyqTmFRr',
@@ -38,9 +44,9 @@ export const RTC_CONFIG: RTCConfiguration = {
       urls: 'turn:a.relay.metered.ca:443?transport=tcp',
       username: 'e8dd65b92c62d5e98c3b8d4b',
       credential: 'uWdWNmkhvyqTmFRr',
-    },
+    }]),
   ],
-  iceCandidatePoolSize: 20, // Increased for faster connection
+  iceCandidatePoolSize: 10,
   iceTransportPolicy: 'all', // Try direct first, use TURN as fallback
   bundlePolicy: 'max-bundle',
   rtcpMuxPolicy: 'require',
