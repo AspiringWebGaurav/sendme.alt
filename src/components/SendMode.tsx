@@ -67,14 +67,14 @@ export function SendMode() {
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={removeFile}
-            className="py-3.5 bg-slate-800/40 hover:bg-slate-700/50 text-white font-semibold rounded-xl transition-all border border-slate-700/50"
+            className="py-3.5 bg-slate-800/40 hover:bg-slate-700/50 text-white font-semibold rounded-xl transition-all border border-slate-700/50 active:scale-95"
             type="button"
           >
             Cancel
           </button>
           <button
             onClick={startSending}
-            className="py-3.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-purple-500/30"
+            className="py-3.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-purple-500/30 active:scale-95"
             type="button"
           >
             Generate Code
@@ -91,7 +91,7 @@ export function SendMode() {
         <div
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
-          className="relative group border-2 border-dashed border-white/40 hover:border-white/70 rounded-2xl p-12 text-center cursor-pointer transition-all bg-white/10 hover:bg-white/20 backdrop-blur-sm"
+          className="relative group border-2 border-dashed border-white/40 hover:border-white/70 rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all bg-white/10 hover:bg-white/20 backdrop-blur-sm active:scale-[0.99] active:border-white"
         >
           <input
             type="file"
@@ -196,7 +196,7 @@ export function SendMode() {
           </motion.div>
           <motion.button
             onClick={() => token && handleCopyToken(token)}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all ${copySuccess
+            className={`px-6 py-3 rounded-xl font-semibold transition-all active:scale-95 ${copySuccess
               ? 'bg-green-500/20 text-green-400 border-2 border-green-500/50'
               : 'bg-slate-800/40 hover:bg-slate-700/50 border-2 border-slate-700/50 text-white'
               }`}
@@ -224,7 +224,7 @@ export function SendMode() {
 
         <button
           onClick={cancel}
-          className="w-full py-3.5 bg-slate-800/40 hover:bg-slate-700/50 text-white font-semibold rounded-xl transition-all border border-slate-700/50"
+          className="w-full py-3.5 bg-slate-800/40 hover:bg-slate-700/50 text-white font-semibold rounded-xl transition-all border border-slate-700/50 active:scale-95"
           type="button"
         >
           Cancel Transfer

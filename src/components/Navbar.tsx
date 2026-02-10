@@ -17,8 +17,8 @@ export function Navbar() {
     <nav className="w-full border-b border-white/20 backdrop-blur-xl bg-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="flex items-center gap-2 group"
           >
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center font-bold text-sm group-hover:scale-105 transition-transform shadow-lg">
@@ -28,30 +28,36 @@ export function Navbar() {
               sendme.alt
             </span>
           </Link>
-          
+
           <div className="flex items-center gap-6">
             <Link
               href="/privacy"
-              className={`text-sm font-medium transition-colors ${
-                pathname === '/privacy'
+              className={`text-sm font-medium transition-colors ${pathname === '/privacy'
                   ? 'text-white font-semibold'
                   : 'text-white/80 hover:text-white'
-              }`}
+                }`}
             >
               Privacy
             </Link>
             <Link
               href="/terms"
-              className={`text-sm font-medium transition-colors ${
-                pathname === '/terms'
+              className={`text-sm font-medium transition-colors ${pathname === '/terms'
                   ? 'text-blue-400'
                   : 'text-slate-400 hover:text-white'
-              }`}
+                }`}
             >
               Terms
             </Link>
             <a
-              href="https://github.com"
+              href="https://www.gauravpatil.online"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
+            >
+              Portfolio
+            </a>
+            <a
+              href="https://github.com/AspiringWebGaurav"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-sm font-medium text-slate-300 hover:text-white transition-colors border border-slate-700/50"

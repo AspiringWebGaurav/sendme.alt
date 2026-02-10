@@ -21,9 +21,9 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-4 sm:py-12">
         <div className="w-full max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12 lg:gap-16 items-center">
+          <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8 lg:gap-16 items-center">
             {/* Left side - Hero & Features */}
             <div className="space-y-8 lg:space-y-10">
               <motion.div
@@ -37,30 +37,30 @@ export default function HomePage() {
                   <span className="text-sm font-medium text-white">WebRTC Powered</span>
                 </div>
 
-                <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight tracking-tight">
+                <h1 className="text-4xl lg:text-6xl xl:text-7xl font-bold leading-tight tracking-tight">
                   <span className="block">Share files</span>
                   <span className="block text-gradient">instantly</span>
                 </h1>
 
-                <p className="text-lg sm:text-xl text-white/90 leading-relaxed max-w-xl">
+                <p className="text-base sm:text-xl text-white/90 leading-relaxed max-w-xl">
                   Transfer files up to 10GB directly between devices with military-grade encryption. No cloud storage, no registration required.
                 </p>
 
-                <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm">
                   <div className="flex items-center gap-2 text-white/80">
-                    <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     End-to-end encrypted
                   </div>
                   <div className="flex items-center gap-2 text-white/80">
-                    <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     No file size limits*
                   </div>
                   <div className="flex items-center gap-2 text-white/80">
-                    <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     P2P connection

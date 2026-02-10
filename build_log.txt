@@ -1,0 +1,69 @@
+
+> sendme-alt@1.0.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 2 errors:
+./src/components/Navbar.tsx:74:5
+Parsing ecmascript source code failed
+[0m [90m 72 |[39m         [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 73 |[39m       [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 74 |[39m     [33m<[39m[33m/[39m[33mnav[39m[33m>[39m
+ [90m    |[39m     [31m[1m^[22m[39m
+ [90m 75 |[39m   )
+ [90m 76 |[39m }
+ [90m 77 |[39m[0m
+
+Expression expected
+
+Import traces:
+  Server Component:
+    ./src/components/Navbar.tsx
+    ./src/app/privacy/page.tsx
+
+  Client Component Browser:
+    ./src/components/Navbar.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Navbar.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+./src/components/Navbar.tsx:74:6
+Parsing ecmascript source code failed
+[0m [90m 72 |[39m         [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 73 |[39m       [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 74 |[39m     [33m<[39m[33m/[39m[33mnav[39m[33m>[39m
+ [90m    |[39m      [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 75 |[39m   )
+ [90m 76 |[39m }
+ [90m 77 |[39m[0m
+
+Unterminated regexp literal
+
+Import traces:
+  Server Component:
+    ./src/components/Navbar.tsx
+    ./src/app/privacy/page.tsx
+
+  Client Component Browser:
+    ./src/components/Navbar.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Navbar.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+    at <unknown> (./src/components/Navbar.tsx:74:5)
+    at <unknown> (./src/components/Navbar.tsx:74:6)

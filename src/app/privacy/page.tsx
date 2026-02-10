@@ -25,10 +25,10 @@ export const metadata: Metadata = {
 }
 
 export default function PrivacyPage() {
-  const today = new Date().toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  const today = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   })
 
   return (
@@ -47,89 +47,59 @@ export default function PrivacyPage() {
 
           <div className="space-y-6 sm:space-y-8 text-white/80 text-sm sm:text-base">
             <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">What We Collect</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">Privacy Commitment</h2>
               <p className="mb-2">
-                <strong>Nothing.</strong> sendme.alt does not collect, store, or track any personal information.
-              </p>
-              <ul className="list-disc list-inside space-y-1 ml-4">
-                <li>No user accounts</li>
-                <li>No cookies</li>
-                <li>No analytics</li>
-                <li>No tracking</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">How It Works</h2>
-              <p>
-                Files are transferred directly between devices using peer-to-peer (WebRTC) technology. 
-                Your files never touch our servers. We only facilitate the connection between sender 
-                and receiver.
+                Your privacy is paramount at sendme.alt. We operate on a strict "No-Logs" policy regarding your files. We do not store, view, or analyze the content of the files you transfer.
               </p>
             </section>
 
             <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">What We Store</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">Data Collection Policy</h2>
               <p className="mb-2">
-                We temporarily store connection information in Firebase for up to 5 minutes:
+                <strong>We collect minimal data necessary for the service to function:</strong>
               </p>
               <ul className="list-disc list-inside space-y-1 ml-4">
-                <li>Share codes (tokens)</li>
-                <li>File metadata (name, size, type)</li>
-                <li>WebRTC signaling data (for connection setup)</li>
+                <li><strong>Volatile Connection Data:</strong> Temporary metadata (share codes, file type, file size) required to establish the peer-to-peer connection. This data is ephemeral and automatically purged after the transfer session.</li>
+                <li><strong>No Personal Identifiable Information (PII):</strong> We do not require account creation, nor do we track user behavior or analytics.</li>
               </ul>
-              <p className="mt-2">
-                All data is automatically deleted after 5 minutes or when the transfer completes.
+            </section>
+
+            <section>
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">How We Secure Your Transfers</h2>
+              <p className="mb-2">
+                We utilize industry-standard security measures:
               </p>
-            </section>
-
-            <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">Security</h2>
               <ul className="list-disc list-inside space-y-1 ml-4">
-                <li>End-to-end encrypted transfers (WebRTC DTLS)</li>
-                <li>HTTPS only</li>
-                <li>No file storage on servers</li>
-                <li>Temporary session data only</li>
+                <li><strong>End-to-End Encryption:</strong> All data transferred is encrypted using WebRTC's Datagram Transport Layer Security (DTLS), ensuring that only the intended recipient can access the files.</li>
+                <li><strong>Secure Protocols:</strong> All signaling and site traffic occur over HTTPS.</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">Third-Party Services</h2>
-              <p className="mb-2">We use the following services:</p>
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">Third-Party Infrastructure</h2>
+              <p className="mb-2">
+                To facilitate connections, we use selected third-party services. These providers process data solely for the purpose of transmission and do not retain file content:
+              </p>
               <ul className="list-disc list-inside space-y-1 ml-4">
-                <li>
-                  <strong>Firebase (Google)</strong> - For real-time signaling only. No file 
-                  content is stored.
-                </li>
-                <li>
-                  <strong>Vercel</strong> - Hosting platform. No user data collected.
-                </li>
-                <li>
-                  <strong>STUN/TURN Servers</strong> - For NAT traversal. Only connection 
-                  information, no file data.
-                </li>
+                <li><strong>Signaling & NAT Traversal:</strong> We use STUN/TURN servers to help devices connect through firewalls. These servers facilitate the handshake but do not store your data.</li>
+                <li><strong>Hosting:</strong> Our static site is hosted on Vercel.</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">Your Rights</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">Your Rights & Contact</h2>
+              <p className="mb-2">
+                As we maintain no persistent user data, traditional data subject rights (access, deletion) are fulfilled by design—there is no data to delete.
+              </p>
               <p>
-                Since we don't collect any personal data, there's nothing to delete, export, 
-                or opt-out of. All session data is automatically deleted after 5 minutes.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">Contact</h2>
-              <p>
-                For questions about privacy, visit{' '}
+                For privacy-related inquiries, please reach out via: {' '}
                 <a
-                  href="https://gauravpatil.online"
+                  href="https://www.gauravpatil.online"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-accent hover:text-accent-light transition-colors"
                 >
-                  gauravpatil.online
+                  www.gauravpatil.online
                 </a>
               </p>
             </section>

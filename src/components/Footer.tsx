@@ -19,7 +19,7 @@ export function Footer() {
             <span className="text-pink-300">♥</span>
             <span>by</span>
             <a
-              href="https://gauravpatil.online"
+              href="https://www.gauravpatil.online"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-pink-200 font-medium transition-colors"

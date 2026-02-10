@@ -25,10 +25,10 @@ export const metadata: Metadata = {
 }
 
 export default function TermsPage() {
-  const today = new Date().toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  const today = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   })
 
   return (
@@ -49,98 +49,66 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">1. Acceptance of Terms</h2>
               <p className="mb-2">
-                By accessing and using sendme.alt, you accept and agree to be bound by the terms and 
-                provision of this agreement. If you do not agree to these terms, please do not use 
-                this service.
+                By accessing or using the sendme.alt service, you confirm your acceptance of these Terms of Service. These terms constitute a legally binding agreement between you and sendme.alt regarding your use of our text and file transfer services.
               </p>
             </section>
 
             <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">2. Service Description</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">2. Nature of Service</h2>
               <p className="mb-2">
-                sendme.alt is a peer-to-peer file transfer service that allows users to send files 
-                directly between devices without storing files on our servers. The service uses 
-                WebRTC technology to establish direct connections between users.
+                sendme.alt is a peer-to-peer (P2P) file transfer solution leveraging WebRTC technology. We facilitate direct data transmission between user devices. We do not permanently store, view, or control the files transferred through our platform. All transfers are transient and direct.
               </p>
             </section>
 
             <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">3. User Responsibilities</h2>
-              <p className="mb-2">You agree to:</p>
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">3. User Conduct</h2>
+              <p className="mb-2">You agree to use the service in compliance with all applicable laws and regulations. You are prohibited from using the service to:</p>
               <ul className="list-disc list-inside space-y-1 ml-4">
-                <li>Use the service only for lawful purposes</li>
-                <li>Not transmit any illegal, harmful, or malicious content</li>
-                <li>Not attempt to disrupt or interfere with the service</li>
-                <li>Respect the intellectual property rights of others</li>
-                <li>Not use the service to violate any laws or regulations</li>
+                <li>Transmit any content that is illegal, infringing, or harmful.</li>
+                <li>Distribute malware, viruses, or any code of a destructive nature.</li>
+                <li>Interfere with or disrupt the integrity or performance of the service.</li>
+                <li>Violate the intellectual property rights of others.</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">4. File Size and Content Limits</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">4. Limitations & Disclaimers</h2>
               <p className="mb-2">
-                The maximum file size is 3GB. You are responsible for ensuring that files you 
-                transfer comply with all applicable laws and do not infringe on any rights.
+                <strong>No Warranty:</strong> The service is provided on an "AS IS" and "AS AVAILABLE" basis. We expressly disclaim all warranties of any kind, whether express or implied.
+              </p>
+              <p className="mb-2">
+                <strong>Limitation of Liability:</strong> In no event shall sendme.alt or its operators be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the service.
+              </p>
+              <p className="mb-2">
+                <strong>File Size Limit:</strong> Transfers are limited to a maximum file size of 3GB per transfer.
               </p>
             </section>
 
             <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">5. No Warranty</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">5. Intellectual Property</h2>
               <p className="mb-2">
-                The service is provided &quot;as is&quot; without any warranties, expressed or implied. 
-                We do not guarantee that the service will be uninterrupted, secure, or error-free. 
-                File transfers are at your own risk.
+                All rights, title, and interest in and to the service (excluding content provided by users) are and will remain the exclusive property of sendme.alt and its licensors.
               </p>
             </section>
 
             <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">6. Limitation of Liability</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">6. Modifications</h2>
               <p className="mb-2">
-                sendme.alt and its operators shall not be liable for any indirect, incidental, 
-                special, consequential, or punitive damages, including loss of data, profits, or 
-                business opportunities, arising from your use of the service.
+                We reserve the right to modify or replace these Terms at any time. It is your responsibility to review these Terms periodically for changes.
               </p>
             </section>
 
             <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">7. Prohibited Uses</h2>
-              <p className="mb-2">You may not use the service to:</p>
-              <ul className="list-disc list-inside space-y-1 ml-4">
-                <li>Transfer illegal content or content that violates laws</li>
-                <li>Distribute malware, viruses, or harmful software</li>
-                <li>Violate intellectual property rights</li>
-                <li>Harass, threaten, or harm others</li>
-                <li>Spam or send unsolicited content</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">8. Service Availability</h2>
-              <p className="mb-2">
-                We reserve the right to modify, suspend, or discontinue the service at any time 
-                without notice. We are not liable for any consequences resulting from such actions.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">9. Changes to Terms</h2>
-              <p className="mb-2">
-                We reserve the right to modify these terms at any time. Continued use of the 
-                service after changes constitutes acceptance of the new terms.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">10. Contact</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">7. Contact Information</h2>
               <p>
-                For questions about these terms, visit{' '}
+                For any inquiries regarding these Terms, please contact us via my portfolio: {' '}
                 <a
-                  href="https://gauravpatil.online"
+                  href="https://www.gauravpatil.online"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-accent hover:text-accent-light transition-colors"
                 >
-                  gauravpatil.online
+                  www.gauravpatil.online
                 </a>
               </p>
             </section>

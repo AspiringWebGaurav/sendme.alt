@@ -41,7 +41,7 @@ export function ReceiveMode() {
         <button
           onClick={startReceiving}
           disabled={!token.trim()}
-          className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all shadow-lg shadow-purple-500/30 disabled:shadow-none"
+          className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all shadow-lg shadow-purple-500/30 disabled:shadow-none active:scale-95 disabled:scale-100"
           type="button"
         >
           {token.trim() ? '🚀 Start Receiving' : '⌨️ Enter Code Above'}
