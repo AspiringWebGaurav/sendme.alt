@@ -68,9 +68,9 @@ export function ReceiveMode() {
           <p className="text-sm text-slate-400">Establishing secure connection...</p>
         </div>
         {fileInfo && (
-          <div className="bg-slate-800/40 border border-slate-700/50 p-4 rounded-xl max-w-sm mx-auto">
+          <div className="bg-slate-800/40 border border-slate-700/50 p-4 rounded-xl max-w-sm mx-auto overflow-hidden">
             <p className="text-xs text-slate-400 mb-2">Preparing to receive:</p>
-            <p className="font-semibold truncate text-white">{fileInfo.name}</p>
+            <p className="font-semibold truncate text-white block w-full">{fileInfo.name}</p>
             <p className="text-sm text-slate-400 mt-1">{formatBytes(fileInfo.size)}</p>
           </div>
         )}
@@ -81,14 +81,14 @@ export function ReceiveMode() {
   // Transferring
   if (state === 'transferring' && progress && fileInfo) {
     return (
-      <div className="space-y-6">
-        <div className="bg-slate-800/40 border border-slate-700/50 p-5 rounded-2xl space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center text-2xl border border-green-500/20">
+      <div className="space-y-6 w-full max-w-full overflow-hidden">
+        <div className="bg-slate-800/40 border border-slate-700/50 p-4 sm:p-5 rounded-2xl space-y-4">
+          <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
+            <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center text-xl sm:text-2xl border border-green-500/20">
               {getFileIcon(fileInfo.name)}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold truncate text-white">{fileInfo.name}</p>
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <p className="font-semibold truncate text-white block w-full">{fileInfo.name}</p>
               <p className="text-sm text-slate-400 mt-0.5">{formatBytes(fileInfo.size)}</p>
             </div>
           </div>
