@@ -22,7 +22,7 @@ export default function HomePage() {
       <Navbar />
 
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        <div className="w-full max-w-7xl mx-auto">
+        <div className="w-full max-w-7xl mx-auto flex flex-col gap-12 lg:gap-20">
           <div className="grid lg:grid-cols-[1fr_1.1fr] xl:grid-cols-[1fr_1.2fr] gap-8 lg:gap-16 items-start mt-4 lg:mt-8">
             {/* Left side - Hero & Features */}
             <div className="space-y-8 lg:space-y-10">
@@ -68,65 +68,7 @@ export default function HomePage() {
                 </div>
               </motion.div>
 
-              {/* Feature Cards - Desktop Only */}
-              <div className="hidden lg:grid grid-cols-1 gap-4">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="group glass-card p-5 rounded-2xl hover:bg-slate-800/60 transition-all"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center text-2xl border border-blue-500/20">
-                      ⚡
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-1.5 text-white">Direct Peer Transfer</h3>
-                      <p className="text-white/80 text-sm leading-relaxed">
-                        Files travel directly from sender to receiver. No intermediary servers means maximum speed.
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="group glass-card p-5 rounded-2xl hover:bg-slate-800/60 transition-all"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center text-2xl border border-green-500/20">
-                      🔒
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-1.5 text-white">Zero Knowledge Architecture</h3>
-                      <p className="text-white/80 text-sm leading-relaxed">
-                        Your files never touch our servers. Complete privacy guaranteed by WebRTC encryption.
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                  className="group glass-card p-5 rounded-2xl hover:bg-slate-800/60 transition-all"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center text-2xl border border-purple-500/20">
-                      🚀
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-1.5 text-white">Simple & Instant</h3>
-                      <p className="text-white/80 text-sm leading-relaxed">
-                        No accounts, no downloads. Just pick a file, share a code, and transfer.
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
+              {/* Feature Cards moved to bottom horizontal row */}
             </div>
 
             {/* Right side - Transfer Interface */}
@@ -186,6 +128,66 @@ export default function HomePage() {
               <p className="text-center text-xs text-white/70 mt-4">
                 * Up to 10GB per transfer. Files expire after 10 minutes.
               </p>
+            </motion.div>
+          </div>
+
+          {/* Feature Cards - Desktop Only */}
+          <div className="hidden lg:grid grid-cols-3 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="group glass-card p-6 rounded-2xl hover:bg-slate-800/60 transition-all"
+            >
+              <div className="flex flex-col gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center text-2xl border border-blue-500/20 group-hover:scale-110 transition-transform">
+                  ⚡
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-2 text-white">Direct Peer Transfer</h3>
+                  <p className="text-white/80 text-sm leading-relaxed">
+                    Files travel directly from sender to receiver. No intermediary servers means maximum speed.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="group glass-card p-6 rounded-2xl hover:bg-slate-800/60 transition-all"
+            >
+              <div className="flex flex-col gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center text-2xl border border-green-500/20 group-hover:scale-110 transition-transform">
+                  🔒
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-2 text-white">Zero Knowledge Architecture</h3>
+                  <p className="text-white/80 text-sm leading-relaxed">
+                    Your files never touch our servers. Complete privacy guaranteed by WebRTC encryption.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="group glass-card p-6 rounded-2xl hover:bg-slate-800/60 transition-all"
+            >
+              <div className="flex flex-col gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center text-2xl border border-purple-500/20 group-hover:scale-110 transition-transform">
+                  🚀
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-2 text-white">Simple & Instant</h3>
+                  <p className="text-white/80 text-sm leading-relaxed">
+                    No accounts, no downloads. Just pick a file, share a code, and transfer.
+                  </p>
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>
