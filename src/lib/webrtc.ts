@@ -188,6 +188,12 @@ export class P2PConnection {
    */
   onChannelOpen(callback: () => void) {
     this.onChannelOpenCallback = callback
+    if (this.channel && this.channel.readyState === 'open') {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[P2P] Channel already open upon registration, triggering immediately')
+      }
+      callback()
+    }
   }
 
   onChannelClose(callback: () => void) {

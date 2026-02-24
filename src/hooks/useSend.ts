@@ -26,6 +26,7 @@ export function useSend() {
   const sseRef = useRef<EventSource | null>(null)
   const processedCandidatesRef = useRef<Set<string>>(new Set())
   const answerSetRef = useRef<boolean>(false)
+  const channelTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const selectFile = useCallback((selectedFile: File) => {
     // Validate file size
@@ -60,20 +61,33 @@ export function useSend() {
         }
       })
 
-      // Create offer
-      const offer = await connection.createOffer()
-
-      // Collect ICE candidates
-      const iceCandidates: RTCIceCandidateInit[] = []
+      // Register ICE candidate handler BEFORE creating offer to not miss early candidates
+      let createdToken: string | null = null
+      const earlyIceCandidates: RTCIceCandidateInit[] = []
 
       connection.onIceCandidate((candidate) => {
         if (candidate) {
-          iceCandidates.push(candidate)
+          if (createdToken) {
+            // Token exists, trickle candidate immediately to signal server
+            fetch(API_ENDPOINTS.SIGNAL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                token: createdToken,
+                type: 'ice',
+                data: candidate,
+                role: 'sender',
+              }),
+            }).catch(console.error)
+          } else {
+            // Buffer early candidates before token is created
+            earlyIceCandidates.push(candidate)
+          }
         }
       })
 
-      // Wait a bit for ICE gathering (essential for local testing/fast connections)
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Create offer (this starts ICE gathering immediately)
+      const offer = await connection.createOffer()
 
       // Create session
       const fileInfo: FileInfo = {
@@ -110,12 +124,13 @@ export function useSend() {
         throw new Error('Token not received from server')
       }
 
+      createdToken = data.token
       setToken(data.token)
       setIsGeneratingToken(false)
       setState('waiting')
 
-      // Send initial ICE candidates
-      for (const candidate of iceCandidates) {
+      // Send buffered early ICE candidates that gathered before session creation
+      for (const candidate of earlyIceCandidates) {
         await fetch(API_ENDPOINTS.SIGNAL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -125,7 +140,7 @@ export function useSend() {
             data: candidate,
             role: 'sender',
           }),
-        })
+        }).catch(console.error)
       }
 
       // Listen for answer and receiver's ICE candidates via SSE
@@ -171,6 +186,10 @@ export function useSend() {
 
       // Wait for channel to open
       connection.onChannelOpen(async () => {
+        if (channelTimeoutRef.current) {
+          clearTimeout(channelTimeoutRef.current)
+          channelTimeoutRef.current = null
+        }
         setState('transferring')
 
         try {
@@ -199,6 +218,15 @@ export function useSend() {
           cleanup()
         }
       })
+
+      // Set a timeout for connection establishment
+      channelTimeoutRef.current = setTimeout(() => {
+        if (connectionRef.current?.getConnectionState() !== 'connected') {
+          setError('Connection timed out. Devices could not connect (NAT/Firewall issue).')
+          setState('error')
+          cleanup()
+        }
+      }, 30000)
 
       connection.onChannelError((err) => {
         setError(err.message)
@@ -252,6 +280,10 @@ export function useSend() {
   }, [])
 
   const cleanup = useCallback(() => {
+    if (channelTimeoutRef.current) {
+      clearTimeout(channelTimeoutRef.current)
+      channelTimeoutRef.current = null
+    }
     sseRef.current?.close()
     sseRef.current = null
     connectionRef.current?.close()

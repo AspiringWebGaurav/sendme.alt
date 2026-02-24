@@ -8,16 +8,17 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { APP_URLS, DEVELOPER_URLS, getOgImageUrl } from '@/lib/urls'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://www.send2me.site'),
+  metadataBase: new URL(APP_URLS.BASE_URL),
   title: {
-    default: 'sendme.alt - Fast P2P File Transfer | Send Files Up to 3GB',
-    template: '%s | sendme.alt',
+    default: `${APP_URLS.APP_NAME} - Fast P2P File Transfer | Send Files Up to 3GB`,
+    template: `%s | ${APP_URLS.APP_NAME}`,
   },
-  description: 'Blazing fast peer-to-peer file transfer. Send files up to 3GB directly between devices. No signup, no cloud storage, just fast transfers. Free forever.',
+  description: APP_URLS.APP_DESCRIPTION,
   keywords: [
     'file transfer',
     'P2P file transfer',
@@ -30,9 +31,9 @@ export const metadata: Metadata = {
     'private file sharing',
     'secure file transfer',
   ],
-  authors: [{ name: 'Gaurav Patil', url: 'https://gauravpatil.online' }],
-  creator: 'Gaurav Patil',
-  publisher: 'Gaurav Patil',
+  authors: [{ name: DEVELOPER_URLS.NAME, url: DEVELOPER_URLS.PORTFOLIO }],
+  creator: DEVELOPER_URLS.NAME,
+  publisher: DEVELOPER_URLS.NAME,
   robots: {
     index: true,
     follow: true,
@@ -47,27 +48,27 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://www.send2me.site',
-    siteName: 'sendme.alt',
-    title: 'sendme.alt - Fast P2P File Transfer',
-    description: 'Send files up to 3GB directly between devices. No signup required. Free forever.',
+    url: APP_URLS.BASE_URL,
+    siteName: APP_URLS.APP_NAME,
+    title: `${APP_URLS.APP_NAME} - Fast P2P File Transfer`,
+    description: APP_URLS.APP_DESCRIPTION,
     images: [
       {
-        url: '/og-image.png',
+        url: getOgImageUrl(),
         width: 1200,
         height: 630,
-        alt: 'sendme.alt - Fast P2P File Transfer',
+        alt: `${APP_URLS.APP_NAME} - Fast P2P File Transfer`,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'sendme.alt - Fast P2P File Transfer',
-    description: 'Send files up to 3GB directly between devices. No signup required.',
-    creator: '@gauravpatil',
+    title: `${APP_URLS.APP_NAME} - Fast P2P File Transfer`,
+    description: APP_URLS.APP_DESCRIPTION,
+    creator: `@${DEVELOPER_URLS.TWITTER_HANDLE}`,
   },
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_BASE_URL || 'https://www.send2me.site',
+    canonical: APP_URLS.BASE_URL,
   },
   category: 'File Transfer',
 }

@@ -8,6 +8,7 @@
 'use client'
 
 import Link from 'next/link'
+import { DEVELOPER_URLS } from '@/lib/urls'
 
 export function Footer() {
   return (
@@ -19,12 +20,12 @@ export function Footer() {
             <span className="text-pink-300">♥</span>
             <span>by</span>
             <a
-              href="https://www.gauravpatil.online"
+              href={DEVELOPER_URLS.PORTFOLIO}
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-pink-200 font-medium transition-colors"
             >
-              Gaurav Patil
+              {DEVELOPER_URLS.NAME}
             </a>
           </div>
 
@@ -43,7 +44,7 @@ export function Footer() {
               Terms of Service
             </Link>
             <span className="text-white/30">•</span>
-            <span className="text-white/40">© 2026</span>
+            <span className="text-white/40">© {new Date().getFullYear()}</span>
           </div>
         </div>
       </div>

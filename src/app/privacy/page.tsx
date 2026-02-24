@@ -9,14 +9,19 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
+import { APP_URLS, DEVELOPER_URLS, getCanonicalUrl } from '@/lib/urls'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'Privacy Policy for sendme.alt - Learn how we protect your privacy. No data collection, no tracking, no storage. Files transfer directly between devices.',
+  description: `Privacy Policy for ${APP_URLS.APP_NAME} - Learn how we protect your privacy. No data collection, no tracking, no storage. Files transfer directly between devices.`,
   openGraph: {
-    title: 'Privacy Policy | sendme.alt',
-    description: 'Privacy Policy for sendme.alt - Learn how we protect your privacy.',
+    title: `Privacy Policy | ${APP_URLS.APP_NAME}`,
+    description: `Privacy Policy for ${APP_URLS.APP_NAME} - Learn how we protect your privacy.`,
     type: 'website',
+    url: getCanonicalUrl('/privacy'),
+  },
+  alternates: {
+    canonical: getCanonicalUrl('/privacy'),
   },
   robots: {
     index: true,
@@ -49,7 +54,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">Privacy Commitment</h2>
               <p className="mb-2">
-                Your privacy is paramount at sendme.alt. We operate on a strict "No-Logs" policy regarding your files. We do not store, view, or analyze the content of the files you transfer.
+                Your privacy is paramount at {APP_URLS.APP_NAME}. We operate on a strict "No-Logs" policy regarding your files. We do not store, view, or analyze the content of the files you transfer.
               </p>
             </section>
 
@@ -94,12 +99,12 @@ export default function PrivacyPage() {
               <p>
                 For privacy-related inquiries, please reach out via: {' '}
                 <a
-                  href="https://www.gauravpatil.online"
+                  href={DEVELOPER_URLS.PORTFOLIO}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-accent hover:text-accent-light transition-colors"
                 >
-                  www.gauravpatil.online
+                  {DEVELOPER_URLS.PORTFOLIO.replace('https://', '').replace('http://', '')}
                 </a>
               </p>
             </section>

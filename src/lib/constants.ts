@@ -5,6 +5,8 @@
  * https://gauravpatil.online
  */
 
+import { getIceServers } from './urls'
+
 // App Configuration
 export const APP_CONFIG = {
   MAX_FILE_SIZE: parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE || '10737418240'), // 10GB default
@@ -13,39 +15,9 @@ export const APP_CONFIG = {
   BUFFER_THRESHOLD: 1 * 1024 * 1024, // 1MB buffer
 } as const
 
-// WebRTC Configuration with STUN/TURN
-// WebRTC Configuration with STUN/TURN
+// WebRTC Configuration with STUN/TURN (Dynamic - configured via environment variables)
 export const RTC_CONFIG: RTCConfiguration = {
-  iceServers: [
-    // FREE STUN servers (Google) - Multiple for redundancy
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' },
-    
-    // Additional free STUN servers for better connectivity
-    { urls: 'stun:stun.stunprotocol.org:3478' },
-    
-    // Custom TURN server from Environment Variables (Recommended for Production)
-    ...(process.env.NEXT_PUBLIC_TURN_URL ? [{
-      urls: process.env.NEXT_PUBLIC_TURN_URL,
-      username: process.env.NEXT_PUBLIC_TURN_USERNAME,
-      credential: process.env.NEXT_PUBLIC_TURN_CREDENTIAL,
-    }] : []),
-
-    // Fallback: Free Metered.ca TURN (Use with caution in production due to limits)
-    ...(process.env.NEXT_PUBLIC_TURN_URL ? [] : [{
-      urls: 'turn:a.relay.metered.ca:443',
-      username: 'e8dd65b92c62d5e98c3b8d4b',
-      credential: 'uWdWNmkhvyqTmFRr',
-    },
-    {
-      urls: 'turn:a.relay.metered.ca:443?transport=tcp',
-      username: 'e8dd65b92c62d5e98c3b8d4b',
-      credential: 'uWdWNmkhvyqTmFRr',
-    }]),
-  ],
+  iceServers: getIceServers(),
   iceCandidatePoolSize: 10,
   iceTransportPolicy: 'all', // Try direct first, use TURN as fallback
   bundlePolicy: 'max-bundle',

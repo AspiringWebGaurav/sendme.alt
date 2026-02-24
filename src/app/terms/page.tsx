@@ -9,14 +9,19 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
+import { APP_URLS, DEVELOPER_URLS, getCanonicalUrl } from '@/lib/urls'
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
-  description: 'Terms of Service for sendme.alt - Read our terms and conditions. Maximum file size: 3GB. No warranty, use at your own risk.',
+  description: `Terms of Service for ${APP_URLS.APP_NAME} - Read our terms and conditions. Maximum file size: 3GB. No warranty, use at your own risk.`,
   openGraph: {
-    title: 'Terms of Service | sendme.alt',
-    description: 'Terms of Service for sendme.alt - Read our terms and conditions.',
+    title: `Terms of Service | ${APP_URLS.APP_NAME}`,
+    description: `Terms of Service for ${APP_URLS.APP_NAME} - Read our terms and conditions.`,
     type: 'website',
+    url: getCanonicalUrl('/terms'),
+  },
+  alternates: {
+    canonical: getCanonicalUrl('/terms'),
   },
   robots: {
     index: true,
@@ -49,14 +54,14 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">1. Acceptance of Terms</h2>
               <p className="mb-2">
-                By accessing or using the sendme.alt service, you confirm your acceptance of these Terms of Service. These terms constitute a legally binding agreement between you and sendme.alt regarding your use of our text and file transfer services.
+                By accessing or using the {APP_URLS.APP_NAME} service, you confirm your acceptance of these Terms of Service. These terms constitute a legally binding agreement between you and {APP_URLS.APP_NAME} regarding your use of our text and file transfer services.
               </p>
             </section>
 
             <section>
               <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">2. Nature of Service</h2>
               <p className="mb-2">
-                sendme.alt is a peer-to-peer (P2P) file transfer solution leveraging WebRTC technology. We facilitate direct data transmission between user devices. We do not permanently store, view, or control the files transferred through our platform. All transfers are transient and direct.
+                {APP_URLS.APP_NAME} is a peer-to-peer (P2P) file transfer solution leveraging WebRTC technology. We facilitate direct data transmission between user devices. We do not permanently store, view, or control the files transferred through our platform. All transfers are transient and direct.
               </p>
             </section>
 
@@ -77,7 +82,7 @@ export default function TermsPage() {
                 <strong>No Warranty:</strong> The service is provided on an "AS IS" and "AS AVAILABLE" basis. We expressly disclaim all warranties of any kind, whether express or implied.
               </p>
               <p className="mb-2">
-                <strong>Limitation of Liability:</strong> In no event shall sendme.alt or its operators be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the service.
+                <strong>Limitation of Liability:</strong> In no event shall {APP_URLS.APP_NAME} or its operators be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the service.
               </p>
               <p className="mb-2">
                 <strong>File Size Limit:</strong> Transfers are limited to a maximum file size of 3GB per transfer.
@@ -87,7 +92,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg sm:text-xl font-bold mb-3 text-white">5. Intellectual Property</h2>
               <p className="mb-2">
-                All rights, title, and interest in and to the service (excluding content provided by users) are and will remain the exclusive property of sendme.alt and its licensors.
+                All rights, title, and interest in and to the service (excluding content provided by users) are and will remain the exclusive property of {APP_URLS.APP_NAME} and its licensors.
               </p>
             </section>
 
@@ -103,12 +108,12 @@ export default function TermsPage() {
               <p>
                 For any inquiries regarding these Terms, please contact us via my portfolio: {' '}
                 <a
-                  href="https://www.gauravpatil.online"
+                  href={DEVELOPER_URLS.PORTFOLIO}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-accent hover:text-accent-light transition-colors"
                 >
-                  www.gauravpatil.online
+                  {DEVELOPER_URLS.PORTFOLIO.replace('https://', '').replace('http://', '')}
                 </a>
               </p>
             </section>

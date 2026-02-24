@@ -9,6 +9,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { DEVELOPER_URLS, APP_URLS } from '@/lib/urls'
 
 export function Navbar() {
   const pathname = usePathname()
@@ -25,7 +26,7 @@ export function Navbar() {
               S
             </div>
             <span className="text-xl font-bold text-white drop-shadow-lg">
-              sendme.alt
+              {APP_URLS.APP_NAME}
             </span>
           </Link>
 
@@ -49,7 +50,7 @@ export function Navbar() {
               Terms
             </Link>
             <a
-              href="https://www.gauravpatil.online"
+              href={DEVELOPER_URLS.PORTFOLIO}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
@@ -57,7 +58,7 @@ export function Navbar() {
               Portfolio
             </a>
             <a
-              href="https://github.com/AspiringWebGaurav"
+              href={DEVELOPER_URLS.GITHUB}
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-sm font-medium text-slate-300 hover:text-white transition-colors border border-slate-700/50"

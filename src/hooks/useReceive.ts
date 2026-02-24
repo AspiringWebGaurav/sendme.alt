@@ -24,6 +24,7 @@ export function useReceive() {
   const connectionRef = useRef<P2PConnection | null>(null)
   const sseRef = useRef<EventSource | null>(null)
   const processedCandidatesRef = useRef<Set<string>>(new Set())
+  const channelTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const startReceiving = useCallback(async () => {
     if (!token.trim()) return
@@ -80,22 +81,7 @@ export function useReceive() {
         }
       })
 
-      // Create answer
-      const answer = await connection.createAnswer(session.sender.offer)
-
-      // Send answer
-      await fetch(API_ENDPOINTS.SIGNAL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          token: token.trim().toLowerCase(),
-          type: 'answer',
-          data: answer,
-          role: 'receiver',
-        }),
-      })
-
-      // Send ICE candidates
+      // Send ICE candidates (register BEFORE createAnswer to not miss trickle candidates)
       connection.onIceCandidate(async (candidate) => {
         if (candidate) {
           await fetch(API_ENDPOINTS.SIGNAL, {
@@ -107,11 +93,12 @@ export function useReceive() {
               data: candidate,
               role: 'receiver',
             }),
-          })
+          }).catch(console.error)
         }
       })
 
-      // Listen for sender's ICE candidates via SSE
+      // Listen for sender's ICE candidates via SSE BEFORE sending answer
+      // to ensure we don't miss any generated immediately after sender receives answer
       const eventSource = new EventSource(
         `${API_ENDPOINTS.LISTEN}?token=${token.trim().toLowerCase()}&role=receiver`
       )
@@ -141,8 +128,30 @@ export function useReceive() {
         }
       }
 
+      // Create answer (this starts ICE gathering immediately)
+      const answer = await connection.createAnswer(session.sender.offer)
+
+      // Send answer
+      await fetch(API_ENDPOINTS.SIGNAL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: token.trim().toLowerCase(),
+          type: 'answer',
+          data: answer,
+          role: 'receiver',
+        }),
+      }).catch((err) => {
+        console.error('[P2P] Failed to send answer:', err)
+        throw new Error('Failed to signal answer to peer server')
+      })
+
       // Wait for channel and receive file
       connection.onChannelOpen(async () => {
+        if (channelTimeoutRef.current) {
+          clearTimeout(channelTimeoutRef.current)
+          channelTimeoutRef.current = null
+        }
         setState('transferring')
 
         try {
@@ -196,6 +205,15 @@ export function useReceive() {
         }
       })
 
+      // Set a timeout for connection establishment
+      channelTimeoutRef.current = setTimeout(() => {
+        if (connectionRef.current?.getConnectionState() !== 'connected') {
+          setError('Connection timed out. Devices could not connect (NAT/Firewall issue).')
+          setState('error')
+          cleanup()
+        }
+      }, 30000)
+
       connection.onChannelError((err) => {
         setError(err.message)
         setState('error')
@@ -229,6 +247,10 @@ export function useReceive() {
   }, [state])
 
   const cleanup = useCallback(() => {
+    if (channelTimeoutRef.current) {
+      clearTimeout(channelTimeoutRef.current)
+      channelTimeoutRef.current = null
+    }
     sseRef.current?.close()
     sseRef.current = null
     connectionRef.current?.close()
