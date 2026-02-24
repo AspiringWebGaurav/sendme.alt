@@ -177,7 +177,7 @@ export default function HomePage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.25 }}
-                  className="min-h-[400px] sm:min-h-[450px]"
+                  className="flex flex-col justify-center min-h-[400px] sm:min-h-[450px]"
                 >
                   {mode === 'send' ? <SendMode /> : <ReceiveMode />}
                 </motion.div>

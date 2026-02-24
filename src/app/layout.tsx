@@ -104,8 +104,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${inter.className} h-full antialiased`}>
+    <html lang="en" className="min-h-screen bg-[#0f172a] text-slate-50">
+      <body className={`${inter.className} min-h-screen antialiased`}>
         <NotificationProvider>
           {children}
         </NotificationProvider>
