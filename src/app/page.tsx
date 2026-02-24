@@ -21,9 +21,9 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-4 sm:py-12">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <div className="w-full max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8 lg:gap-16 items-center">
+          <div className="grid lg:grid-cols-[1fr_1.1fr] xl:grid-cols-[1fr_1.2fr] gap-8 lg:gap-16 items-start mt-4 lg:mt-8">
             {/* Left side - Hero & Features */}
             <div className="space-y-8 lg:space-y-10">
               <motion.div
