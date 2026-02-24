@@ -267,7 +267,7 @@ export function useReceive() {
           setState('error')
           cleanup()
         }
-      }, 30000)
+      }, 180000) // 3 minutes timeout
 
       connection.onChannelError((err) => {
         addNotification(err.message, 'error')
