@@ -73,6 +73,13 @@ export function ProgressBar({ progress }: ProgressBarProps) {
           <div className="font-semibold text-white">{formatTime(progress.eta)}</div>
         </div>
       </div>
+
+      {/* Adaptive status message (network slow, optimizing, etc.) */}
+      {progress.statusMessage && (
+        <div className="text-center text-xs text-amber-300/90 animate-pulse">
+          ⚡ {progress.statusMessage}
+        </div>
+      )}
     </div>
   )
 }

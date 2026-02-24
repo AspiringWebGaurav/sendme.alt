@@ -11,8 +11,20 @@ import { getIceServers } from './urls'
 export const APP_CONFIG = {
   MAX_FILE_SIZE: parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE || '10737418240'), // 10GB default
   TOKEN_EXPIRY_MINUTES: parseInt(process.env.NEXT_PUBLIC_TOKEN_EXPIRY_MINUTES || '10'),
-  CHUNK_SIZE: 32 * 1024, // 32KB chunks (increased for better speed)
-  BUFFER_THRESHOLD: 1 * 1024 * 1024, // 1MB buffer
+  // Adaptive chunk sizing (ThroughputController auto-tunes within these bounds)
+  CHUNK_SIZE_INITIAL: 64 * 1024, // 64KB — conservative start
+  CHUNK_SIZE_MIN: 16 * 1024, // 16KB — floor for very slow connections
+  CHUNK_SIZE_MAX: 256 * 1024, // 256KB — SCTP ceiling
+  // Adaptive buffer threshold (auto-tuned by drain rate)
+  BUFFER_THRESHOLD_INITIAL: 2 * 1024 * 1024, // 2MB — safe start
+  BUFFER_THRESHOLD_MIN: 512 * 1024, // 512KB — floor
+  BUFFER_THRESHOLD_MAX: 8 * 1024 * 1024, // 8MB — ceiling
+  // Stall detection
+  STALL_DETECT_MS: 3000, // 3s no drain → "Network slow" feedback
+  STALL_FATAL_MS: 10000, // 10s no drain → recoverable error
+  // Adaptive tuning window
+  ADAPTIVE_WINDOW: 10, // Measure drain rate over N chunks before adjusting
+  PROGRESS_THROTTLE_MS: 100, // Limit UI progress updates to 10/sec
 } as const
 
 // WebRTC Configuration with STUN/TURN (Dynamic - configured via environment variables)

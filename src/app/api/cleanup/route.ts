@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     // Verify request is from server (optional: add auth header check)
     const authHeader = request.headers.get('authorization')
     const expectedToken = process.env.CLEANUP_SECRET
-    
+
     // Optional: require auth token for security
     if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
       return NextResponse.json(
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
     const sessionsRef = adminDb.ref('sessions')
     const snapshot = await sessionsRef.get()
-    
+
     if (!snapshot.exists()) {
       return NextResponse.json({
         success: true,
@@ -63,6 +63,33 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     // Log error server-side only (not in browser console)
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const { token } = body
+
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: 'Missing token' },
+        { status: 400 }
+      )
+    }
+
+    const { tokenToFirebaseKey } = await import('@/lib/token')
+    const firebaseKey = tokenToFirebaseKey(token)
+
+    // Explicitly delete the session immediately
+    await adminDb.ref(`sessions/${firebaseKey}`).remove()
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

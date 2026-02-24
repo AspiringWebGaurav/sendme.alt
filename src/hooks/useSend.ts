@@ -12,8 +12,10 @@ import { P2PConnection } from '@/lib/webrtc'
 import { copyToClipboard } from '@/lib/transfer'
 import { API_ENDPOINTS, APP_CONFIG, ERROR_MESSAGES } from '@/lib/constants'
 import type { TransferState, FileInfo, ProgressInfo } from '@/types'
+import { useNotification } from '@/contexts/NotificationContext'
 
 export function useSend() {
+  const { addNotification } = useNotification()
   const [state, setState] = useState<TransferState>('idle')
   const [file, setFile] = useState<File | null>(null)
   const [token, setToken] = useState<string | null>(null)
@@ -28,16 +30,48 @@ export function useSend() {
   const answerSetRef = useRef<boolean>(false)
   const channelTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Ref for cleanup on unmount
+  const activeTokenRef = useRef<string | null>(null)
+
+  const cleanup = useCallback(() => {
+    if (channelTimeoutRef.current) {
+      clearTimeout(channelTimeoutRef.current)
+      channelTimeoutRef.current = null
+    }
+    sseRef.current?.close()
+    sseRef.current = null
+    connectionRef.current?.close()
+    connectionRef.current = null
+    processedCandidatesRef.current.clear()
+    answerSetRef.current = false
+
+    // Explicitly destroy Firebase session on unmount or cancel
+    if (activeTokenRef.current) {
+      if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        navigator.sendBeacon('/api/cleanup', JSON.stringify({ token: activeTokenRef.current }))
+      } else {
+        fetch('/api/cleanup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: activeTokenRef.current }),
+          keepalive: true
+        }).catch(() => { })
+      }
+      activeTokenRef.current = null
+    }
+  }, [])
+
   const selectFile = useCallback((selectedFile: File) => {
     // Validate file size
     if (selectedFile.size > APP_CONFIG.MAX_FILE_SIZE) {
+      addNotification(ERROR_MESSAGES.FILE_TOO_LARGE, 'error')
       setError(ERROR_MESSAGES.FILE_TOO_LARGE)
       return
     }
 
     setFile(selectedFile)
     setError(null)
-  }, [])
+  }, [addNotification])
 
   const startSending = useCallback(async () => {
     if (!file) return
@@ -54,7 +88,8 @@ export function useSend() {
       // Handle connection state changes for better UX
       connection.onConnectionStateChange((state) => {
         if (state === 'failed') {
-          setError('Connection failed. Please check your network or try again.')
+          addNotification('Connection failed — peer network blocked.', 'error')
+          setError('Connection failed — your network may be blocking peer connections. Try a different network or disable VPN.')
           setState('error')
         } else if (state === 'connected') {
           // Connection established
@@ -126,6 +161,7 @@ export function useSend() {
 
       createdToken = data.token
       setToken(data.token)
+      activeTokenRef.current = data.token // Set activeTokenRef here
       setIsGeneratingToken(false)
       setState('waiting')
 
@@ -179,6 +215,7 @@ export function useSend() {
             }
           }
         } else if (message.type === 'expired') {
+          addNotification('Signaling token expired.', 'warning')
           setError(ERROR_MESSAGES.TOKEN_EXPIRED)
           cleanup()
         }
@@ -198,23 +235,44 @@ export function useSend() {
           })
 
           setState('complete')
+          addNotification('Transfer complete!', 'success')
+
+          // Keep the WebRTC connection alive for a few seconds after completion.
+          // The receiver may still be processing buffered SCTP chunks that haven't
+          // arrived yet. If we clean up Firebase/SSE immediately, the peer connection
+          // can be torn down before the receiver processes all data.
+          await new Promise(resolve => setTimeout(resolve, 3000))
+
+          // Transfer complete — no longer need Firebase signaling room
+          if (activeTokenRef.current) {
+            fetch('/api/cleanup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: activeTokenRef.current })
+            }).catch(() => { })
+            activeTokenRef.current = null
+          }
+
           // cleanup called by user action or timeout
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : ERROR_MESSAGES.TRANSFER_FAILED
 
-          // Handle cancellation specifically
-          if (errorMessage.includes('cancelled') || errorMessage.includes('closed unexpectedly')) {
-            if (errorMessage.includes('receiver')) {
-              // Peer cancelled
-              setError('Receiver cancelled the transfer')
-            } else {
-              // Self cancelled
-              setError('Transfer cancelled')
-            }
+          // UI Protocol Mapping V4
+          if (connection.peerCancelReceived) {
+            addNotification('Receiver cancelled the transfer.', 'warning')
+            setError('Receiver cancelled the transfer.')
+            setState('error')
+          } else if (connection.isCancelled || errorMessage.toLowerCase().includes('cancelled')) {
+            // Already handled by local cancel() call via addNotification
+          } else if (errorMessage.toLowerCase().includes('disconnected') || errorMessage.toLowerCase().includes('closed')) {
+            addNotification('Peer disconnected.', 'error')
+            setError('Peer disconnected.')
+            setState('error')
           } else {
-            setError(ERROR_MESSAGES.TRANSFER_FAILED)
+            addNotification(errorMessage || ERROR_MESSAGES.TRANSFER_FAILED, 'error')
+            setError(errorMessage || ERROR_MESSAGES.TRANSFER_FAILED)
+            setState('error')
           }
-          setState('error')
           cleanup()
         }
       })
@@ -222,19 +280,23 @@ export function useSend() {
       // Set a timeout for connection establishment
       channelTimeoutRef.current = setTimeout(() => {
         if (connectionRef.current?.getConnectionState() !== 'connected') {
-          setError('Connection timed out. Devices could not connect (NAT/Firewall issue).')
+          addNotification('Connection timed out.', 'error')
+          setError('Connection timed out — your firewall or NAT is blocking the peer connection. Try a different network.')
           setState('error')
           cleanup()
         }
       }, 30000)
 
       connection.onChannelError((err) => {
+        addNotification(err.message, 'error')
         setError(err.message)
         setState('error')
       })
 
     } catch (err) {
-      setError((err as Error).message || ERROR_MESSAGES.CONNECTION_FAILED)
+      const msg = (err as Error).message || ERROR_MESSAGES.CONNECTION_FAILED
+      addNotification(msg, 'error')
+      setError(msg)
       setState('error')
       setIsGeneratingToken(false)
     }
@@ -246,26 +308,30 @@ export function useSend() {
   }, [])
 
   const cancel = useCallback(() => {
-    // Cancel active transfer if in progress
-    if (connectionRef.current && (state === 'transferring' || state === 'waiting')) {
+    // Determine if we are actively cancelling a mid-flight transfer to toast
+    const isMidFlight = state === 'transferring' || state === 'waiting' || state === 'connecting'
+
+    if (connectionRef.current && isMidFlight) {
       try {
         connectionRef.current.cancelTransfer()
-      } catch (err) {
-        // Ignore errors during cancellation
-      }
+      } catch (err) { }
+      addNotification('You cancelled the transfer.', 'info')
     }
 
-    // Delay cleanup to allow cancel message to be sent
-    setTimeout(cleanup, 200)
-
-    setState('idle')
-    setFile(null)
-    setToken(null)
+    // Reset UI state atomically — progress first, then state
     setProgress(null)
     setError(null)
     setIsGeneratingToken(false)
     setCopySuccess(false)
-  }, [state])
+    setFile(null)
+    setToken(null)
+
+    // Delay state reset to `idle` until after cancel message is sent + cleanup
+    setTimeout(() => {
+      cleanup()
+      setState('idle')
+    }, 250)
+  }, [state, cleanup, addNotification])
 
   const handleCopyToken = useCallback(async (token: string) => {
     try {
@@ -277,19 +343,6 @@ export function useSend() {
     } catch (err) {
       // Silent fail
     }
-  }, [])
-
-  const cleanup = useCallback(() => {
-    if (channelTimeoutRef.current) {
-      clearTimeout(channelTimeoutRef.current)
-      channelTimeoutRef.current = null
-    }
-    sseRef.current?.close()
-    sseRef.current = null
-    connectionRef.current?.close()
-    connectionRef.current = null
-    processedCandidatesRef.current.clear()
-    answerSetRef.current = false
   }, [])
 
   return {

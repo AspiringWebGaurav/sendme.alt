@@ -153,7 +153,7 @@ export default function HomePage() {
                   <div className="relative grid grid-cols-2 gap-1">
                     <button
                       onClick={() => setMode('send')}
-                      className={`relative py-3.5 px-4 rounded-xl font-semibold transition-colors text-base ${mode === 'send' ? 'text-white' : 'text-white/70 hover:text-white'
+                      className={`relative py-3.5 px-4 rounded-xl font-semibold transition-colors text-base no-select ${mode === 'send' ? 'text-white' : 'text-white/70 hover:text-white'
                         }`}
                       type="button"
                     >
@@ -161,7 +161,7 @@ export default function HomePage() {
                     </button>
                     <button
                       onClick={() => setMode('receive')}
-                      className={`relative py-3.5 px-4 rounded-xl font-semibold transition-colors text-base ${mode === 'receive' ? 'text-white' : 'text-white/70 hover:text-white'
+                      className={`relative py-3.5 px-4 rounded-xl font-semibold transition-colors text-base no-select ${mode === 'receive' ? 'text-white' : 'text-white/70 hover:text-white'
                         }`}
                       type="button"
                     >

@@ -22,6 +22,7 @@ export interface ProgressInfo {
   percentage: number
   speed: number // bytes per second
   eta: number // seconds remaining
+  statusMessage?: string // "Optimizing speed…", "Network slow…", etc.
 }
 
 // Session Data (stored in Firebase)

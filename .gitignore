@@ -1,36 +1,60 @@
 # Dependencies
-node_modules
+node_modules/
 /.pnp
 .pnp.js
 
 # Testing
 /coverage
+/.nyc_output
 
 # Next.js
 /.next/
 /out/
-.next
-
-# Production
-/build
-dist
+build/
+dist/
 
 # Misc
 .DS_Store
 *.pem
+
+# Environment variables
 .env
-.env.local
+.env*.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.local
+.env.staging
 
-# Debug
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-debug.log*
 
 # Vercel
 .vercel
+
+# Editor directories and files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.eslintcache
+
+# OS-generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
@@ -39,3 +63,11 @@ next-env.d.ts
 # Firebase
 service-account.json
 .firebase/
+firebase-debug.log
+firebase-debug.*.log
+
+# Diagnostic/Temporary files
+temp/
+tmp/
+*.tmp
+*.bak

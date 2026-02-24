@@ -112,16 +112,6 @@ export function SendMode() {
             <p className="text-xs text-white/60">Maximum file size: 3GB</p>
           </label>
         </div>
-
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400"
-          >
-            {error}
-          </motion.div>
-        )}
       </div>
     )
   }
@@ -299,7 +289,7 @@ export function SendMode() {
         </div>
         <div>
           <p className="text-2xl font-bold text-white mb-2">
-            {error?.toLowerCase().includes('cancelled') ? 'Transfer Cancelled' : 'Transfer Failed'}
+            Transfer Stopped
           </p>
           <p className="text-white/80 px-4">{error}</p>
         </div>

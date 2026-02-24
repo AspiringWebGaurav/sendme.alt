@@ -62,11 +62,19 @@ export async function POST(request: Request) {
 
     await adminDb.ref(`sessions/${firebaseKey}`).set(sessionData)
 
-    return NextResponse.json({
+    const responsePayload = {
       success: true,
       token,
       expiresAt,
-    })
+    }
+
+    // Fire and forget background lazy cleanup (does not block response)
+    fetch(new URL('/api/cleanup', request.url).toString(), {
+      method: 'GET',
+      headers: request.headers
+    }).catch(() => { }) // Silent fail
+
+    return NextResponse.json(responsePayload)
   } catch (error) {
     // Log error server-side only (not in browser console)
     return NextResponse.json(

@@ -12,8 +12,10 @@ import { P2PConnection } from '@/lib/webrtc'
 import { downloadFile, formatBytes } from '@/lib/transfer'
 import { API_ENDPOINTS, ERROR_MESSAGES } from '@/lib/constants'
 import type { TransferState, FileInfo, ProgressInfo } from '@/types'
+import { useNotification } from '@/contexts/NotificationContext'
 
 export function useReceive() {
+  const { addNotification } = useNotification()
   const [state, setState] = useState<TransferState>('idle')
   const [token, setToken] = useState<string>('')
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null)
@@ -25,6 +27,36 @@ export function useReceive() {
   const sseRef = useRef<EventSource | null>(null)
   const processedCandidatesRef = useRef<Set<string>>(new Set())
   const channelTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Ref for cleanup on unmount
+  const activeTokenRef = useRef<string | null>(null)
+
+  const cleanup = useCallback(() => {
+    if (channelTimeoutRef.current) {
+      clearTimeout(channelTimeoutRef.current)
+      channelTimeoutRef.current = null
+    }
+    sseRef.current?.close()
+    sseRef.current = null
+    connectionRef.current?.close()
+    connectionRef.current = null
+    processedCandidatesRef.current.clear()
+
+    // Explicitly destroy Firebase session on unmount or cancel
+    if (activeTokenRef.current) {
+      if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        navigator.sendBeacon('/api/cleanup', JSON.stringify({ token: activeTokenRef.current }))
+      } else {
+        fetch('/api/cleanup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: activeTokenRef.current }),
+          keepalive: true
+        }).catch(() => { })
+      }
+      activeTokenRef.current = null
+    }
+  }, [])
 
   const startReceiving = useCallback(async () => {
     if (!token.trim()) return
@@ -66,6 +98,7 @@ export function useReceive() {
 
       const session = validateData.session
       setFileInfo(session.file)
+      activeTokenRef.current = normalizedToken
 
       // Create WebRTC connection
       const connection = new P2PConnection()
@@ -74,7 +107,8 @@ export function useReceive() {
       // Handle connection state changes
       connection.onConnectionStateChange((state) => {
         if (state === 'failed') {
-          setError('Connection failed. Please check your network or try again.')
+          addNotification('Connection failed — peer network blocked.', 'error')
+          setError('Connection failed — your network may be blocking peer connections. Try a different network or disable VPN.')
           setState('error')
         } else if (state === 'connected') {
           // Connection established
@@ -123,30 +157,15 @@ export function useReceive() {
             }
           }
         } else if (message.type === 'expired') {
+          addNotification('Signaling token expired.', 'warning')
           setError(ERROR_MESSAGES.TOKEN_EXPIRED)
           cleanup()
         }
       }
 
-      // Create answer (this starts ICE gathering immediately)
-      const answer = await connection.createAnswer(session.sender.offer)
-
-      // Send answer
-      await fetch(API_ENDPOINTS.SIGNAL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          token: token.trim().toLowerCase(),
-          type: 'answer',
-          data: answer,
-          role: 'receiver',
-        }),
-      }).catch((err) => {
-        console.error('[P2P] Failed to send answer:', err)
-        throw new Error('Failed to signal answer to peer server')
-      })
-
-      // Wait for channel and receive file
+      // Register channel open handler BEFORE creating the answer.
+      // On fast local connections, the channel can open during the await fetch()
+      // for sending the answer. If we register after, the callback is missed.
       connection.onChannelOpen(async () => {
         if (channelTimeoutRef.current) {
           clearTimeout(channelTimeoutRef.current)
@@ -169,15 +188,27 @@ export function useReceive() {
             // Size mismatch
           }
 
+          // Transfer complete — no longer need Firebase signaling room
+          if (activeTokenRef.current) {
+            fetch('/api/cleanup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: activeTokenRef.current })
+            }).catch(() => { })
+            activeTokenRef.current = null
+          }
+
           // Download file with error handling
           try {
             await downloadFile(blob, session.file.name)
             setReceivedFileName(session.file.name)
             setState('complete')
+            addNotification('File received successfully!', 'success')
             setTimeout(() => cleanup(), 3000)
           } catch (downloadError) {
             // Download failed but file was received - offer manual download
             const errorMsg = downloadError instanceof Error ? downloadError.message : 'Unknown error'
+            addNotification('File received, but auto-download failed.', 'warning')
             setError(`File received but download failed: ${errorMsg}. File size: ${formatBytes(blob.size)}.`)
             setState('error')
             // Store blob for manual download (only in browser)
@@ -189,32 +220,57 @@ export function useReceive() {
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : ERROR_MESSAGES.TRANSFER_FAILED
 
-          if (errorMessage.includes('cancelled') || errorMessage.includes('closed unexpectedly')) {
-            if (errorMessage.includes('receiver')) {
-              // Self cancelled
-              setError('Transfer cancelled')
-            } else {
-              // Peer cancelled
-              setError('Sender cancelled the transfer')
-            }
+          // UI Protocol Mapping V4
+          if (connection.peerCancelReceived) {
+            addNotification('Sender cancelled the transfer.', 'warning')
+            setError('Sender cancelled the transfer.')
+            setState('error')
+          } else if (connection.isCancelled || errorMessage.toLowerCase().includes('cancelled')) {
+            // Already handled by local cancel() via addNotification
+          } else if (errorMessage.toLowerCase().includes('disconnected') || errorMessage.toLowerCase().includes('closed')) {
+            addNotification('Peer disconnected.', 'error')
+            setError('Peer disconnected.')
+            setState('error')
           } else {
-            setError(errorMessage)
+            addNotification(errorMessage || ERROR_MESSAGES.TRANSFER_FAILED, 'error')
+            setError(errorMessage || ERROR_MESSAGES.TRANSFER_FAILED)
+            setState('error')
           }
-          setState('error')
           cleanup()
         }
+      })
+
+      // Create answer AFTER registering onChannelOpen, so the callback is
+      // ready when the channel opens (which can happen during the fetch below).
+      const answer = await connection.createAnswer(session.sender.offer)
+
+      // Send answer to signaling server
+      await fetch(API_ENDPOINTS.SIGNAL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: token.trim().toLowerCase(),
+          type: 'answer',
+          data: answer,
+          role: 'receiver',
+        }),
+      }).catch((err) => {
+        console.error('[P2P] Failed to send answer:', err)
+        throw new Error('Failed to signal answer to peer server')
       })
 
       // Set a timeout for connection establishment
       channelTimeoutRef.current = setTimeout(() => {
         if (connectionRef.current?.getConnectionState() !== 'connected') {
-          setError('Connection timed out. Devices could not connect (NAT/Firewall issue).')
+          addNotification('Connection timed out.', 'error')
+          setError('Connection timed out — your firewall or NAT is blocking the peer connection. Try a different network.')
           setState('error')
           cleanup()
         }
       }, 30000)
 
       connection.onChannelError((err) => {
+        addNotification(err.message, 'error')
         setError(err.message)
         setState('error')
       })
@@ -226,37 +282,29 @@ export function useReceive() {
   }, [token])
 
   const cancel = useCallback(() => {
-    // Cancel active transfer if in progress
-    if (connectionRef.current && (state === 'transferring' || state === 'connecting')) {
+    // Determine if we are actively cancelling a mid-flight transfer to toast
+    const isMidFlight = state === 'transferring' || state === 'connecting'
+
+    if (connectionRef.current && isMidFlight) {
       try {
         connectionRef.current.cancelTransfer()
-      } catch (err) {
-        // Ignore errors during cancellation
-      }
+      } catch { }
+      addNotification('You cancelled the transfer.', 'info')
     }
 
-    // Delay cleanup to allow cancel message to be sent
-    setTimeout(cleanup, 200)
-
-    setState('idle')
-    setToken('')
-    setFileInfo(null)
+    // Reset UI state atomically — progress first, then state
     setProgress(null)
     setError(null)
+    setFileInfo(null)
     setReceivedFileName('')
-  }, [state])
+    setToken('')
 
-  const cleanup = useCallback(() => {
-    if (channelTimeoutRef.current) {
-      clearTimeout(channelTimeoutRef.current)
-      channelTimeoutRef.current = null
-    }
-    sseRef.current?.close()
-    sseRef.current = null
-    connectionRef.current?.close()
-    connectionRef.current = null
-    processedCandidatesRef.current.clear()
-  }, [])
+    // Delay state reset to `idle` until after cancel message is sent + cleanup
+    setTimeout(() => {
+      cleanup()
+      setState('idle')
+    }, 250)
+  }, [state, cleanup, addNotification])
 
   return {
     state,

@@ -46,16 +46,6 @@ export function ReceiveMode() {
         >
           {token.trim() ? '🚀 Start Receiving' : '⌨️ Enter Code Above'}
         </button>
-
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400"
-          >
-            {error}
-          </motion.div>
-        )}
       </div>
     )
   }
@@ -158,7 +148,7 @@ export function ReceiveMode() {
         </div>
         <div>
           <p className="text-2xl font-bold text-white mb-2">
-            {error?.toLowerCase().includes('cancelled') ? 'Transfer Cancelled' : 'Transfer Failed'}
+            Transfer Stopped
           </p>
           <p className="text-slate-400 px-4">{error}</p>
           {hasManualDownload && (
