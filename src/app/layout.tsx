@@ -52,12 +52,15 @@ export const metadata: Metadata = {
     siteName: APP_URLS.APP_NAME,
     title: `${APP_URLS.APP_NAME} - Fast P2P File Transfer`,
     description: APP_URLS.APP_DESCRIPTION,
+    emails: ['hello@gauravpatil.online'],
     images: [
       {
         url: getOgImageUrl(),
+        secureUrl: getOgImageUrl(),
         width: 1200,
         height: 630,
-        alt: `${APP_URLS.APP_NAME} - Fast P2P File Transfer`,
+        alt: `${APP_URLS.APP_NAME} Preview Graphic showing secure peer-to-peer file transfer`,
+        type: 'image/png',
       },
     ],
   },
@@ -65,12 +68,24 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: `${APP_URLS.APP_NAME} - Fast P2P File Transfer`,
     description: APP_URLS.APP_DESCRIPTION,
+    site: `@${DEVELOPER_URLS.TWITTER_HANDLE}`,
     creator: `@${DEVELOPER_URLS.TWITTER_HANDLE}`,
+    images: [getOgImageUrl()],
   },
   alternates: {
     canonical: APP_URLS.BASE_URL,
   },
   category: 'File Transfer',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  appleWebApp: {
+    capable: true,
+    title: APP_URLS.APP_NAME,
+    statusBarStyle: 'black-translucent',
+  },
 }
 
 export const viewport: Viewport = {
