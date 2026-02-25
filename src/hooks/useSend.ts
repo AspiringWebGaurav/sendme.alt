@@ -300,7 +300,7 @@ export function useSend() {
       setState('error')
       setIsGeneratingToken(false)
     }
-  }, [file])
+  }, [file, addNotification, cleanup])
 
   const removeFile = useCallback(() => {
     setFile(null)

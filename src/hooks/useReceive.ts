@@ -279,7 +279,7 @@ export function useReceive() {
       setError((err as Error).message || ERROR_MESSAGES.CONNECTION_FAILED)
       setState('error')
     }
-  }, [token])
+  }, [token, addNotification, cleanup])
 
   const cancel = useCallback(() => {
     // Determine if we are actively cancelling a mid-flight transfer to toast
