@@ -5,8 +5,8 @@
  * https://gauravpatil.online
  */
 
-import { adminDb } from '@/lib/firebase-admin'
-import { tokenToFirebaseKey } from '@/lib/token'
+import { adminDb } from '@/services/firebase-admin'
+import { tokenToFirebaseKey } from '@/core/token/token'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -34,11 +34,11 @@ export async function GET(request: Request) {
 
       let listener: ((snapshot: any) => void) | null = null
       let cleanedUp = false
-      
+
       const cleanup = () => {
         if (cleanedUp) return
         cleanedUp = true
-        
+
         if (listener) {
           sessionRef.off('value', listener)
           listener = null
@@ -53,11 +53,11 @@ export async function GET(request: Request) {
           // Controller may already be closed
         }
       }
-      
+
       // Listen to session changes
-      listener = sessionRef.on('value', (snapshot) => {
+      listener = sessionRef.on('value', (snapshot: any) => {
         if (cleanedUp) return
-        
+
         try {
           const session = snapshot.val()
 
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
               type: 'update',
               status: session.status,
               answer: session.receiver?.answer || null,
-              candidates: session.receiver?.candidates 
+              candidates: session.receiver?.candidates
                 ? Object.values(session.receiver.candidates)
                 : [],
             }
@@ -92,7 +92,7 @@ export async function GET(request: Request) {
             const update = {
               type: 'update',
               status: session.status,
-              candidates: session.sender?.candidates 
+              candidates: session.sender?.candidates
                 ? Object.values(session.sender.candidates)
                 : [],
             }

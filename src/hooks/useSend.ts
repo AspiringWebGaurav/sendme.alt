@@ -8,11 +8,11 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { P2PConnection } from '@/lib/webrtc'
-import { copyToClipboard } from '@/lib/transfer'
-import { API_ENDPOINTS, APP_CONFIG, ERROR_MESSAGES } from '@/lib/constants'
+import { P2PConnection } from '@/core/webrtc/webrtc'
+import { copyToClipboard } from '@/core/webrtc/transfer'
+import { API_ENDPOINTS, APP_CONFIG, ERROR_MESSAGES } from '@/core/constants'
 import type { TransferState, FileInfo, ProgressInfo } from '@/types'
-import { useNotification } from '@/contexts/NotificationContext'
+import { useNotification } from '@/state/NotificationContext'
 
 export function useSend() {
   const { addNotification } = useNotification()
@@ -86,7 +86,7 @@ export function useSend() {
       connectionRef.current = connection
 
       // Handle connection state changes for better UX
-      connection.onConnectionStateChange((state) => {
+      connection.onConnectionStateChange((state: any) => {
         if (state === 'failed') {
           addNotification('Connection failed — peer network blocked.', 'error')
           setError('Connection failed — your network may be blocking peer connections. Try a different network or disable VPN.')
@@ -100,7 +100,7 @@ export function useSend() {
       let createdToken: string | null = null
       const earlyIceCandidates: RTCIceCandidateInit[] = []
 
-      connection.onIceCandidate((candidate) => {
+      connection.onIceCandidate((candidate: any) => {
         if (candidate) {
           if (createdToken) {
             // Token exists, trickle candidate immediately to signal server
@@ -230,7 +230,7 @@ export function useSend() {
         setState('transferring')
 
         try {
-          await connection.sendFile(file, (progressInfo) => {
+          await connection.sendFile(file, (progressInfo: any) => {
             setProgress(progressInfo)
           })
 
@@ -287,7 +287,7 @@ export function useSend() {
         }
       }, 180000) // 3 minutes timeout
 
-      connection.onChannelError((err) => {
+      connection.onChannelError((err: any) => {
         addNotification(err.message, 'error')
         setError(err.message)
         setState('error')

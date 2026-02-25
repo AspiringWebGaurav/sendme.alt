@@ -6,8 +6,8 @@
  */
 
 import { NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase-admin'
-import { tokenToFirebaseKey } from '@/lib/token'
+import { adminDb } from '@/services/firebase-admin'
+import { tokenToFirebaseKey } from '@/core/token/token'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -36,10 +36,10 @@ export async function POST(request: Request) {
       await sessionRef.update({ status: 'connected' })
     } else if (type === 'ice') {
       // Add ICE candidate
-      const candidatesRef = role === 'sender' 
+      const candidatesRef = role === 'sender'
         ? sessionRef.child('sender/candidates')
         : sessionRef.child('receiver/candidates')
-      
+
       await candidatesRef.push(data)
     }
 

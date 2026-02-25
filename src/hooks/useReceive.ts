@@ -8,11 +8,11 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { P2PConnection } from '@/lib/webrtc'
-import { downloadFile, formatBytes } from '@/lib/transfer'
-import { API_ENDPOINTS, ERROR_MESSAGES } from '@/lib/constants'
+import { P2PConnection } from '@/core/webrtc/webrtc'
+import { downloadFile, formatBytes } from '@/core/webrtc/transfer'
+import { API_ENDPOINTS, ERROR_MESSAGES } from '@/core/constants'
 import type { TransferState, FileInfo, ProgressInfo } from '@/types'
-import { useNotification } from '@/contexts/NotificationContext'
+import { useNotification } from '@/state/NotificationContext'
 
 export function useReceive() {
   const { addNotification } = useNotification()
@@ -105,7 +105,7 @@ export function useReceive() {
       connectionRef.current = connection
 
       // Handle connection state changes
-      connection.onConnectionStateChange((state) => {
+      connection.onConnectionStateChange((state: any) => {
         if (state === 'failed') {
           addNotification('Connection failed — peer network blocked.', 'error')
           setError('Connection failed — your network may be blocking peer connections. Try a different network or disable VPN.')
@@ -116,7 +116,7 @@ export function useReceive() {
       })
 
       // Send ICE candidates (register BEFORE createAnswer to not miss trickle candidates)
-      connection.onIceCandidate(async (candidate) => {
+      connection.onIceCandidate(async (candidate: any) => {
         if (candidate) {
           await fetch(API_ENDPOINTS.SIGNAL, {
             method: 'POST',
@@ -174,7 +174,7 @@ export function useReceive() {
         setState('transferring')
 
         try {
-          const blob = await connection.receiveFile((progressInfo) => {
+          const blob = await connection.receiveFile((progressInfo: any) => {
             setProgress(progressInfo)
           })
 
@@ -269,7 +269,7 @@ export function useReceive() {
         }
       }, 180000) // 3 minutes timeout
 
-      connection.onChannelError((err) => {
+      connection.onChannelError((err: any) => {
         addNotification(err.message, 'error')
         setError(err.message)
         setState('error')

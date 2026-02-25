@@ -5,7 +5,7 @@
  * https://gauravpatil.online
  */
 
-import { RTC_CONFIG, DATA_CHANNEL_CONFIG, APP_CONFIG } from './constants'
+import { RTC_CONFIG, DATA_CHANNEL_CONFIG, APP_CONFIG } from '../constants'
 import type { ProgressInfo } from '@/types'
 
 /**

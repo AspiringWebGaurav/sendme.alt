@@ -1,129 +1,44 @@
-/**
- * sendme.alt
- * Copyright (c) 2026 Gaurav Patil
- * Licensed under MIT License
- * https://gauravpatil.online
- */
-
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-primary: #3B82F6;
-  --color-primary-light: #60A5FA;
-  --color-primary-dark: #2563EB;
-  --color-accent: #10B981;
-  --color-accent-light: #34D399;
-  --color-accent-dark: #059669;
+  --color-primary: #8B5CF6;
+  --color-primary-light: #A78BFA;
+  --color-primary-dark: #7C3AED;
+  --color-accent: #06B6D4;
+  --color-accent-light: #22D3EE;
+  --color-accent-dark: #0891B2;
   --color-success: #10B981;
   --color-error: #EF4444;
   --color-warning: #F59E0B;
-  --backdrop-blur-glass: 16px;
 }
 
-* {
-  -webkit-tap-highlight-color: transparent;
+/* Global root lock — prevents any page-level scroll on the main app */
+html, body {
+  margin: 0;
+  padding: 0;
 }
 
-/* Touch and mobile optimizations */
-button, a, input, select, textarea {
-  touch-action: manipulation;
-}
-
-.no-select {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-html {
-  height: 100%;
-}
-
+/* Main app viewport lock (home page uses this) */
 body {
-  min-height: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
+  height: 100dvh;            /* Use dvh for mobile browser chrome */
+  width: 100vw;
+}
+
+/* Safe-area insets for notched phones */
+@supports(padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Smooth scrolling for legal pages */
+.scroll-container {
   overflow-y: auto;
-}
-
-body {
-  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
-  background-attachment: fixed;
-  color: white;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-}
-
-.btn-primary {
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-  color: white;
-  font-weight: 600;
-  border-radius: 0.75rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-}
-
-.btn-secondary {
-  padding: 0.75rem 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
-  font-weight: 500;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.2s ease;
-}
-
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.text-gradient {
-  background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Custom scrollbar (for any overflow) */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.3);
-  border-radius: 5px;
-  border: 2px solid rgba(15, 23, 42, 0.5);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.5);
-}
-
-/* Input focus glow effect */
-input:focus, textarea:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Smooth transitions */
-* {
-  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+  -webkit-overflow-scrolling: touch;
 }

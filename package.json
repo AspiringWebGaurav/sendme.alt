@@ -1,36 +1,37 @@
 {
-  "name": "sendme-alt",
+  "name": "sendme-alt-rebuild",
   "version": "1.0.0",
   "description": "Blazing fast P2P file transfer for the web",
   "author": "Gaurav Patil <https://gauravpatil.online>",
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "dev": "next dev",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "@serwist/next": "^9.5.6",
-    "@tailwindcss/postcss": "^4.1.18",
+    "@tailwindcss/postcss": "^4.0.0",
     "firebase": "^11.1.0",
-    "firebase-admin": "^13.0.1",
+    "firebase-admin": "^13.6.1",
     "framer-motion": "^12.0.0",
-    "next": "^16.1.6",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "serwist": "^9.5.6"
+    "lucide-react": "^0.475.0",
+    "next": "^15.5.12",
+    "next-themes": "^0.4.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "tailwindcss": "^4.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
-    "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2",
-    "autoprefixer": "^10.4.20",
-    "playwright": "^1.58.2",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^4.0.0",
-    "typescript": "^5.6.3"
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^22.10.0",
+    "@types/react": "19.0.8",
+    "@types/react-dom": "19.0.3",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "15.1.7",
+    "postcss": "^8.4.0",
+    "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -6,8 +6,8 @@
  */
 
 import { NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase-admin'
-import { tokenToFirebaseKey, isValidToken } from '@/lib/token'
+import { adminDb } from '@/services/firebase-admin'
+import { tokenToFirebaseKey, isValidToken } from '@/core/token/token'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

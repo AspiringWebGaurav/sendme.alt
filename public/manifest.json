@@ -1,0 +1,24 @@
+{
+    "name": "Sendme.alt - Secure P2P File Transfer",
+    "short_name": "Sendme.alt",
+    "description": "Blazing fast peer-to-peer encrypted file transfer. No servers, no limits, no sign-up.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#09090b",
+    "theme_color": "#8B5CF6",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

@@ -9,7 +9,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase-admin'
+import { adminDb } from '@/services/firebase-admin'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { tokenToFirebaseKey } = await import('@/lib/token')
+    const { tokenToFirebaseKey } = await import('@/core/token/token')
     const firebaseKey = tokenToFirebaseKey(token)
 
     // Explicitly delete the session immediately
