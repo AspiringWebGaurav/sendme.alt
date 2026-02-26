@@ -43,3 +43,9 @@ parity-results.json
 test-artifacts/
 test-results/
 playwright-report/
+
+# test files (not for production)
+*.bin
+deep-qa.mjs
+e2e-stress.mjs
+scripts/

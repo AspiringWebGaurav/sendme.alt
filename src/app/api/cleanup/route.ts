@@ -20,12 +20,17 @@ export async function GET(request: Request) {
     const authHeader = request.headers.get('authorization')
     const expectedToken = process.env.CLEANUP_SECRET
 
-    // Optional: require auth token for security
+    // Strictly enforce SECRET during production if it exists
     if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
+        { success: false, error: 'Unauthorized. Valid bearer token required.' },
         { status: 401 }
       )
+    }
+
+    // Default warn if no SECRET is strictly configured but allow execution for tests
+    if (!expectedToken) {
+      console.warn('⚠️ [SECURITY] /api/cleanup fired without a CLEANUP_SECRET mounted in environment.');
     }
 
     const sessionsRef = adminDb.ref('sessions')

@@ -13,18 +13,49 @@
   --color-success: #10B981;
   --color-error: #EF4444;
   --color-warning: #F59E0B;
+
+  /* Premium White Theme Tokens */
+  --color-bg-primary: #F7F9FC;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-elevated: #F1F4F8;
+
+  --color-border-subtle: #E3E8EF;
+  --color-border-strong: #CBD5E1;
+
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748B;
+
+  --color-accent-primary: #6C47FF;
+  --color-accent-hover: #5B3DDB;
+
+  --color-success-bg: #E6F9F1;
+  --color-success-text: #0F9D58;
+
+  --color-error-bg: #FEECEC;
+  --color-error-text: #D92D20;
+
+  /* Premium Light Elevation Shadows */
+  --shadow-light-card: 0 4px 12px rgba(15, 23, 42, 0.04);
+  --shadow-light-elevated: 0 6px 16px rgba(15, 23, 42, 0.06);
 }
 
 /* Global root lock — prevents any page-level scroll on the main app */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  /* Makes buttons feel native on touch */
+  touch-action: pan-x pan-y;
+  /* Fluid mobile touch gestures */
 }
 
 /* Main app viewport lock (home page uses this) */
 body {
   overflow: hidden;
-  height: 100dvh;            /* Use dvh for mobile browser chrome */
+  height: 100dvh;
+  /* Use dvh for mobile browser chrome */
   width: 100vw;
 }
 

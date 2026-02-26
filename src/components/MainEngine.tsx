@@ -17,7 +17,7 @@ export function MainEngine() {
                 <ModeToggle mode={mode} onChange={setMode} />
             </div>
 
-            <div className="relative w-full flex-1 min-h-0 rounded-2xl bg-zinc-900/50 border border-white/5 overflow-hidden backdrop-blur-xl shadow-2xl">
+            <div className="relative w-full flex-1 min-h-0 rounded-2xl bg-bg-surface dark:bg-zinc-900/50 border border-border-subtle dark:border-white/5 overflow-hidden backdrop-blur-xl shadow-light-card dark:shadow-2xl">
                 <AnimatePresence mode="wait">
                     {mode === 'send' ? (
                         <motion.div

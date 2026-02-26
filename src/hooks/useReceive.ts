@@ -159,6 +159,7 @@ export function useReceive() {
         } else if (message.type === 'expired') {
           addNotification('Signaling token expired.', 'warning')
           setError(ERROR_MESSAGES.TOKEN_EXPIRED)
+          setState('error')
           cleanup()
         }
       }

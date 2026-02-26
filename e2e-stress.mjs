@@ -10,9 +10,10 @@ import fs from 'fs';
 import path from 'path';
 import { performance } from 'perf_hooks';
 
-const APP_URL = process.argv.includes('--base-url')
+const BASE_URL = process.argv.includes('--base-url')
     ? process.argv[process.argv.indexOf('--base-url') + 1]
     : 'http://localhost:3000';
+const APP_URL = `${BASE_URL}/transfer`;
 
 let PASS = 0, FAIL = 0;
 const RESULTS = [];
@@ -92,6 +93,7 @@ async function receiverEnterToken(page, token) {
 }
 
 async function getStatusText(page) {
+    await page.waitForTimeout(300); // Wait for AnimatePresence transition to finish
     try {
         return await page.locator('.text-xs.font-medium').first().innerText({ timeout: 2000 });
     } catch { return 'UNKNOWN'; }
@@ -105,6 +107,19 @@ async function getBodyText(page) {
 
 async function phase1() {
     console.log('\n━━━ PHASE 1: UI State Tests — Chromium (12 tests) ━━━');
+
+    await test('LANDING-001: Landing page loads and has CTAs', async () => {
+        const { browser, page } = await newPage(chromium);
+        try {
+            await page.goto(BASE_URL);
+            await page.waitForLoadState('networkidle');
+            const text = await getBodyText(page);
+            assert(text.includes('Secure P2P'), 'Landing title missing');
+            assert(text.includes('Send File'), 'Send File CTA missing');
+            assert(text.includes('Receive File'), 'Receive File CTA missing');
+            assert(text.includes('Cross Browser'), 'Feature block missing');
+        } finally { await browser.close(); }
+    });
 
     await test('UI-001: Page loads with Send tab active', async () => {
         const { browser, page } = await newPage(chromium);
@@ -507,7 +522,7 @@ async function phase3() {
             // Wait 10 seconds
             await s.page.waitForTimeout(10000);
             // Validate token still valid via API
-            const res = await fetch(`${APP_URL}/api/validate`, {
+            const res = await fetch(`${BASE_URL}/api/validate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token }),
@@ -542,7 +557,7 @@ async function phase4() {
             const token = await senderStartTransfer(page);
             await page.click('text=Cancel');
             await page.waitForTimeout(2000);
-            const res = await fetch(`${APP_URL}/api/validate`, {
+            const res = await fetch(`${BASE_URL}/api/validate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token }),
@@ -553,14 +568,14 @@ async function phase4() {
     });
 
     await test('CANCEL-003: Sender cancel with receiver connected — receiver shows error/reset', async () => {
-        const filePath = generateTestFile(1, 'can003');
+        const filePath = generateTestFile(20, 'can003');
         const s = await newPage(chromium);
         const r = await newPage(firefox);
         try {
             await senderSelectFile(s.page, filePath);
             const token = await senderStartTransfer(s.page);
             await receiverEnterToken(r.page, token);
-            await r.page.waitForTimeout(3000);
+            await r.page.waitForTimeout(500);
             // Sender cancels
             await s.page.click('text=Cancel');
             await s.page.waitForTimeout(3000);
@@ -581,14 +596,14 @@ async function phase4() {
     });
 
     await test('CANCEL-004: Sender closes tab — no crash on receiver', async () => {
-        const filePath = generateTestFile(1, 'can004');
+        const filePath = generateTestFile(20, 'can004');
         const s = await newPage(chromium);
         const r = await newPage(firefox);
         try {
             await senderSelectFile(s.page, filePath);
             const token = await senderStartTransfer(s.page);
             await receiverEnterToken(r.page, token);
-            await r.page.waitForTimeout(3000);
+            await r.page.waitForTimeout(500);
             // Close sender tab abruptly
             await s.page.close();
             await new Promise(res => setTimeout(res, 5000));
@@ -603,14 +618,14 @@ async function phase4() {
     });
 
     await test('CANCEL-005: Receiver closes tab — no crash on sender', async () => {
-        const filePath = generateTestFile(1, 'can005');
+        const filePath = generateTestFile(20, 'can005');
         const s = await newPage(chromium);
         const r = await newPage(firefox);
         try {
             await senderSelectFile(s.page, filePath);
             const token = await senderStartTransfer(s.page);
             await receiverEnterToken(r.page, token);
-            await r.page.waitForTimeout(3000);
+            await r.page.waitForTimeout(500);
             // Close receiver tab abruptly
             await r.page.close();
             await new Promise(res => setTimeout(res, 5000));
@@ -638,14 +653,14 @@ async function phase4() {
     });
 
     await test('CANCEL-007: Receiver refreshes page — no ghost state', async () => {
-        const filePath = generateTestFile(1, 'can007');
+        const filePath = generateTestFile(20, 'can007');
         const s = await newPage(chromium);
         const r = await newPage(firefox);
         try {
             await senderSelectFile(s.page, filePath);
             const token = await senderStartTransfer(s.page);
             await receiverEnterToken(r.page, token);
-            await r.page.waitForTimeout(3000);
+            await r.page.waitForTimeout(500);
             await r.page.reload();
             await r.page.waitForLoadState('networkidle');
             const text = await getBodyText(r.page);
@@ -728,14 +743,14 @@ async function phase4() {
     });
 
     await test('CANCEL-012: Both sender & receiver cancel simultaneously', async () => {
-        const filePath = generateTestFile(1, 'can012');
+        const filePath = generateTestFile(20, 'can012');
         const s = await newPage(chromium);
         const r = await newPage(firefox);
         try {
             await senderSelectFile(s.page, filePath);
             const token = await senderStartTransfer(s.page);
             await receiverEnterToken(r.page, token);
-            await r.page.waitForTimeout(3000);
+            await r.page.waitForTimeout(500);
             // Both cancel at same time
             await Promise.all([
                 s.page.click('text=Cancel').catch(() => { }),
@@ -860,7 +875,7 @@ async function phase5() {
             await senderSelectFile(page, filePath);
             await senderStartTransfer(page);
             // Make API call simultaneously
-            const res = await fetch(`${APP_URL}/api/create`, {
+            const res = await fetch(`${BASE_URL}/api/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ offer: { type: 'offer', sdp: 'test' }, fileInfo: { name: 'api.bin', size: 100, type: 'application/octet-stream' } }),
@@ -868,7 +883,7 @@ async function phase5() {
             const json = await res.json();
             assert(json.success === true, 'API create should succeed while UI is in progress');
             // Cleanup
-            await fetch(`${APP_URL}/api/cleanup`, {
+            await fetch(`${BASE_URL}/api/cleanup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token: json.token }),

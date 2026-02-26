@@ -21,9 +21,9 @@ const stateConfig: Record<string, {
     idle: {
         label: 'Ready',
         icon: Wifi,
-        color: 'text-emerald-600 dark:text-emerald-400',
-        bgColor: 'bg-emerald-500/10',
-        borderColor: 'border-emerald-500/20',
+        color: 'text-success-text dark:text-emerald-400',
+        bgColor: 'bg-success-bg dark:bg-emerald-500/10',
+        borderColor: 'border-success-bg dark:border-emerald-500/20',
     },
     connecting: {
         label: 'Connecting',
@@ -52,16 +52,16 @@ const stateConfig: Record<string, {
     complete: {
         label: 'Complete',
         icon: CheckCircle2,
-        color: 'text-emerald-600 dark:text-emerald-400',
-        bgColor: 'bg-emerald-500/10',
-        borderColor: 'border-emerald-500/20',
+        color: 'text-success-text dark:text-emerald-400',
+        bgColor: 'bg-success-bg dark:bg-emerald-500/10',
+        borderColor: 'border-success-bg dark:border-emerald-500/20',
     },
     error: {
         label: 'Error',
         icon: XCircle,
-        color: 'text-red-600 dark:text-red-400',
-        bgColor: 'bg-red-500/10',
-        borderColor: 'border-red-500/20',
+        color: 'text-error-text dark:text-red-400',
+        bgColor: 'bg-error-bg dark:bg-red-500/10',
+        borderColor: 'border-error-bg dark:border-red-500/20',
     },
 }
 

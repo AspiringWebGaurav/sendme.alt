@@ -5,6 +5,9 @@
  * Usage: node deep-qa.mjs [--base-url http://localhost:3000]
  */
 
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+
 const BASE = process.argv.includes('--base-url')
     ? process.argv[process.argv.indexOf('--base-url') + 1]
     : 'http://localhost:3000';
@@ -18,14 +21,19 @@ const CREATED_TOKENS = []; // Track for cleanup
 async function api(path, method = 'POST', body = null, headers = {}) {
     const opts = {
         method,
-        headers: { 'Content-Type': 'application/json', ...headers },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': process.env.CLEANUP_SECRET ? `Bearer ${process.env.CLEANUP_SECRET}` : '',
+            ...headers
+        },
     };
     if (body && method !== 'GET') opts.body = JSON.stringify(body);
-    const url = method === 'GET' && body === null ? `${BASE}${path}` : `${BASE}${path}`;
+    const url = `${BASE}${path}`;
     const res = await fetch(url, opts);
     const text = await res.text();
     let json;
     try { json = JSON.parse(text); } catch { json = { raw: text }; }
+
     return { status: res.status, json, headers: Object.fromEntries(res.headers) };
 }
 
@@ -818,7 +826,7 @@ async function phase5() {
 // ─── Phase 6: Integration & Edge Cases ────────────────────────────────────────
 
 async function phase6() {
-    console.log('\n━━━ PHASE 6: Integration & Edge Cases (15 tests) ━━━');
+    console.log('\n━━━ PHASE 6: Integration & Edge Cases (17 tests) ━━━');
 
     await test('INTEG-001: Full lifecycle: create → validate → signal → cleanup', async () => {
         const c = await createSession();
@@ -918,12 +926,22 @@ async function phase6() {
     });
 
     await test('INTEG-014: Terms page returns 200', async () => {
-        const res = await fetch(`${BASE}/terms`);
+        const res = await fetch(`${BASE}/legal/terms`);
         assertEq(res.status, 200);
     });
 
     await test('INTEG-015: Privacy page returns 200', async () => {
-        const res = await fetch(`${BASE}/privacy`);
+        const res = await fetch(`${BASE}/legal/privacy`);
+        assertEq(res.status, 200);
+    });
+
+    await test('INTEG-016: AUP page returns 200', async () => {
+        const res = await fetch(`${BASE}/legal/aup`);
+        assertEq(res.status, 200);
+    });
+
+    await test('INTEG-017: Transfer app page returns 200', async () => {
+        const res = await fetch(`${BASE}/transfer`);
         assertEq(res.status, 200);
     });
 }
@@ -949,7 +967,7 @@ async function cleanupAll() {
 async function main() {
     console.log('');
     console.log('╔══════════════════════════════════════════════════════════════════╗');
-    console.log('║  sendme.alt — Deep QA API Validation Suite (105 tests)          ║');
+    console.log('║  sendme.alt — Deep QA API Validation Suite (107 tests)          ║');
     console.log('║  Target: ' + BASE.padEnd(54) + '║');
     console.log('╚══════════════════════════════════════════════════════════════════╝');
 
@@ -985,7 +1003,7 @@ async function main() {
         console.log('');
         process.exit(1);
     } else {
-        console.log('  🎉 ALL 105 TESTS PASSED — Zero bugs. Production-grade API.');
+        console.log('  🎉 ALL 107 TESTS PASSED — Zero bugs. Production-grade API.');
         process.exit(0);
     }
 }

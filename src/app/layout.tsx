@@ -41,6 +41,16 @@ export const metadata: Metadata = {
         },
     },
     manifest: '/manifest.json',
+    icons: {
+        icon: [
+            { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+            { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+        ],
+        apple: [
+            { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+            { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+        ],
+    },
     appleWebApp: {
         title: 'Sendme.alt',
         statusBarStyle: 'black-translucent',
@@ -70,7 +80,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={`${inter.className} bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 overflow-hidden h-[100dvh] w-screen m-0 p-0 transition-colors duration-300`}>
+            <body className={`${inter.className} bg-bg-primary dark:bg-zinc-950 text-text-primary dark:text-zinc-50 overflow-hidden h-[100dvh] w-screen m-0 p-0 transition-colors duration-300`}>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="dark"

@@ -27,6 +27,20 @@ export async function POST(request: Request) {
     const firebaseKey = tokenToFirebaseKey(token)
     const sessionRef = adminDb.ref(`sessions/${firebaseKey}`)
 
+    // ── Validate session exists before writing (prevents orphan creation) ──
+    const snapshot = await sessionRef.get()
+    if (!snapshot.exists()) {
+      // Do NOT write — this would create an orphan node in Firebase
+      return NextResponse.json({ success: true })
+    }
+
+    // ── Auto-delete if session has expired (TTL enforcement) ──
+    const sessionData = snapshot.val()
+    if (sessionData.expiresAt && sessionData.expiresAt < Date.now()) {
+      await sessionRef.remove()
+      return NextResponse.json({ success: true })
+    }
+
     if (type === 'answer') {
       // Receiver sending answer
       await sessionRef.child('receiver').update({
