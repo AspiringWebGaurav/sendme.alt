@@ -128,6 +128,7 @@ export class P2PConnection {
   private onChannelCloseCallback: (() => void) | null = null
   private onChannelErrorCallback: ((error: Error) => void) | null = null
   private onConnectionStateChangeCallback: ((state: RTCPeerConnectionState) => void) | null = null
+  private onIceConnectionStateChangeCallback: ((state: RTCIceConnectionState) => void) | null = null
 
   // ICE Candidate buffering
   private iceCandidateBuffer: RTCIceCandidateInit[] = []
@@ -161,6 +162,8 @@ export class P2PConnection {
       if (process.env.NODE_ENV === 'development') {
         console.log(`[P2P] ICE connection state changed: ${state}`)
       }
+
+      this.onIceConnectionStateChangeCallback?.(state)
 
       if (state === 'failed' || state === 'disconnected') {
         // Optional: trigger fallback or restart logic
@@ -327,6 +330,18 @@ export class P2PConnection {
     this.onConnectionStateChangeCallback = callback
   }
 
+  onIceConnectionStateChange(callback: (state: RTCIceConnectionState) => void) {
+    this.onIceConnectionStateChangeCallback = callback
+  }
+
+  getIceConnectionState(): RTCIceConnectionState {
+    return this.pc.iceConnectionState
+  }
+
+  getChannelReadyState(): RTCDataChannelState | undefined {
+    return this.channel?.readyState
+  }
+
   /**
    * Get ICE candidates as they are generated
    */
@@ -393,6 +408,9 @@ export class P2PConnection {
     }
 
     try {
+      // Pre-read entire file into memory for zero-copy chunking
+      const fileBuffer = await file.arrayBuffer()
+
       // Send file metadata first
       const metadata = {
         name: file.name,
@@ -439,7 +457,7 @@ export class P2PConnection {
               } else {
                 resolve()
               }
-            }, 500)
+            }, 50)
             this.channel!.onbufferedamountlow = () => {
               clearTimeout(fallback)
               if (this.channel) this.channel.onbufferedamountlow = null
@@ -451,9 +469,9 @@ export class P2PConnection {
           controller.checkStall(this.channel.bufferedAmount)
         }
 
-        // Read and send chunk (adaptive size)
-        const chunk = file.slice(offset, offset + chunkSize)
-        const arrayBuffer = await chunk.arrayBuffer()
+        // Read chunk from pre-loaded buffer (zero-copy slice)
+        const end = Math.min(offset + chunkSize, file.size)
+        const arrayBuffer = fileBuffer.slice(offset, end)
 
         // Send with retry on buffer-full (Chromium throws TypeError if SCTP overflows)
         let sendAttempts = 0
@@ -717,6 +735,7 @@ export class P2PConnection {
     this.onChannelCloseCallback = null
     this.onChannelErrorCallback = null
     this.onConnectionStateChangeCallback = null
+    this.onIceConnectionStateChangeCallback = null
   }
 
   /**

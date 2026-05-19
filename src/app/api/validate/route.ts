@@ -46,6 +46,14 @@ export async function POST(request: Request) {
       })
     }
 
+    // Check if session is already connected
+    if (session.status !== 'waiting') {
+      return NextResponse.json({
+        valid: false,
+        error: 'Session already in progress or completed',
+      })
+    }
+
     return NextResponse.json({
       valid: true,
       session,

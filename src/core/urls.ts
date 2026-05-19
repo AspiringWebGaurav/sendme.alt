@@ -77,7 +77,7 @@ export const WEBRTC_URLS = {
    * Env: NEXT_PUBLIC_STUN_SERVERS (comma-separated)
    */
   STUN_SERVERS: (process.env.NEXT_PUBLIC_STUN_SERVERS || 
-    'stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302,stun:stun2.l.google.com:19302,stun:stun3.l.google.com:19302,stun:stun4.l.google.com:19302,stun:stun.stunprotocol.org:3478'
+    'stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302'
   ).split(',').map(url => url.trim()),
   
   /**

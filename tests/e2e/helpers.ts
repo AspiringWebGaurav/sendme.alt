@@ -159,3 +159,21 @@ export async function waitForState(page: Page, stateText: string, timeoutMs = 30
         { timeout: timeoutMs }
     )
 }
+
+/**
+ * Simulate slow network or offline mode via CDP
+ */
+export async function setNetworkThrottling(page: Page, options: { offline?: boolean, downloadThroughput?: number, uploadThroughput?: number, latency?: number }) {
+    try {
+        const client = await page.context().newCDPSession(page);
+        await client.send('Network.enable');
+        await client.send('Network.emulateNetworkConditions', {
+            offline: options.offline ?? false,
+            downloadThroughput: options.downloadThroughput ?? -1,
+            uploadThroughput: options.uploadThroughput ?? -1,
+            latency: options.latency ?? 0,
+        });
+    } catch (err) {
+        console.warn('CDP network throttling only supported on Chromium', err);
+    }
+}

@@ -27,11 +27,21 @@ export function useReceive() {
   const sseRef = useRef<EventSource | null>(null)
   const processedCandidatesRef = useRef<Set<string>>(new Set())
   const channelTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const generationRef = useRef<number>(0)
+  const isTerminalRef = useRef<boolean>(false)
+  const stateRef = useRef<TransferState>('idle')
+  const isPassiveModeRef = useRef<boolean>(false)
+
+  const setSafeState = useCallback((newState: TransferState) => {
+    stateRef.current = newState
+    setState(newState)
+  }, [])
 
   // Ref for cleanup on unmount
   const activeTokenRef = useRef<string | null>(null)
 
   const cleanup = useCallback(() => {
+    generationRef.current++
     if (channelTimeoutRef.current) {
       clearTimeout(channelTimeoutRef.current)
       channelTimeoutRef.current = null
@@ -42,8 +52,8 @@ export function useReceive() {
     connectionRef.current = null
     processedCandidatesRef.current.clear()
 
-    // Explicitly destroy Firebase session on unmount or cancel
-    if (activeTokenRef.current) {
+    // Explicitly destroy Firebase session on unmount or cancel if not terminal
+    if (activeTokenRef.current && !isTerminalRef.current) {
       if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
         navigator.sendBeacon('/api/cleanup', JSON.stringify({ token: activeTokenRef.current }))
       } else {
@@ -61,8 +71,12 @@ export function useReceive() {
   const startReceiving = useCallback(async () => {
     if (!token.trim()) return
 
+    const currentGeneration = ++generationRef.current
+    isTerminalRef.current = false
+    isPassiveModeRef.current = false
+
     try {
-      setState('connecting')
+      setSafeState('connecting')
       setError(null)
 
       // Validate token
@@ -106,12 +120,23 @@ export function useReceive() {
 
       // Handle connection state changes
       connection.onConnectionStateChange((state: any) => {
+        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
         if (state === 'failed') {
+          isTerminalRef.current = true
           addNotification('Connection failed — peer network blocked.', 'error')
           setError('Connection failed — your network may be blocking peer connections. Try a different network or disable VPN.')
-          setState('error')
+          setSafeState('error')
         } else if (state === 'connected') {
           // Connection established
+        }
+      })
+
+      // Add ICE connection state change listener for advanced passive mode trigger
+      connection.onIceConnectionStateChange((pcState) => {
+        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+        const channelState = connectionRef.current?.getChannelReadyState()
+        if (channelState === 'open' && (pcState === 'connected' || pcState === 'completed')) {
+          isPassiveModeRef.current = true
         }
       })
 
@@ -139,6 +164,8 @@ export function useReceive() {
       sseRef.current = eventSource
 
       eventSource.onmessage = async (event) => {
+        if (generationRef.current !== currentGeneration) return
+
         const message = JSON.parse(event.data)
 
         if (message.type === 'update') {
@@ -157,9 +184,14 @@ export function useReceive() {
             }
           }
         } else if (message.type === 'expired') {
+          // Passive signaling mode guard
+          if (isTerminalRef.current || isPassiveModeRef.current || sseRef.current !== eventSource) {
+            return
+          }
+          isTerminalRef.current = true
           addNotification('Signaling token expired.', 'warning')
           setError(ERROR_MESSAGES.TOKEN_EXPIRED)
-          setState('error')
+          setSafeState('error')
           cleanup()
         }
       }
@@ -168,16 +200,28 @@ export function useReceive() {
       // On fast local connections, the channel can open during the await fetch()
       // for sending the answer. If we register after, the callback is missed.
       connection.onChannelOpen(async () => {
+        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+        
+        // Advanced passive mode trigger evaluation
+        const pcState = connectionRef.current?.getIceConnectionState()
+        if (pcState === 'connected' || pcState === 'completed') {
+          isPassiveModeRef.current = true
+        }
+
         if (channelTimeoutRef.current) {
           clearTimeout(channelTimeoutRef.current)
           channelTimeoutRef.current = null
         }
-        setState('transferring')
+        setSafeState('transferring')
 
         try {
           const blob = await connection.receiveFile((progressInfo: any) => {
+            if (generationRef.current !== currentGeneration || isTerminalRef.current) return
             setProgress(progressInfo)
           })
+
+          if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+          isTerminalRef.current = true
 
           // Verify blob is valid
           if (!blob || blob.size === 0) {
@@ -189,36 +233,31 @@ export function useReceive() {
             // Size mismatch
           }
 
-          // Transfer complete — no longer need Firebase signaling room
-          if (activeTokenRef.current) {
-            fetch('/api/cleanup', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ token: activeTokenRef.current })
-            }).catch(() => { })
-            activeTokenRef.current = null
-          }
-
+          // Removed aggressive POST /api/cleanup. Relying on TTL.
+          
           // Download file with error handling
           try {
             await downloadFile(blob, session.file.name)
             setReceivedFileName(session.file.name)
-            setState('complete')
+            setSafeState('complete')
             addNotification('File received successfully!', 'success')
             setTimeout(() => cleanup(), 3000)
           } catch (downloadError) {
+            if (generationRef.current !== currentGeneration) return
             // Download failed but file was received - offer manual download
             const errorMsg = downloadError instanceof Error ? downloadError.message : 'Unknown error'
             addNotification('File received, but auto-download failed.', 'warning')
             setError(`File received but download failed: ${errorMsg}. File size: ${formatBytes(blob.size)}.`)
-            setState('error')
+            setSafeState('error')
             // Store blob for manual download (only in browser)
             if (typeof window !== 'undefined') {
-              window.lastReceivedBlob = blob
-              window.lastReceivedFileName = session.file.name
+              (window as any).lastReceivedBlob = blob;
+              (window as any).lastReceivedFileName = session.file.name;
             }
           }
         } catch (err) {
+          if (generationRef.current !== currentGeneration) return
+          isTerminalRef.current = true
           const errorMessage = err instanceof Error ? err.message : ERROR_MESSAGES.TRANSFER_FAILED
 
           // UI Protocol Mapping V4
@@ -235,7 +274,7 @@ export function useReceive() {
           } else {
             addNotification(errorMessage || ERROR_MESSAGES.TRANSFER_FAILED, 'error')
             setError(errorMessage || ERROR_MESSAGES.TRANSFER_FAILED)
-            setState('error')
+            setSafeState('error')
           }
           cleanup()
         }
@@ -262,29 +301,36 @@ export function useReceive() {
 
       // Set a timeout for connection establishment
       channelTimeoutRef.current = setTimeout(() => {
+        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
         if (connectionRef.current?.getConnectionState() !== 'connected') {
+          isTerminalRef.current = true
           addNotification('Connection timed out.', 'error')
           setError('Connection timed out — your firewall or NAT is blocking the peer connection. Try a different network.')
-          setState('error')
+          setSafeState('error')
           cleanup()
         }
       }, 180000) // 3 minutes timeout
 
       connection.onChannelError((err: any) => {
+        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+        isTerminalRef.current = true
         addNotification(err.message, 'error')
         setError(err.message)
-        setState('error')
+        setSafeState('error')
       })
 
     } catch (err) {
+      if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+      isTerminalRef.current = true
       setError((err as Error).message || ERROR_MESSAGES.CONNECTION_FAILED)
-      setState('error')
+      setSafeState('error')
     }
   }, [token, addNotification, cleanup])
 
   const cancel = useCallback(() => {
     // Determine if we are actively cancelling a mid-flight transfer to toast
-    const isMidFlight = state === 'transferring' || state === 'connecting'
+    const currentState = stateRef.current
+    const isMidFlight = currentState === 'transferring' || currentState === 'connecting'
 
     if (connectionRef.current && isMidFlight) {
       try {
@@ -303,9 +349,9 @@ export function useReceive() {
     // Delay state reset to `idle` until after cancel message is sent + cleanup
     setTimeout(() => {
       cleanup()
-      setState('idle')
+      setSafeState('idle')
     }, 250)
-  }, [state, cleanup, addNotification])
+  }, [cleanup, addNotification, setSafeState])
 
   return {
     state,

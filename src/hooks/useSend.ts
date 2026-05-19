@@ -29,11 +29,21 @@ export function useSend() {
   const processedCandidatesRef = useRef<Set<string>>(new Set())
   const answerSetRef = useRef<boolean>(false)
   const channelTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const generationRef = useRef<number>(0)
+  const isTerminalRef = useRef<boolean>(false)
+  const stateRef = useRef<TransferState>('idle')
+  const isPassiveModeRef = useRef<boolean>(false)
+
+  const setSafeState = useCallback((newState: TransferState) => {
+    stateRef.current = newState
+    setState(newState)
+  }, [])
 
   // Ref for cleanup on unmount
   const activeTokenRef = useRef<string | null>(null)
 
   const cleanup = useCallback(() => {
+    generationRef.current++
     if (channelTimeoutRef.current) {
       clearTimeout(channelTimeoutRef.current)
       channelTimeoutRef.current = null
@@ -45,8 +55,8 @@ export function useSend() {
     processedCandidatesRef.current.clear()
     answerSetRef.current = false
 
-    // Explicitly destroy Firebase session on unmount or cancel
-    if (activeTokenRef.current) {
+    // Explicitly destroy Firebase session on unmount or cancel if not terminal
+    if (activeTokenRef.current && !isTerminalRef.current) {
       if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
         navigator.sendBeacon('/api/cleanup', JSON.stringify({ token: activeTokenRef.current }))
       } else {
@@ -76,8 +86,12 @@ export function useSend() {
   const startSending = useCallback(async () => {
     if (!file) return
 
+    const currentGeneration = ++generationRef.current
+    isTerminalRef.current = false
+    isPassiveModeRef.current = false
+
     try {
-      setState('connecting')
+      setSafeState('connecting')
       setIsGeneratingToken(true)
       setError(null)
 
@@ -87,12 +101,23 @@ export function useSend() {
 
       // Handle connection state changes for better UX
       connection.onConnectionStateChange((state: any) => {
+        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
         if (state === 'failed') {
+          isTerminalRef.current = true
           addNotification('Connection failed — peer network blocked.', 'error')
           setError('Connection failed — your network may be blocking peer connections. Try a different network or disable VPN.')
-          setState('error')
+          setSafeState('error')
         } else if (state === 'connected') {
           // Connection established
+        }
+      })
+
+      // Add ICE connection state change listener for advanced passive mode trigger
+      connection.onIceConnectionStateChange((pcState) => {
+        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+        const channelState = connectionRef.current?.getChannelReadyState()
+        if (channelState === 'open' && (pcState === 'connected' || pcState === 'completed')) {
+          isPassiveModeRef.current = true
         }
       })
 
@@ -163,7 +188,7 @@ export function useSend() {
       setToken(data.token)
       activeTokenRef.current = data.token // Set activeTokenRef here
       setIsGeneratingToken(false)
-      setState('waiting')
+      setSafeState('waiting')
 
       // Send buffered early ICE candidates that gathered before session creation
       for (const candidate of earlyIceCandidates) {
@@ -186,6 +211,8 @@ export function useSend() {
       sseRef.current = eventSource
 
       eventSource.onmessage = async (event) => {
+        if (generationRef.current !== currentGeneration) return
+
         const message = JSON.parse(event.data)
 
         if (message.type === 'update') {
@@ -215,27 +242,43 @@ export function useSend() {
             }
           }
         } else if (message.type === 'expired') {
+          // Passive signaling mode guard
+          if (isTerminalRef.current || isPassiveModeRef.current || sseRef.current !== eventSource) {
+            return
+          }
+          isTerminalRef.current = true
           addNotification('Signaling token expired.', 'warning')
           setError(ERROR_MESSAGES.TOKEN_EXPIRED)
-          setState('error')
+          setSafeState('error')
           cleanup()
         }
       }
 
       // Wait for channel to open
       connection.onChannelOpen(async () => {
+        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+        
+        // Advanced passive mode trigger evaluation
+        const pcState = connectionRef.current?.getIceConnectionState()
+        if (pcState === 'connected' || pcState === 'completed') {
+          isPassiveModeRef.current = true
+        }
+
         if (channelTimeoutRef.current) {
           clearTimeout(channelTimeoutRef.current)
           channelTimeoutRef.current = null
         }
-        setState('transferring')
+        setSafeState('transferring')
 
         try {
           await connection.sendFile(file, (progressInfo: any) => {
+            if (generationRef.current !== currentGeneration || isTerminalRef.current) return
             setProgress(progressInfo)
           })
 
-          setState('complete')
+          if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+          isTerminalRef.current = true
+          setSafeState('complete')
           addNotification('Transfer complete!', 'success')
 
           // Keep the WebRTC connection alive for a few seconds after completion.
@@ -244,18 +287,12 @@ export function useSend() {
           // can be torn down before the receiver processes all data.
           await new Promise(resolve => setTimeout(resolve, 3000))
 
-          // Transfer complete — no longer need Firebase signaling room
-          if (activeTokenRef.current) {
-            fetch('/api/cleanup', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ token: activeTokenRef.current })
-            }).catch(() => { })
-            activeTokenRef.current = null
-          }
-
+          // Removed aggressive POST /api/cleanup. Relying on TTL to prevent false-negatives.
+          
           // cleanup called by user action or timeout
         } catch (err) {
+          if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+          isTerminalRef.current = true
           const errorMessage = err instanceof Error ? err.message : ERROR_MESSAGES.TRANSFER_FAILED
 
           // UI Protocol Mapping V4
@@ -272,7 +309,7 @@ export function useSend() {
           } else {
             addNotification(errorMessage || ERROR_MESSAGES.TRANSFER_FAILED, 'error')
             setError(errorMessage || ERROR_MESSAGES.TRANSFER_FAILED)
-            setState('error')
+            setSafeState('error')
           }
           cleanup()
         }
@@ -280,25 +317,31 @@ export function useSend() {
 
       // Set a timeout for connection establishment
       channelTimeoutRef.current = setTimeout(() => {
+        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
         if (connectionRef.current?.getConnectionState() !== 'connected') {
+          isTerminalRef.current = true
           addNotification('Connection timed out.', 'error')
           setError('Connection timed out — your firewall or NAT is blocking the peer connection. Try a different network.')
-          setState('error')
+          setSafeState('error')
           cleanup()
         }
       }, 180000) // 3 minutes timeout
 
       connection.onChannelError((err: any) => {
+        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+        isTerminalRef.current = true
         addNotification(err.message, 'error')
         setError(err.message)
-        setState('error')
+        setSafeState('error')
       })
 
     } catch (err) {
+      if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+      isTerminalRef.current = true
       const msg = (err as Error).message || ERROR_MESSAGES.CONNECTION_FAILED
       addNotification(msg, 'error')
       setError(msg)
-      setState('error')
+      setSafeState('error')
       setIsGeneratingToken(false)
     }
   }, [file, addNotification, cleanup])
@@ -310,7 +353,8 @@ export function useSend() {
 
   const cancel = useCallback(() => {
     // Determine if we are actively cancelling a mid-flight transfer to toast
-    const isMidFlight = state === 'transferring' || state === 'waiting' || state === 'connecting'
+    const currentState = stateRef.current
+    const isMidFlight = currentState === 'transferring' || currentState === 'waiting' || currentState === 'connecting'
 
     if (connectionRef.current && isMidFlight) {
       try {
@@ -330,9 +374,9 @@ export function useSend() {
     // Delay state reset to `idle` until after cancel message is sent + cleanup
     setTimeout(() => {
       cleanup()
-      setState('idle')
+      setSafeState('idle')
     }, 250)
-  }, [state, cleanup, addNotification])
+  }, [cleanup, addNotification, setSafeState])
 
   const handleCopyToken = useCallback(async (token: string) => {
     try {

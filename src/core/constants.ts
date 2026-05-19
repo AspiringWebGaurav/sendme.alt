@@ -12,13 +12,13 @@ export const APP_CONFIG = {
   MAX_FILE_SIZE: parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE || '10737418240'), // 10GB default
   TOKEN_EXPIRY_MINUTES: parseInt(process.env.NEXT_PUBLIC_TOKEN_EXPIRY_MINUTES || '10'),
   // Adaptive chunk sizing (ThroughputController auto-tunes within these bounds)
-  CHUNK_SIZE_INITIAL: 64 * 1024, // 64KB — conservative start
+  CHUNK_SIZE_INITIAL: 256 * 1024, // 256KB — start at SCTP max for fast ramp-up
   CHUNK_SIZE_MIN: 16 * 1024, // 16KB — floor for very slow connections
   CHUNK_SIZE_MAX: 256 * 1024, // 256KB — SCTP ceiling
   // Adaptive buffer threshold (auto-tuned by drain rate)
-  BUFFER_THRESHOLD_INITIAL: 2 * 1024 * 1024, // 2MB — safe start
-  BUFFER_THRESHOLD_MIN: 512 * 1024, // 512KB — floor
-  BUFFER_THRESHOLD_MAX: 8 * 1024 * 1024, // 8MB — ceiling
+  BUFFER_THRESHOLD_INITIAL: 1 * 1024 * 1024, // 1MB — low start to minimize backpressure waits
+  BUFFER_THRESHOLD_MIN: 256 * 1024, // 256KB — floor
+  BUFFER_THRESHOLD_MAX: 16 * 1024 * 1024, // 16MB — ceiling
   // Stall detection
   STALL_DETECT_MS: 3000, // 3s no drain → "Network slow" feedback
   STALL_FATAL_MS: 10000, // 10s no drain → recoverable error
