@@ -100,7 +100,7 @@ export function useSend() {
       connectionRef.current = connection
 
       // Handle connection state changes for better UX
-      connection.onConnectionStateChange((state: any) => {
+      connection.onConnectionStateChange((state: RTCPeerConnectionState) => {
         if (generationRef.current !== currentGeneration || isTerminalRef.current) return
         if (state === 'failed') {
           isTerminalRef.current = true
@@ -125,7 +125,7 @@ export function useSend() {
       let createdToken: string | null = null
       const earlyIceCandidates: RTCIceCandidateInit[] = []
 
-      connection.onIceCandidate((candidate: any) => {
+      connection.onIceCandidate((candidate: RTCIceCandidateInit | null) => {
         if (candidate) {
           if (createdToken) {
             // Token exists, trickle candidate immediately to signal server
@@ -271,7 +271,7 @@ export function useSend() {
         setSafeState('transferring')
 
         try {
-          await connection.sendFile(file, (progressInfo: any) => {
+          await connection.sendFile(file, (progressInfo: ProgressInfo) => {
             if (generationRef.current !== currentGeneration || isTerminalRef.current) return
             setProgress(progressInfo)
           })
@@ -327,7 +327,7 @@ export function useSend() {
         }
       }, 180000) // 3 minutes timeout
 
-      connection.onChannelError((err: any) => {
+      connection.onChannelError((err: Error) => {
         if (generationRef.current !== currentGeneration || isTerminalRef.current) return
         isTerminalRef.current = true
         addNotification(err.message, 'error')

@@ -34,7 +34,7 @@ export const APP_URLS = {
    * Env: NEXT_PUBLIC_APP_DESCRIPTION
    */
   APP_DESCRIPTION: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 
-    'Blazing fast peer-to-peer file transfer. Send files up to 3GB directly between devices.',
+    'Blazing fast peer-to-peer file transfer. Send files up to 10GB directly between devices.',
 } as const
 
 // ============================================================================
@@ -105,11 +105,11 @@ export const WEBRTC_URLS = {
    * Env: NEXT_PUBLIC_FALLBACK_TURN_CREDENTIAL
    */
   FALLBACK_TURN: {
-    URLS: (process.env.NEXT_PUBLIC_FALLBACK_TURN_URLS || 
-      'turn:a.relay.metered.ca:443,turn:a.relay.metered.ca:443?transport=tcp'
-    ).split(',').map(url => url.trim()),
-    USERNAME: process.env.NEXT_PUBLIC_FALLBACK_TURN_USERNAME || 'e8dd65b92c62d5e98c3b8d4b',
-    CREDENTIAL: process.env.NEXT_PUBLIC_FALLBACK_TURN_CREDENTIAL || 'uWdWNmkhvyqTmFRr',
+    URLS: (process.env.NEXT_PUBLIC_FALLBACK_TURN_URLS ||
+      ''
+    ).split(',').filter(url => url.trim()).map(url => url.trim()),
+    USERNAME: process.env.NEXT_PUBLIC_FALLBACK_TURN_USERNAME || '',
+    CREDENTIAL: process.env.NEXT_PUBLIC_FALLBACK_TURN_CREDENTIAL || '',
   },
 } as const
 
@@ -207,7 +207,7 @@ export function getIceServers(): RTCIceServer[] {
       username: WEBRTC_URLS.TURN_USERNAME,
       credential: WEBRTC_URLS.TURN_CREDENTIAL,
     })
-  } else {
+  } else if (WEBRTC_URLS.FALLBACK_TURN.URLS.length > 0 && WEBRTC_URLS.FALLBACK_TURN.USERNAME && WEBRTC_URLS.FALLBACK_TURN.CREDENTIAL) {
     // Add fallback TURN servers
     for (const turnUrl of WEBRTC_URLS.FALLBACK_TURN.URLS) {
       iceServers.push({

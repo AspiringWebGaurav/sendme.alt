@@ -1,28 +1,17 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Lock, HardDrive, Zap, Trash2, Globe, Shield, Github } from 'lucide-react'
+import { ArrowRight, Lock, HardDrive, Zap, Trash2, Globe, Shield } from 'lucide-react'
 import Link from 'next/link'
+import { Github } from 'lucide-react'
+
+import { Navbar } from '@/layout/Navbar'
 
 export function TabletLanding() {
     return (
         <div className="w-full h-[100dvh] flex flex-col bg-zinc-950 text-zinc-50 overflow-hidden font-sans selection:bg-zinc-800">
             {/* Nav */}
-            <header className="w-full flex items-center justify-between px-8 py-5 shrink-0 relative z-10 border-b border-zinc-900">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-bold text-sm text-white">S</div>
-                    <span className="font-semibold text-lg tracking-tight text-white">sendme.alt</span>
-                </div>
-                <div className="flex items-center gap-3">
-                    <a href="https://github.com/AspiringWebGaurav" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white transition-colors" title="GitHub">
-                        <Github className="w-4 h-4" />
-                    </a>
-                    <a href="https://www.gauravpatil.online" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white transition-colors" title="Portfolio">
-                        <Globe className="w-4 h-4" />
-                    </a>
-                    <Link href="/transfer" className="px-5 py-2 text-sm font-medium bg-white text-zinc-950 hover:bg-zinc-200 rounded-full transition-colors">Start Sending</Link>
-                </div>
-            </header>
+            <Navbar variant="landing" />
 
             {/* Main Content */}
             <main className="flex-1 w-full flex flex-col items-center justify-center p-8 relative z-10 max-w-3xl mx-auto overflow-y-auto mt-4">
@@ -54,7 +43,7 @@ export function TabletLanding() {
                         transition={{ duration: 0.5, delay: 0.2 }}
                         className="text-lg text-zinc-400 mb-8 leading-relaxed max-w-lg"
                     >
-                        No Signup. No Cloud. Up to 3GB. Direct device-to-device tunneling ensures your data stays yours.
+                        No Signup. No Cloud. Up to 10GB. Direct device-to-device tunneling ensures your data stays yours.
                     </motion.p>
 
                     <motion.div
@@ -63,11 +52,11 @@ export function TabletLanding() {
                         transition={{ duration: 0.5, delay: 0.3 }}
                         className="flex flex-row items-center justify-center gap-4 w-full"
                     >
-                        <Link href="/transfer" className="flex items-center justify-center gap-2 px-8 py-3.5 bg-white hover:bg-zinc-200 text-zinc-950 rounded-full font-semibold transition-all group w-48">
+                        <Link href="/transfer?mode=send" className="flex items-center justify-center gap-2 px-8 py-3.5 bg-white hover:bg-zinc-200 text-zinc-950 rounded-full font-semibold transition-all group w-48">
                             Send File
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
-                        <Link href="/transfer" className="flex items-center justify-center gap-2 px-8 py-3.5 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white rounded-full font-semibold transition-all w-48">
+                        <Link href="/transfer?mode=receive" className="flex items-center justify-center gap-2 px-8 py-3.5 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white rounded-full font-semibold transition-all w-48">
                             Receive File
                         </Link>
                     </motion.div>
@@ -82,7 +71,7 @@ export function TabletLanding() {
                         className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full"
                     >
                         {[
-                            { icon: Zap, title: "Up to 3GB", desc: "Massive files instantly." },
+                            { icon: Zap, title: "Up to 10GB", desc: "Massive files instantly." },
                             { icon: Lock, title: "E2E Encrypted", desc: "Data strictly encrypted in transit." },
                             { icon: HardDrive, title: "No Storage", desc: "Files fly straight to peer." },
                             { icon: Trash2, title: "Auto Cleanup", desc: "Tokens destroyed securely." },
@@ -105,8 +94,9 @@ export function TabletLanding() {
             <footer className="w-full flex flex-row items-center justify-between px-8 py-5 shrink-0 border-t border-zinc-900 relative z-10">
                 <p className="text-xs text-zinc-600">© 2026 sendme.alt · Made by <a href="https://www.gauravpatil.online" target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-white transition-colors">Gaurav Patil</a></p>
                 <div className="flex items-center gap-4">
-                    <Link href="/legal/privacy" className="text-[11px] text-zinc-500 hover:text-white transition-colors">Privacy</Link>
-                    <Link href="/legal/terms" className="text-[11px] text-zinc-500 hover:text-white transition-colors">Terms</Link>
+                    <Link href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-[11px] text-zinc-500 hover:text-white transition-colors">Privacy</Link>
+                    <Link href="/legal/terms" target="_blank" rel="noopener noreferrer" className="text-[11px] text-zinc-500 hover:text-white transition-colors">Terms</Link>
+                    <Link href="/legal/aup" target="_blank" rel="noopener noreferrer" className="text-[11px] text-zinc-500 hover:text-white transition-colors">Acceptable Use</Link>
                     <a href="https://github.com/AspiringWebGaurav" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white transition-colors" title="GitHub">
                         <Github className="w-3.5 h-3.5" />
                     </a>

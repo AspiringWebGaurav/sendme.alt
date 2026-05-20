@@ -51,14 +51,26 @@ export const API_ENDPOINTS = {
 } as const
 
 // Error Messages
+export function formatMaxFileSize(): string {
+    const bytes = APP_CONFIG.MAX_FILE_SIZE
+    const gb = bytes / (1024 * 1024 * 1024)
+    if (gb >= 1) {
+        const rounded = Math.round(gb)
+        return `${rounded}GB`
+    }
+    return `${Math.round(bytes / (1024 * 1024))}MB`
+}
+
 export const ERROR_MESSAGES = {
-  FILE_TOO_LARGE: 'File is too large. Maximum size is 3GB.',
-  CONNECTION_FAILED: 'Failed to establish connection. Please try again.',
-  TRANSFER_FAILED: 'File transfer failed. Please try again.',
-  TOKEN_INVALID: 'Invalid or expired token.',
-  TOKEN_EXPIRED: 'Token has expired. Please generate a new one.',
-  NETWORK_ERROR: 'Network error. Please check your connection.',
-} as const
+    get FILE_TOO_LARGE() {
+        return `File is too large. Maximum size is ${formatMaxFileSize()}.`
+    },
+    CONNECTION_FAILED: 'Failed to establish connection. Please try again.',
+    TRANSFER_FAILED: 'File transfer failed. Please try again.',
+    TOKEN_INVALID: 'Invalid or expired token.',
+    TOKEN_EXPIRED: 'Token has expired. Please generate a new one.',
+    NETWORK_ERROR: 'Network error. Please check your connection.',
+}
 
 // Success Messages
 export const SUCCESS_MESSAGES = {

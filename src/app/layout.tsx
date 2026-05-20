@@ -2,11 +2,12 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { NotificationProvider } from '@/state/NotificationContext'
+import { APP_URLS } from '@/core/urls'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-    metadataBase: new URL('https://sendme-alt.vercel.app'),
+    metadataBase: new URL(APP_URLS.BASE_URL),
     title: {
         default: 'Sendme.alt — Secure P2P File Transfer',
         template: '%s | Sendme.alt'
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
     openGraph: {
         type: 'website',
         locale: 'en_US',
-        url: 'https://sendme-alt.vercel.app',
+        url: APP_URLS.BASE_URL,
         title: 'Sendme.alt — Secure P2P File Transfer',
         description: 'Blazing fast peer-to-peer encrypted file transfer. No servers, no file limits, no sign-up required.',
         siteName: 'Sendme.alt',

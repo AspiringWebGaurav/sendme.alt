@@ -1,7 +1,8 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { FileUp, X } from 'lucide-react'
+import { formatMaxFileSize } from '@/core/constants'
 
 interface DropZoneProps {
     file: File | null
@@ -12,6 +13,7 @@ interface DropZoneProps {
 
 export function DropZone({ file, onFileSelect, onFileRemove, error }: DropZoneProps) {
     const [isDragging, setIsDragging] = useState(false)
+    const inputRef = useRef<HTMLInputElement>(null)
 
     const handleDrag = useCallback((e: React.DragEvent) => {
         e.preventDefault()
@@ -34,11 +36,21 @@ export function DropZone({ file, onFileSelect, onFileRemove, error }: DropZonePr
     }, [onFileSelect])
 
     const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        e.preventDefault()
         if (e.target.files && e.target.files[0]) {
             onFileSelect(e.target.files[0])
         }
     }, [onFileSelect])
+
+    const handleClick = useCallback(() => {
+        inputRef.current?.click()
+    }, [])
+
+    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            inputRef.current?.click()
+        }
+    }, [])
 
     if (file) {
         return (
@@ -74,17 +86,25 @@ export function DropZone({ file, onFileSelect, onFileRemove, error }: DropZonePr
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
+                onClick={handleClick}
+                onKeyDown={handleKeyDown}
+                tabIndex={0}
+                role="button"
+                aria-label="Select a file to send"
             >
                 <input
+                    ref={inputRef}
                     type="file"
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    className="sr-only"
                     onChange={handleChange}
+                    tabIndex={-1}
+                    aria-hidden="true"
                 />
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-bg-surface dark:bg-zinc-800 shadow-sm dark:shadow-none flex items-center justify-center text-text-muted dark:text-zinc-400 mb-3 sm:mb-4 group-hover:scale-110 group-hover:text-text-primary dark:group-hover:text-zinc-300 transition-all">
                     <FileUp className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
                 <h3 className="text-[15px] font-medium text-text-primary dark:text-zinc-200 mb-1">Select or drop file</h3>
-                <p className="text-[13px] text-text-muted">Up to 3GB</p>
+                <p className="text-[13px] text-text-muted">Up to {formatMaxFileSize()}</p>
             </div>
 
             {error && (

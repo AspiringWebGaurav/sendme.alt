@@ -18,12 +18,13 @@ export function ReceivePanel() {
         progress,
         error,
         receivedFileName,
+        receivedBlob,
         startReceiving,
         cancel,
     } = useReceive()
 
     // Safely check if we are in connection phase without strict typescript overlap errors
-    const isConnecting = state === 'connecting' as any;
+    const isConnecting = state === 'connecting';
 
     return (
         <div className="h-full w-full flex flex-col items-center justify-center p-4 sm:p-8 lg:p-12 relative overflow-y-auto">
@@ -49,6 +50,7 @@ export function ReceivePanel() {
                         fileName={receivedFileName || fileInfo?.name}
                         fileSize={fileInfo?.size}
                         onReset={cancel}
+                        receivedBlob={receivedBlob}
                     />
                 ) : (
                     <div className="w-full flex flex-col items-center gap-4 sm:gap-6">

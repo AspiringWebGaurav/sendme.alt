@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { downloadFile } from '@/core/webrtc/transfer'
 import { CheckCircle2 } from 'lucide-react'
 
 interface SuccessViewProps {
@@ -6,10 +7,17 @@ interface SuccessViewProps {
     fileName?: string
     fileSize?: number
     onReset: () => void
+    receivedBlob?: Blob | null
 }
 
-export function SuccessView({ mode, fileName, fileSize, onReset }: SuccessViewProps) {
+export function SuccessView({ mode, fileName, fileSize, onReset, receivedBlob }: SuccessViewProps) {
     const isSend = mode === 'send'
+
+  const handleSave = () => {
+    if (receivedBlob && fileName) {
+      downloadFile(receivedBlob, fileName)
+    }
+  }
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -57,6 +65,18 @@ export function SuccessView({ mode, fileName, fileSize, onReset }: SuccessViewPr
             >
                 {isSend ? 'Send Another File' : 'Receive Another File'}
             </motion.button>
-        </motion.div>
+
+            {!isSend && receivedBlob && (
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                onClick={handleSave}
+                className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-medium transition-colors shadow-sm relative z-10 mb-3"
+              >
+                Save File
+              </motion.button>
+            )}
+          </motion.div>
     )
 }

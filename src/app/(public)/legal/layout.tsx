@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 py-12 px-4 sm:px-6 lg:px-8 overflow-y-auto w-full absolute inset-0 transition-colors duration-300">
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-5xl mx-auto">
                 <nav className="mb-12 flex items-center justify-between border-b border-white/10 pb-6">
                     <Link
                         href="/"

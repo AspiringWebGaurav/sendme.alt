@@ -25,6 +25,22 @@ export async function POST(request: Request) {
       )
     }
 
+    if (fileInfo.size && typeof fileInfo.size === 'number') {
+      if (fileInfo.size <= 0) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid file size' },
+          { status: 400 }
+        )
+      }
+      if (fileInfo.size > APP_CONFIG.MAX_FILE_SIZE) {
+        const gb = Math.round(APP_CONFIG.MAX_FILE_SIZE / (1024 * 1024 * 1024))
+        return NextResponse.json(
+          { success: false, error: `File is too large. Maximum size is ${gb}GB.` },
+          { status: 400 }
+        )
+      }
+    }
+
     // Generate unique token
     let token = generateToken()
     let firebaseKey = tokenToFirebaseKey(token)

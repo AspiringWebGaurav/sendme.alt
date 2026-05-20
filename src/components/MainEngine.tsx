@@ -8,8 +8,8 @@ import { ReceivePanel } from './ReceivePanel'
 
 type AppMode = 'send' | 'receive'
 
-export function MainEngine() {
-    const [mode, setMode] = useState<AppMode>('send')
+export function MainEngine({ initialMode = 'send' }: { initialMode?: AppMode }) {
+    const [mode, setMode] = useState<AppMode>(initialMode)
 
     return (
         <div className="w-full max-w-2xl mx-auto flex flex-col gap-3 sm:gap-6 h-full max-h-full">

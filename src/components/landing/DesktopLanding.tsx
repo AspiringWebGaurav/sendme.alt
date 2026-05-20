@@ -1,29 +1,17 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Lock, HardDrive, Zap, Trash2, Globe, Shield, Github } from 'lucide-react'
+import { ArrowRight, Lock, HardDrive, Zap, Trash2, Globe, Shield } from 'lucide-react'
+import { Github } from 'lucide-react'
 import Link from 'next/link'
+
+import { Navbar } from '@/layout/Navbar'
 
 export function DesktopLanding() {
     return (
         <div className="w-full h-[100dvh] flex flex-col bg-zinc-950 text-zinc-50 overflow-hidden font-sans selection:bg-zinc-800">
             {/* Nav */}
-            <header className="w-full flex items-center justify-between px-12 py-6 shrink-0 relative z-10">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center font-bold text-lg text-white">S</div>
-                    <span className="font-semibold text-xl tracking-tight text-white">sendme.alt</span>
-                </div>
-                <div className="flex items-center gap-4">
-                    <a href="https://github.com/AspiringWebGaurav" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white transition-colors" title="GitHub">
-                        <Github className="w-4 h-4" />
-                    </a>
-                    <a href="https://www.gauravpatil.online" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white transition-colors" title="Portfolio">
-                        <Globe className="w-4 h-4" />
-                    </a>
-                    <Link href="/transfer" className="px-5 py-2.5 text-sm font-medium text-zinc-300 hover:text-white transition-colors">Receive</Link>
-                    <Link href="/transfer" className="px-5 py-2.5 text-sm font-medium bg-white text-zinc-950 hover:bg-zinc-200 rounded-full transition-colors hidden sm:block">Start Sending</Link>
-                </div>
-            </header>
+            <Navbar variant="landing" />
 
             {/* Main Content */}
             <main className="flex-1 w-full flex items-center justify-between px-12 lg:px-24 relative z-10 max-w-7xl mx-auto">
@@ -55,7 +43,7 @@ export function DesktopLanding() {
                         transition={{ duration: 0.6, delay: 0.2 }}
                         className="text-lg lg:text-xl text-zinc-400 mb-10 max-w-md leading-relaxed"
                     >
-                        No Signup. No Cloud. Up to 3GB. Direct device-to-device tunneling ensures your files never hit a third-party server.
+                        No Signup. No Cloud. Up to 10GB. Direct device-to-device tunneling ensures your files never hit a third-party server.
                     </motion.p>
 
                     <motion.div
@@ -64,11 +52,11 @@ export function DesktopLanding() {
                         transition={{ duration: 0.6, delay: 0.3 }}
                         className="flex items-center gap-4 w-full"
                     >
-                        <Link href="/transfer" className="flex items-center justify-center gap-2 px-8 py-4 bg-white hover:bg-zinc-200 text-zinc-950 rounded-full font-semibold transition-all group">
+                        <Link href="/transfer?mode=send" className="flex items-center justify-center gap-2 px-8 py-4 bg-white hover:bg-zinc-200 text-zinc-950 rounded-full font-semibold transition-all group">
                             Send File
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
-                        <Link href="/transfer" className="flex items-center justify-center gap-2 px-8 py-4 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white rounded-full font-semibold transition-all">
+                        <Link href="/transfer?mode=receive" className="flex items-center justify-center gap-2 px-8 py-4 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white rounded-full font-semibold transition-all">
                             Receive File
                         </Link>
                     </motion.div>
@@ -83,7 +71,7 @@ export function DesktopLanding() {
                         className="grid grid-cols-2 gap-4 w-full max-w-lg"
                     >
                         {[
-                            { icon: Zap, title: "Up to 3GB", desc: "Send massive files instantly via direct local or global peer networks." },
+                            { icon: Zap, title: "Up to 10GB", desc: "Send massive files instantly via direct local or global peer networks." },
                             { icon: Lock, title: "End-to-End Encrypted", desc: "Data is encrypted in transit using mandatory WebRTC protocols." },
                             { icon: HardDrive, title: "No Storage", desc: "We don't hold your data. Files fly straight from you to them." },
                             { icon: Trash2, title: "Auto Cleanup", desc: "Signaling tokens are securely destroyed the moment you disconnect." },
@@ -106,9 +94,9 @@ export function DesktopLanding() {
             <footer className="w-full flex items-center justify-between px-12 py-6 shrink-0 border-t border-zinc-900 relative z-10">
                 <p className="text-xs text-zinc-600">© 2026 sendme.alt · Made by <a href="https://www.gauravpatil.online" target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-white transition-colors">Gaurav Patil</a></p>
                 <div className="flex items-center gap-6">
-                    <Link href="/legal/privacy" className="text-xs text-zinc-500 hover:text-white transition-colors">Privacy</Link>
-                    <Link href="/legal/terms" className="text-xs text-zinc-500 hover:text-white transition-colors">Terms</Link>
-                    <Link href="/legal/aup" className="text-xs text-zinc-500 hover:text-white transition-colors">Acceptable Use</Link>
+                    <Link href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-xs text-zinc-500 hover:text-white transition-colors">Privacy</Link>
+                    <Link href="/legal/terms" target="_blank" rel="noopener noreferrer" className="text-xs text-zinc-500 hover:text-white transition-colors">Terms</Link>
+                    <Link href="/legal/aup" target="_blank" rel="noopener noreferrer" className="text-xs text-zinc-500 hover:text-white transition-colors">Acceptable Use</Link>
                     <a href="https://github.com/AspiringWebGaurav" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white transition-colors" title="GitHub">
                         <Github className="w-3.5 h-3.5" />
                     </a>

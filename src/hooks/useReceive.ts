@@ -22,6 +22,7 @@ export function useReceive() {
   const [progress, setProgress] = useState<ProgressInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [receivedFileName, setReceivedFileName] = useState<string>('')
+  const [receivedBlob, setReceivedBlob] = useState<Blob | null>(null)
 
   const connectionRef = useRef<P2PConnection | null>(null)
   const sseRef = useRef<EventSource | null>(null)
@@ -119,7 +120,7 @@ export function useReceive() {
       connectionRef.current = connection
 
       // Handle connection state changes
-      connection.onConnectionStateChange((state: any) => {
+      connection.onConnectionStateChange((state: RTCPeerConnectionState) => {
         if (generationRef.current !== currentGeneration || isTerminalRef.current) return
         if (state === 'failed') {
           isTerminalRef.current = true
@@ -141,7 +142,7 @@ export function useReceive() {
       })
 
       // Send ICE candidates (register BEFORE createAnswer to not miss trickle candidates)
-      connection.onIceCandidate(async (candidate: any) => {
+      connection.onIceCandidate(async (candidate: RTCIceCandidateInit | null) => {
         if (candidate) {
           await fetch(API_ENDPOINTS.SIGNAL, {
             method: 'POST',
@@ -215,7 +216,7 @@ export function useReceive() {
         setSafeState('transferring')
 
         try {
-          const blob = await connection.receiveFile((progressInfo: any) => {
+          const blob = await connection.receiveFile((progressInfo: ProgressInfo) => {
             if (generationRef.current !== currentGeneration || isTerminalRef.current) return
             setProgress(progressInfo)
           })
@@ -235,26 +236,11 @@ export function useReceive() {
 
           // Removed aggressive POST /api/cleanup. Relying on TTL.
           
-          // Download file with error handling
-          try {
-            await downloadFile(blob, session.file.name)
-            setReceivedFileName(session.file.name)
-            setSafeState('complete')
-            addNotification('File received successfully!', 'success')
-            setTimeout(() => cleanup(), 3000)
-          } catch (downloadError) {
-            if (generationRef.current !== currentGeneration) return
-            // Download failed but file was received - offer manual download
-            const errorMsg = downloadError instanceof Error ? downloadError.message : 'Unknown error'
-            addNotification('File received, but auto-download failed.', 'warning')
-            setError(`File received but download failed: ${errorMsg}. File size: ${formatBytes(blob.size)}.`)
-            setSafeState('error')
-            // Store blob for manual download (only in browser)
-            if (typeof window !== 'undefined') {
-              (window as any).lastReceivedBlob = blob;
-              (window as any).lastReceivedFileName = session.file.name;
-            }
-          }
+          // Store blob for user-initiated save
+          setReceivedBlob(blob)
+          setReceivedFileName(session.file.name)
+          setSafeState('complete')
+          addNotification('File received! Tap Save File to download.', 'success')
         } catch (err) {
           if (generationRef.current !== currentGeneration) return
           isTerminalRef.current = true
@@ -311,7 +297,7 @@ export function useReceive() {
         }
       }, 180000) // 3 minutes timeout
 
-      connection.onChannelError((err: any) => {
+      connection.onChannelError((err: Error) => {
         if (generationRef.current !== currentGeneration || isTerminalRef.current) return
         isTerminalRef.current = true
         addNotification(err.message, 'error')
@@ -344,6 +330,7 @@ export function useReceive() {
     setError(null)
     setFileInfo(null)
     setReceivedFileName('')
+    setReceivedBlob(null)
     setToken('')
 
     // Delay state reset to `idle` until after cancel message is sent + cleanup
@@ -361,6 +348,7 @@ export function useReceive() {
     progress,
     error,
     receivedFileName,
+    receivedBlob,
     startReceiving,
     cancel,
   }

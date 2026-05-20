@@ -7,115 +7,7 @@
 
 import { RTC_CONFIG, DATA_CHANNEL_CONFIG, APP_CONFIG } from '../constants'
 import type { ProgressInfo } from '@/types'
-
-/**
- * Adaptive Throughput Controller
- * Self-tunes chunk size and buffer threshold based on real-time drain rate.
- */
-class ThroughputController {
-  private chunkSize = APP_CONFIG.CHUNK_SIZE_INITIAL
-  private bufferThreshold = APP_CONFIG.BUFFER_THRESHOLD_INITIAL
-  private chunksSinceLastTune = 0
-  private bytesInWindow = 0
-  private windowStartTime = 0
-  private lastDrainCheck = 0
-  private lastBufferedAmount = 0
-  private stallStartTime = 0
-  private speedSamples: number[] = []
-  private _statusMessage = ''
-
-  get currentChunkSize() { return this.chunkSize }
-  get currentBufferThreshold() { return this.bufferThreshold }
-  get statusMessage() { return this._statusMessage }
-
-  /** Record a chunk send for adaptive tuning */
-  recordChunk(bytesSent: number) {
-    if (this.windowStartTime === 0) this.windowStartTime = Date.now()
-    this.chunksSinceLastTune++
-    this.bytesInWindow += bytesSent
-
-    if (this.chunksSinceLastTune >= APP_CONFIG.ADAPTIVE_WINDOW) {
-      this.tune()
-    }
-  }
-
-  /** Record a speed sample for rolling average */
-  recordSpeed(bytesPerSec: number) {
-    this.speedSamples.push(bytesPerSec)
-    if (this.speedSamples.length > 5) this.speedSamples.shift()
-  }
-
-  /** Get rolling average speed (last 5 samples) */
-  getRollingSpeed(): number {
-    if (this.speedSamples.length === 0) return 0
-    return this.speedSamples.reduce((a, b) => a + b, 0) / this.speedSamples.length
-  }
-
-  /** Check for stalled buffer drain. Returns status message or empty. */
-  checkStall(bufferedAmount: number): 'ok' | 'slow' | 'fatal' {
-    const now = Date.now()
-
-    if (bufferedAmount < this.lastBufferedAmount || bufferedAmount === 0) {
-      // Buffer is draining — reset stall tracker
-      this.stallStartTime = 0
-      this.lastBufferedAmount = bufferedAmount
-      this.lastDrainCheck = now
-      this._statusMessage = ''
-      return 'ok'
-    }
-
-    // Buffer NOT draining
-    if (this.stallStartTime === 0) {
-      this.stallStartTime = now
-      this.lastBufferedAmount = bufferedAmount
-    }
-
-    const stallDuration = now - this.stallStartTime
-
-    if (stallDuration >= APP_CONFIG.STALL_FATAL_MS) {
-      this._statusMessage = 'Transfer stalled — connection may be lost'
-      return 'fatal'
-    }
-
-    if (stallDuration >= APP_CONFIG.STALL_DETECT_MS) {
-      this._statusMessage = 'Network slow — optimizing…'
-      // Scale down aggressively
-      this.chunkSize = Math.max(APP_CONFIG.CHUNK_SIZE_MIN, Math.floor(this.chunkSize / 2))
-      this.bufferThreshold = Math.max(APP_CONFIG.BUFFER_THRESHOLD_MIN, Math.floor(this.bufferThreshold / 2))
-      return 'slow'
-    }
-
-    this.lastBufferedAmount = bufferedAmount
-    return 'ok'
-  }
-
-  /** Auto-tune chunk size and buffer threshold based on measured throughput */
-  private tune() {
-    const elapsed = (Date.now() - this.windowStartTime) / 1000
-    if (elapsed <= 0) return
-
-    const throughput = this.bytesInWindow / elapsed // bytes/sec
-
-    if (throughput > 5 * 1024 * 1024) {
-      // > 5 MB/s — scale up
-      this.chunkSize = Math.min(APP_CONFIG.CHUNK_SIZE_MAX, this.chunkSize * 2)
-      this.bufferThreshold = Math.min(APP_CONFIG.BUFFER_THRESHOLD_MAX, this.bufferThreshold * 2)
-      this._statusMessage = ''
-    } else if (throughput < 500 * 1024) {
-      // < 500 KB/s — scale down
-      this.chunkSize = Math.max(APP_CONFIG.CHUNK_SIZE_MIN, Math.floor(this.chunkSize / 2))
-      this.bufferThreshold = Math.max(APP_CONFIG.BUFFER_THRESHOLD_MIN, Math.floor(this.bufferThreshold / 2))
-      this._statusMessage = 'Network slow — optimizing…'
-    } else {
-      this._statusMessage = ''
-    }
-
-    // Reset window
-    this.chunksSinceLastTune = 0
-    this.bytesInWindow = 0
-    this.windowStartTime = Date.now()
-  }
-}
+import { ThroughputController } from './throughput'
 
 /**
  * P2P Connection Manager
@@ -302,8 +194,10 @@ export class P2PConnection {
       this.onChannelCloseCallback?.()
     }
 
-    channel.onerror = (error) => {
-      console.error('[P2P] Data channel error:', error)
+    channel.onerror = (event: Event) => {
+      const errorEvent = event as RTCErrorEvent
+      const errorMsg = errorEvent.error?.message || 'Unknown error'
+      console.error(`[P2P] Data channel error: ${errorMsg}`, event)
       this.onChannelErrorCallback?.(new Error('Data channel error'))
     }
   }
@@ -408,9 +302,6 @@ export class P2PConnection {
     }
 
     try {
-      // Pre-read entire file into memory for zero-copy chunking
-      const fileBuffer = await file.arrayBuffer()
-
       // Send file metadata first
       const metadata = {
         name: file.name,
@@ -469,9 +360,10 @@ export class P2PConnection {
           controller.checkStall(this.channel.bufferedAmount)
         }
 
-        // Read chunk from pre-loaded buffer (zero-copy slice)
+        // Read chunk directly from file Blob
         const end = Math.min(offset + chunkSize, file.size)
-        const arrayBuffer = fileBuffer.slice(offset, end)
+        const blobChunk = file.slice(offset, end)
+        const arrayBuffer = await blobChunk.arrayBuffer()
 
         // Send with retry on buffer-full (Chromium throws TypeError if SCTP overflows)
         let sendAttempts = 0
@@ -682,8 +574,10 @@ export class P2PConnection {
         }
       }
 
-      this.channel!.onerror = (event) => {
-        console.error('[P2P] Data channel error:', event)
+      this.channel!.onerror = (event: Event) => {
+        const errorEvent = event as RTCErrorEvent
+        const errorMsg = errorEvent.error?.message || 'Unknown error'
+        console.error(`[P2P] Data channel error: ${errorMsg}`, event)
         if (timeoutId) clearTimeout(timeoutId)
         reject(new Error('Data channel error — transfer failed. Try again.'))
       }
