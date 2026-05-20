@@ -3,6 +3,6 @@
  */
 
 interface Window {
-  lastReceivedBlob?: Blob
-  lastReceivedFileName?: string
+ lastReceivedBlob?: Blob
+ lastReceivedFileName?: string
 }

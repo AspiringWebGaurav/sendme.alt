@@ -13,56 +13,56 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: Request) {
-  try {
-    const body = await request.json()
-    const { token } = body
+ try {
+ const body = await request.json()
+ const { token } = body
 
-    if (!token || !isValidToken(token)) {
-      return NextResponse.json({
-        valid: false,
-        error: 'Invalid token format',
-      })
-    }
+ if (!token || !isValidToken(token)) {
+ return NextResponse.json({
+ valid: false,
+ error: 'Invalid token format',
+ })
+ }
 
-    const firebaseKey = tokenToFirebaseKey(token)
-    const snapshot = await adminDb.ref(`sessions/${firebaseKey}`).get()
+ const firebaseKey = tokenToFirebaseKey(token)
+ const snapshot = await adminDb.ref(`sessions/${firebaseKey}`).get()
 
-    if (!snapshot.exists()) {
-      return NextResponse.json({
-        valid: false,
-        error: 'Token not found',
-      })
-    }
+ if (!snapshot.exists()) {
+ return NextResponse.json({
+ valid: false,
+ error: 'Token not found',
+ })
+ }
 
-    const session = snapshot.val()
+ const session = snapshot.val()
 
-    // Check expiry
-    if (session.expiresAt < Date.now()) {
-      // Delete expired session
-      await adminDb.ref(`sessions/${firebaseKey}`).remove()
-      return NextResponse.json({
-        valid: false,
-        error: 'Token expired',
-      })
-    }
+ // Check expiry
+ if (session.expiresAt < Date.now()) {
+ // Delete expired session
+ await adminDb.ref(`sessions/${firebaseKey}`).remove()
+ return NextResponse.json({
+ valid: false,
+ error: 'Token expired',
+ })
+ }
 
-    // Check if session is already connected
-    if (session.status !== 'waiting') {
-      return NextResponse.json({
-        valid: false,
-        error: 'Session already in progress or completed',
-      })
-    }
+ // Check if session is already connected
+ if (session.status !== 'waiting') {
+ return NextResponse.json({
+ valid: false,
+ error: 'Session already in progress or completed',
+ })
+ }
 
-    return NextResponse.json({
-      valid: true,
-      session,
-    })
-  } catch (error) {
-    // Log error server-side only (not in browser console)
-    return NextResponse.json(
-      { valid: false, error: 'Internal server error' },
-      { status: 500 }
-    )
-  }
+ return NextResponse.json({
+ valid: true,
+ session,
+ })
+ } catch (error) {
+ // Log error server-side only (not in browser console)
+ return NextResponse.json(
+ { valid: false, error: 'Internal server error' },
+ { status: 500 }
+ )
+ }
 }

@@ -14,94 +14,94 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: Request) {
-  try {
-    const body = await request.json()
-    const { offer, fileInfo } = body
+ try {
+ const body = await request.json()
+ const { offer, fileInfo } = body
 
-    if (!offer || !fileInfo) {
-      return NextResponse.json(
-        { success: false, error: 'Missing offer or file info' },
-        { status: 400 }
-      )
-    }
+ if (!offer || !fileInfo) {
+ return NextResponse.json(
+ { success: false, error: 'Missing offer or file info' },
+ { status: 400 }
+ )
+ }
 
-    if (fileInfo.size && typeof fileInfo.size === 'number') {
-      if (fileInfo.size <= 0) {
-        return NextResponse.json(
-          { success: false, error: 'Invalid file size' },
-          { status: 400 }
-        )
-      }
-      if (fileInfo.size > APP_CONFIG.MAX_FILE_SIZE) {
-        const gb = Math.round(APP_CONFIG.MAX_FILE_SIZE / (1024 * 1024 * 1024))
-        return NextResponse.json(
-          { success: false, error: `File is too large. Maximum size is ${gb}GB.` },
-          { status: 400 }
-        )
-      }
-    }
+ if (fileInfo.size && typeof fileInfo.size === 'number') {
+ if (fileInfo.size <= 0) {
+ return NextResponse.json(
+ { success: false, error: 'Invalid file size' },
+ { status: 400 }
+ )
+ }
+ if (fileInfo.size > APP_CONFIG.MAX_FILE_SIZE) {
+ const gb = Math.round(APP_CONFIG.MAX_FILE_SIZE / (1024 * 1024 * 1024))
+ return NextResponse.json(
+ { success: false, error: `File is too large. Maximum size is ${gb}GB.` },
+ { status: 400 }
+ )
+ }
+ }
 
-    // Generate unique token
-    let token = generateToken()
-    let firebaseKey = tokenToFirebaseKey(token)
-    let attempts = 0
+ // Generate unique token
+ let token = generateToken()
+ let firebaseKey = tokenToFirebaseKey(token)
+ let attempts = 0
 
-    // Ensure uniqueness (rare collision)
-    while (attempts < 5) {
-      const snapshot = await adminDb.ref(`sessions/${firebaseKey}`).get()
-      if (!snapshot.exists()) break
-      token = generateToken()
-      firebaseKey = tokenToFirebaseKey(token)
-      attempts++
-    }
+ // Ensure uniqueness (rare collision)
+ while (attempts < 5) {
+ const snapshot = await adminDb.ref(`sessions/${firebaseKey}`).get()
+ if (!snapshot.exists()) break
+ token = generateToken()
+ firebaseKey = tokenToFirebaseKey(token)
+ attempts++
+ }
 
-    if (attempts >= 5) {
-      return NextResponse.json(
-        { success: false, error: 'Failed to generate unique token' },
-        { status: 500 }
-      )
-    }
+ if (attempts >= 5) {
+ return NextResponse.json(
+ { success: false, error: 'Failed to generate unique token' },
+ { status: 500 }
+ )
+ }
 
-    const expiresAt = Date.now() + (APP_CONFIG.TOKEN_EXPIRY_MINUTES * 60 * 1000)
+ const expiresAt = Date.now() + (APP_CONFIG.TOKEN_EXPIRY_MINUTES * 60 * 1000)
 
-    // Create session
-    const sessionData = {
-      createdAt: Date.now(),
-      expiresAt,
-      status: 'waiting',
-      file: fileInfo,
-      sender: {
-        offer,
-        candidates: [],
-      },
-    }
+ // Create session
+ const sessionData = {
+ createdAt: Date.now(),
+ expiresAt,
+ status: 'waiting',
+ file: fileInfo,
+ sender: {
+ offer,
+ candidates: [],
+ },
+ }
 
-    await adminDb.ref(`sessions/${firebaseKey}`).set(sessionData)
+ await adminDb.ref(`sessions/${firebaseKey}`).set(sessionData)
 
-    const responsePayload = {
-      success: true,
-      token,
-      expiresAt,
-    }
+ const responsePayload = {
+ success: true,
+ token,
+ expiresAt,
+ }
 
-    // Fire and forget background lazy cleanup (does not block response)
-    const headers = new Headers(request.headers)
-    if (process.env.CLEANUP_SECRET) {
-      headers.set('authorization', `Bearer ${process.env.CLEANUP_SECRET}`)
-    }
+ // Fire and forget background lazy cleanup (does not block response)
+ const headers = new Headers(request.headers)
+ if (process.env.CLEANUP_SECRET) {
+ headers.set('authorization', `Bearer ${process.env.CLEANUP_SECRET}`)
+ }
 
-    fetch(new URL('/api/cleanup', request.url).toString(), {
-      method: 'GET',
-      headers
+ fetch(new URL('/api/cleanup', request.url).toString(), {
+ method: 'GET',
+ headers
 
-    }).catch(() => { }) // Silent fail
+ }).catch(() => { }) // Silent fail
 
-    return NextResponse.json(responsePayload)
-  } catch (error) {
-    // Log error server-side only (not in browser console)
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    )
-  }
+ return NextResponse.json(responsePayload)
+ } catch (error) {
+ // Log error server-side only (not in browser console)
+ return NextResponse.json(
+ { success: false, error: 'Internal server error' },
+ { status: 500 }
+ )
+ }
 }

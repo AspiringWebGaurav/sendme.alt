@@ -9,71 +9,71 @@ import { getIceServers } from './urls'
 
 // App Configuration
 export const APP_CONFIG = {
-  MAX_FILE_SIZE: parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE || '10737418240'), // 10GB default
-  TOKEN_EXPIRY_MINUTES: parseInt(process.env.NEXT_PUBLIC_TOKEN_EXPIRY_MINUTES || '10'),
-  // Adaptive chunk sizing (ThroughputController auto-tunes within these bounds)
-  CHUNK_SIZE_INITIAL: 256 * 1024, // 256KB — start at SCTP max for fast ramp-up
-  CHUNK_SIZE_MIN: 16 * 1024, // 16KB — floor for very slow connections
-  CHUNK_SIZE_MAX: 256 * 1024, // 256KB — SCTP ceiling
-  // Adaptive buffer threshold (auto-tuned by drain rate)
-  BUFFER_THRESHOLD_INITIAL: 1 * 1024 * 1024, // 1MB — low start to minimize backpressure waits
-  BUFFER_THRESHOLD_MIN: 256 * 1024, // 256KB — floor
-  BUFFER_THRESHOLD_MAX: 16 * 1024 * 1024, // 16MB — ceiling
-  // Stall detection
-  STALL_DETECT_MS: 3000, // 3s no drain → "Network slow" feedback
-  STALL_FATAL_MS: 10000, // 10s no drain → recoverable error
-  // Adaptive tuning window
-  ADAPTIVE_WINDOW: 10, // Measure drain rate over N chunks before adjusting
-  PROGRESS_THROTTLE_MS: 100, // Limit UI progress updates to 10/sec
+ MAX_FILE_SIZE: parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE || '10737418240'), // 10GB default
+ TOKEN_EXPIRY_MINUTES: parseInt(process.env.NEXT_PUBLIC_TOKEN_EXPIRY_MINUTES || '10'),
+ // Adaptive chunk sizing (ThroughputController auto-tunes within these bounds)
+ CHUNK_SIZE_INITIAL: 256 * 1024, // 256KB — start at SCTP max for fast ramp-up
+ CHUNK_SIZE_MIN: 16 * 1024, // 16KB — floor for very slow connections
+ CHUNK_SIZE_MAX: 256 * 1024, // 256KB — SCTP ceiling
+ // Adaptive buffer threshold (auto-tuned by drain rate)
+ BUFFER_THRESHOLD_INITIAL: 1 * 1024 * 1024, // 1MB — low start to minimize backpressure waits
+ BUFFER_THRESHOLD_MIN: 256 * 1024, // 256KB — floor
+ BUFFER_THRESHOLD_MAX: 16 * 1024 * 1024, // 16MB — ceiling
+ // Stall detection
+ STALL_DETECT_MS: 3000, // 3s no drain → "Network slow" feedback
+ STALL_FATAL_MS: 10000, // 10s no drain → recoverable error
+ // Adaptive tuning window
+ ADAPTIVE_WINDOW: 10, // Measure drain rate over N chunks before adjusting
+ PROGRESS_THROTTLE_MS: 100, // Limit UI progress updates to 10/sec
 } as const
 
 // WebRTC Configuration with STUN/TURN (Dynamic - configured via environment variables)
 export const RTC_CONFIG: RTCConfiguration = {
-  iceServers: getIceServers(),
-  iceCandidatePoolSize: 10,
-  iceTransportPolicy: 'all', // Try direct first, use TURN as fallback
-  bundlePolicy: 'max-bundle',
-  rtcpMuxPolicy: 'require',
+ iceServers: getIceServers(),
+ iceCandidatePoolSize: 10,
+ iceTransportPolicy: 'all', // Try direct first, use TURN as fallback
+ bundlePolicy: 'max-bundle',
+ rtcpMuxPolicy: 'require',
 }
 
 // DataChannel Configuration (reliable and ordered)
 export const DATA_CHANNEL_CONFIG: RTCDataChannelInit = {
-  ordered: true, // Ensure packets arrive in order
-  // No maxRetransmits or maxPacketLifeTime = fully reliable
+ ordered: true, // Ensure packets arrive in order
+ // No maxRetransmits or maxPacketLifeTime = fully reliable
 }
 
 // API Endpoints
 export const API_ENDPOINTS = {
-  CREATE: '/api/create',
-  VALIDATE: '/api/validate',
-  SIGNAL: '/api/signal',
-  LISTEN: '/api/listen',
+ CREATE: '/api/create',
+ VALIDATE: '/api/validate',
+ SIGNAL: '/api/signal',
+ LISTEN: '/api/listen',
 } as const
 
 // Error Messages
 export function formatMaxFileSize(): string {
-    const bytes = APP_CONFIG.MAX_FILE_SIZE
-    const gb = bytes / (1024 * 1024 * 1024)
-    if (gb >= 1) {
-        const rounded = Math.round(gb)
-        return `${rounded}GB`
-    }
-    return `${Math.round(bytes / (1024 * 1024))}MB`
+ const bytes = APP_CONFIG.MAX_FILE_SIZE
+ const gb = bytes / (1024 * 1024 * 1024)
+ if (gb >= 1) {
+ const rounded = Math.round(gb)
+ return `${rounded}GB`
+ }
+ return `${Math.round(bytes / (1024 * 1024))}MB`
 }
 
 export const ERROR_MESSAGES = {
-    get FILE_TOO_LARGE() {
-        return `File is too large. Maximum size is ${formatMaxFileSize()}.`
-    },
-    CONNECTION_FAILED: 'Failed to establish connection. Please try again.',
-    TRANSFER_FAILED: 'File transfer failed. Please try again.',
-    TOKEN_INVALID: 'Invalid or expired token.',
-    TOKEN_EXPIRED: 'Token has expired. Please generate a new one.',
-    NETWORK_ERROR: 'Network error. Please check your connection.',
+ get FILE_TOO_LARGE() {
+ return `File is too large. Maximum size is ${formatMaxFileSize()}.`
+ },
+ CONNECTION_FAILED: 'Failed to establish connection. Please try again.',
+ TRANSFER_FAILED: 'File transfer failed. Please try again.',
+ TOKEN_INVALID: 'Invalid or expired token.',
+ TOKEN_EXPIRED: 'Token has expired. Please generate a new one.',
+ NETWORK_ERROR: 'Network error. Please check your connection.',
 }
 
 // Success Messages
 export const SUCCESS_MESSAGES = {
-  TRANSFER_COMPLETE: 'File transferred successfully!',
-  TOKEN_COPIED: 'Token copied to clipboard!',
+ TRANSFER_COMPLETE: 'File transferred successfully!',
+ TOKEN_COPIED: 'Token copied to clipboard!',
 } as const

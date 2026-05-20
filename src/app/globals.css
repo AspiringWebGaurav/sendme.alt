@@ -3,6 +3,48 @@
 @custom-variant dark (&:is(.dark *));
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  /* Light Theme Variables */
+  --bg-primary: #F7F9FC;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #F1F4F8;
+  
+  --border-subtle: #E3E8EF;
+  --border-strong: #CBD5E1;
+  
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --text-inverse: #FFFFFF;
+  
+  --success-bg: #E6F9F1;
+  --success-text: #0F9D58;
+  
+  --error-bg: #FEECEC;
+  --error-text: #D92D20;
+}
+
+:root.dark, .dark {
+  /* Dark Theme Variables */
+  --bg-primary: #09090b;
+  --bg-surface: #18181b;
+  --bg-elevated: #27272a;
+  
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-inverse: #09090b;
+
+  --success-bg: rgba(16, 185, 129, 0.1);
+  --success-text: #10B981;
+
+  --error-bg: rgba(239, 68, 68, 0.1);
+  --error-text: #EF4444;
+}
+
 @theme {
   --color-primary: #8B5CF6;
   --color-primary-light: #A78BFA;
@@ -14,30 +56,32 @@
   --color-error: #EF4444;
   --color-warning: #F59E0B;
 
-  /* Premium White Theme Tokens */
-  --color-bg-primary: #F7F9FC;
-  --color-bg-surface: #FFFFFF;
-  --color-bg-elevated: #F1F4F8;
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-elevated: var(--bg-elevated);
 
-  --color-border-subtle: #E3E8EF;
-  --color-border-strong: #CBD5E1;
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
 
-  --color-text-primary: #0F172A;
-  --color-text-secondary: #334155;
-  --color-text-muted: #64748B;
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
 
-  --color-accent-primary: #6C47FF;
-  --color-accent-hover: #5B3DDB;
+  --color-success-bg: var(--success-bg);
+  --color-success-text: var(--success-text);
 
-  --color-success-bg: #E6F9F1;
-  --color-success-text: #0F9D58;
+  --color-error-bg: var(--error-bg);
+  --color-error-text: var(--error-text);
 
-  --color-error-bg: #FEECEC;
-  --color-error-text: #D92D20;
-
-  /* Premium Light Elevation Shadows */
+  /* Shadows */
   --shadow-light-card: 0 4px 12px rgba(15, 23, 42, 0.04);
   --shadow-light-elevated: 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+/* Global Transition for Theme Switching */
+*, *::before, *::after {
+  transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease, fill 300ms ease, stroke 300ms ease !important;
 }
 
 /* Global root lock — prevents any page-level scroll on the main app */

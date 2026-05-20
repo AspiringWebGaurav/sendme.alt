@@ -9,26 +9,26 @@ import admin from 'firebase-admin'
 
 // Initialize Firebase Admin
 if (!admin.apps.length) {
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY
-    ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
-    : undefined
+ const privateKey = process.env.FIREBASE_PRIVATE_KEY
+ ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+ : undefined
 
-  if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !privateKey) {
-    throw new Error('Missing required Firebase Admin environment variables. Please check your .env configuration.')
-  }
+ if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !privateKey) {
+ throw new Error('Missing required Firebase Admin environment variables. Please check your .env configuration.')
+ }
 
-  if (!process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL) {
-    throw new Error('Missing NEXT_PUBLIC_FIREBASE_DATABASE_URL environment variable.')
-  }
+ if (!process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL) {
+ throw new Error('Missing NEXT_PUBLIC_FIREBASE_DATABASE_URL environment variable.')
+ }
 
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey,
-    }),
-    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-  })
+ admin.initializeApp({
+ credential: admin.credential.cert({
+ projectId: process.env.FIREBASE_PROJECT_ID,
+ clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+ privateKey,
+ }),
+ databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+ })
 }
 
 export const adminDb = admin.database()

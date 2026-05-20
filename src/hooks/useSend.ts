@@ -15,393 +15,393 @@ import type { TransferState, FileInfo, ProgressInfo } from '@/types'
 import { useNotification } from '@/state/NotificationContext'
 
 export function useSend() {
-  const { addNotification } = useNotification()
-  const [state, setState] = useState<TransferState>('idle')
-  const [file, setFile] = useState<File | null>(null)
-  const [token, setToken] = useState<string | null>(null)
-  const [progress, setProgress] = useState<ProgressInfo | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isGeneratingToken, setIsGeneratingToken] = useState<boolean>(false)
-  const [copySuccess, setCopySuccess] = useState<boolean>(false)
+ const { addNotification } = useNotification()
+ const [state, setState] = useState<TransferState>('idle')
+ const [file, setFile] = useState<File | null>(null)
+ const [token, setToken] = useState<string | null>(null)
+ const [progress, setProgress] = useState<ProgressInfo | null>(null)
+ const [error, setError] = useState<string | null>(null)
+ const [isGeneratingToken, setIsGeneratingToken] = useState<boolean>(false)
+ const [copySuccess, setCopySuccess] = useState<boolean>(false)
 
-  const connectionRef = useRef<P2PConnection | null>(null)
-  const sseRef = useRef<EventSource | null>(null)
-  const processedCandidatesRef = useRef<Set<string>>(new Set())
-  const answerSetRef = useRef<boolean>(false)
-  const channelTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const generationRef = useRef<number>(0)
-  const isTerminalRef = useRef<boolean>(false)
-  const stateRef = useRef<TransferState>('idle')
-  const isPassiveModeRef = useRef<boolean>(false)
+ const connectionRef = useRef<P2PConnection | null>(null)
+ const sseRef = useRef<EventSource | null>(null)
+ const processedCandidatesRef = useRef<Set<string>>(new Set())
+ const answerSetRef = useRef<boolean>(false)
+ const channelTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+ const generationRef = useRef<number>(0)
+ const isTerminalRef = useRef<boolean>(false)
+ const stateRef = useRef<TransferState>('idle')
+ const isPassiveModeRef = useRef<boolean>(false)
 
-  const setSafeState = useCallback((newState: TransferState) => {
-    stateRef.current = newState
-    setState(newState)
-  }, [])
+ const setSafeState = useCallback((newState: TransferState) => {
+ stateRef.current = newState
+ setState(newState)
+ }, [])
 
-  // Ref for cleanup on unmount
-  const activeTokenRef = useRef<string | null>(null)
+ // Ref for cleanup on unmount
+ const activeTokenRef = useRef<string | null>(null)
 
-  const cleanup = useCallback(() => {
-    generationRef.current++
-    if (channelTimeoutRef.current) {
-      clearTimeout(channelTimeoutRef.current)
-      channelTimeoutRef.current = null
-    }
-    sseRef.current?.close()
-    sseRef.current = null
-    connectionRef.current?.close()
-    connectionRef.current = null
-    processedCandidatesRef.current.clear()
-    answerSetRef.current = false
+ const cleanup = useCallback(() => {
+ generationRef.current++
+ if (channelTimeoutRef.current) {
+ clearTimeout(channelTimeoutRef.current)
+ channelTimeoutRef.current = null
+ }
+ sseRef.current?.close()
+ sseRef.current = null
+ connectionRef.current?.close()
+ connectionRef.current = null
+ processedCandidatesRef.current.clear()
+ answerSetRef.current = false
 
-    // Explicitly destroy Firebase session on unmount or cancel if not terminal
-    if (activeTokenRef.current && !isTerminalRef.current) {
-      if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-        navigator.sendBeacon('/api/cleanup', JSON.stringify({ token: activeTokenRef.current }))
-      } else {
-        fetch('/api/cleanup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: activeTokenRef.current }),
-          keepalive: true
-        }).catch(() => { })
-      }
-      activeTokenRef.current = null
-    }
-  }, [])
+ // Explicitly destroy Firebase session on unmount or cancel if not terminal
+ if (activeTokenRef.current && !isTerminalRef.current) {
+ if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+ navigator.sendBeacon('/api/cleanup', JSON.stringify({ token: activeTokenRef.current }))
+ } else {
+ fetch('/api/cleanup', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ token: activeTokenRef.current }),
+ keepalive: true
+ }).catch(() => { })
+ }
+ activeTokenRef.current = null
+ }
+ }, [])
 
-  const selectFile = useCallback((selectedFile: File) => {
-    // Validate file size
-    if (selectedFile.size > APP_CONFIG.MAX_FILE_SIZE) {
-      addNotification(ERROR_MESSAGES.FILE_TOO_LARGE, 'error')
-      setError(ERROR_MESSAGES.FILE_TOO_LARGE)
-      return
-    }
+ const selectFile = useCallback((selectedFile: File) => {
+ // Validate file size
+ if (selectedFile.size > APP_CONFIG.MAX_FILE_SIZE) {
+ addNotification(ERROR_MESSAGES.FILE_TOO_LARGE, 'error')
+ setError(ERROR_MESSAGES.FILE_TOO_LARGE)
+ return
+ }
 
-    setFile(selectedFile)
-    setError(null)
-  }, [addNotification])
+ setFile(selectedFile)
+ setError(null)
+ }, [addNotification])
 
-  const startSending = useCallback(async () => {
-    if (!file) return
+ const startSending = useCallback(async () => {
+ if (!file) return
 
-    const currentGeneration = ++generationRef.current
-    isTerminalRef.current = false
-    isPassiveModeRef.current = false
+ const currentGeneration = ++generationRef.current
+ isTerminalRef.current = false
+ isPassiveModeRef.current = false
 
-    try {
-      setSafeState('connecting')
-      setIsGeneratingToken(true)
-      setError(null)
+ try {
+ setSafeState('connecting')
+ setIsGeneratingToken(true)
+ setError(null)
 
-      // Create WebRTC connection
-      const connection = new P2PConnection()
-      connectionRef.current = connection
+ // Create WebRTC connection
+ const connection = new P2PConnection()
+ connectionRef.current = connection
 
-      // Handle connection state changes for better UX
-      connection.onConnectionStateChange((state: RTCPeerConnectionState) => {
-        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
-        if (state === 'failed') {
-          isTerminalRef.current = true
-          addNotification('Connection failed — peer network blocked.', 'error')
-          setError('Connection failed — your network may be blocking peer connections. Try a different network or disable VPN.')
-          setSafeState('error')
-        } else if (state === 'connected') {
-          // Connection established
-        }
-      })
+ // Handle connection state changes for better UX
+ connection.onConnectionStateChange((state: RTCPeerConnectionState) => {
+ if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+ if (state === 'failed') {
+ isTerminalRef.current = true
+ addNotification('Connection failed — peer network blocked.', 'error')
+ setError('Connection failed — your network may be blocking peer connections. Try a different network or disable VPN.')
+ setSafeState('error')
+ } else if (state === 'connected') {
+ // Connection established
+ }
+ })
 
-      // Add ICE connection state change listener for advanced passive mode trigger
-      connection.onIceConnectionStateChange((pcState) => {
-        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
-        const channelState = connectionRef.current?.getChannelReadyState()
-        if (channelState === 'open' && (pcState === 'connected' || pcState === 'completed')) {
-          isPassiveModeRef.current = true
-        }
-      })
+ // Add ICE connection state change listener for advanced passive mode trigger
+ connection.onIceConnectionStateChange((pcState) => {
+ if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+ const channelState = connectionRef.current?.getChannelReadyState()
+ if (channelState === 'open' && (pcState === 'connected' || pcState === 'completed')) {
+ isPassiveModeRef.current = true
+ }
+ })
 
-      // Register ICE candidate handler BEFORE creating offer to not miss early candidates
-      let createdToken: string | null = null
-      const earlyIceCandidates: RTCIceCandidateInit[] = []
+ // Register ICE candidate handler BEFORE creating offer to not miss early candidates
+ let createdToken: string | null = null
+ const earlyIceCandidates: RTCIceCandidateInit[] = []
 
-      connection.onIceCandidate((candidate: RTCIceCandidateInit | null) => {
-        if (candidate) {
-          if (createdToken) {
-            // Token exists, trickle candidate immediately to signal server
-            fetch(API_ENDPOINTS.SIGNAL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                token: createdToken,
-                type: 'ice',
-                data: candidate,
-                role: 'sender',
-              }),
-            }).catch(console.error)
-          } else {
-            // Buffer early candidates before token is created
-            earlyIceCandidates.push(candidate)
-          }
-        }
-      })
+ connection.onIceCandidate((candidate: RTCIceCandidateInit | null) => {
+ if (candidate) {
+ if (createdToken) {
+ // Token exists, trickle candidate immediately to signal server
+ fetch(API_ENDPOINTS.SIGNAL, {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({
+ token: createdToken,
+ type: 'ice',
+ data: candidate,
+ role: 'sender',
+ }),
+ }).catch(console.error)
+ } else {
+ // Buffer early candidates before token is created
+ earlyIceCandidates.push(candidate)
+ }
+ }
+ })
 
-      // Create offer (this starts ICE gathering immediately)
-      const offer = await connection.createOffer()
+ // Create offer (this starts ICE gathering immediately)
+ const offer = await connection.createOffer()
 
-      // Create session
-      const fileInfo: FileInfo = {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      }
+ // Create session
+ const fileInfo: FileInfo = {
+ name: file.name,
+ size: file.size,
+ type: file.type,
+ }
 
-      const response = await fetch(API_ENDPOINTS.CREATE, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ offer, fileInfo }),
-      })
+ const response = await fetch(API_ENDPOINTS.CREATE, {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ offer, fileInfo }),
+ })
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        let errorMessage = 'Failed to create session'
-        try {
-          const errorData = JSON.parse(errorText)
-          errorMessage = errorData.error || errorMessage
-        } catch {
-          errorMessage = `Server error: ${response.status} ${response.statusText}`
-        }
-        throw new Error(errorMessage)
-      }
+ if (!response.ok) {
+ const errorText = await response.text()
+ let errorMessage = 'Failed to create session'
+ try {
+ const errorData = JSON.parse(errorText)
+ errorMessage = errorData.error || errorMessage
+ } catch {
+ errorMessage = `Server error: ${response.status} ${response.statusText}`
+ }
+ throw new Error(errorMessage)
+ }
 
-      const data = await response.json()
+ const data = await response.json()
 
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to create session')
-      }
+ if (!data.success) {
+ throw new Error(data.error || 'Failed to create session')
+ }
 
-      if (!data.token) {
-        throw new Error('Token not received from server')
-      }
+ if (!data.token) {
+ throw new Error('Token not received from server')
+ }
 
-      createdToken = data.token
-      setToken(data.token)
-      activeTokenRef.current = data.token // Set activeTokenRef here
-      setIsGeneratingToken(false)
-      setSafeState('waiting')
+ createdToken = data.token
+ setToken(data.token)
+ activeTokenRef.current = data.token // Set activeTokenRef here
+ setIsGeneratingToken(false)
+ setSafeState('waiting')
 
-      // Send buffered early ICE candidates that gathered before session creation
-      for (const candidate of earlyIceCandidates) {
-        await fetch(API_ENDPOINTS.SIGNAL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            token: data.token,
-            type: 'ice',
-            data: candidate,
-            role: 'sender',
-          }),
-        }).catch(console.error)
-      }
+ // Send buffered early ICE candidates that gathered before session creation
+ for (const candidate of earlyIceCandidates) {
+ await fetch(API_ENDPOINTS.SIGNAL, {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({
+ token: data.token,
+ type: 'ice',
+ data: candidate,
+ role: 'sender',
+ }),
+ }).catch(console.error)
+ }
 
-      // Listen for answer and receiver's ICE candidates via SSE
-      const eventSource = new EventSource(
-        `${API_ENDPOINTS.LISTEN}?token=${data.token}&role=sender`
-      )
-      sseRef.current = eventSource
+ // Listen for answer and receiver's ICE candidates via SSE
+ const eventSource = new EventSource(
+ `${API_ENDPOINTS.LISTEN}?token=${data.token}&role=sender`
+ )
+ sseRef.current = eventSource
 
-      eventSource.onmessage = async (event) => {
-        if (generationRef.current !== currentGeneration) return
+ eventSource.onmessage = async (event) => {
+ if (generationRef.current !== currentGeneration) return
 
-        const message = JSON.parse(event.data)
+ const message = JSON.parse(event.data)
 
-        if (message.type === 'update') {
-          // Set remote answer (only once, when in correct signaling state)
-          if (message.answer && !answerSetRef.current) {
-            try {
-              await connection.setRemoteAnswer(message.answer)
-              answerSetRef.current = true
-            } catch (err) {
-              // If answer already set or state wrong, that's okay (race condition)
-              answerSetRef.current = true // Mark as set to prevent retries
-            }
-          }
+ if (message.type === 'update') {
+ // Set remote answer (only once, when in correct signaling state)
+ if (message.answer && !answerSetRef.current) {
+ try {
+ await connection.setRemoteAnswer(message.answer)
+ answerSetRef.current = true
+ } catch (err) {
+ // If answer already set or state wrong, that's okay (race condition)
+ answerSetRef.current = true // Mark as set to prevent retries
+ }
+ }
 
-          // Add receiver's ICE candidates
-          if (message.candidates) {
-            for (const candidate of message.candidates) {
-              const key = JSON.stringify(candidate)
-              if (!processedCandidatesRef.current.has(key)) {
-                processedCandidatesRef.current.add(key)
-                try {
-                  await connection.addIceCandidate(candidate)
-                } catch (err) {
-                  // Ignore candidate errors
-                }
-              }
-            }
-          }
-        } else if (message.type === 'expired') {
-          // Passive signaling mode guard
-          if (isTerminalRef.current || isPassiveModeRef.current || sseRef.current !== eventSource) {
-            return
-          }
-          isTerminalRef.current = true
-          addNotification('Signaling token expired.', 'warning')
-          setError(ERROR_MESSAGES.TOKEN_EXPIRED)
-          setSafeState('error')
-          cleanup()
-        }
-      }
+ // Add receiver's ICE candidates
+ if (message.candidates) {
+ for (const candidate of message.candidates) {
+ const key = JSON.stringify(candidate)
+ if (!processedCandidatesRef.current.has(key)) {
+ processedCandidatesRef.current.add(key)
+ try {
+ await connection.addIceCandidate(candidate)
+ } catch (err) {
+ // Ignore candidate errors
+ }
+ }
+ }
+ }
+ } else if (message.type === 'expired') {
+ // Passive signaling mode guard
+ if (isTerminalRef.current || isPassiveModeRef.current || sseRef.current !== eventSource) {
+ return
+ }
+ isTerminalRef.current = true
+ addNotification('Signaling token expired.', 'warning')
+ setError(ERROR_MESSAGES.TOKEN_EXPIRED)
+ setSafeState('error')
+ cleanup()
+ }
+ }
 
-      // Wait for channel to open
-      connection.onChannelOpen(async () => {
-        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
-        
-        // Advanced passive mode trigger evaluation
-        const pcState = connectionRef.current?.getIceConnectionState()
-        if (pcState === 'connected' || pcState === 'completed') {
-          isPassiveModeRef.current = true
-        }
+ // Wait for channel to open
+ connection.onChannelOpen(async () => {
+ if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+ 
+ // Advanced passive mode trigger evaluation
+ const pcState = connectionRef.current?.getIceConnectionState()
+ if (pcState === 'connected' || pcState === 'completed') {
+ isPassiveModeRef.current = true
+ }
 
-        if (channelTimeoutRef.current) {
-          clearTimeout(channelTimeoutRef.current)
-          channelTimeoutRef.current = null
-        }
-        setSafeState('transferring')
+ if (channelTimeoutRef.current) {
+ clearTimeout(channelTimeoutRef.current)
+ channelTimeoutRef.current = null
+ }
+ setSafeState('transferring')
 
-        try {
-          await connection.sendFile(file, (progressInfo: ProgressInfo) => {
-            if (generationRef.current !== currentGeneration || isTerminalRef.current) return
-            setProgress(progressInfo)
-          })
+ try {
+ await connection.sendFile(file, (progressInfo: ProgressInfo) => {
+ if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+ setProgress(progressInfo)
+ })
 
-          if (generationRef.current !== currentGeneration || isTerminalRef.current) return
-          isTerminalRef.current = true
-          setSafeState('complete')
-          addNotification('Transfer complete!', 'success')
+ if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+ isTerminalRef.current = true
+ setSafeState('complete')
+ addNotification('Transfer complete!', 'success')
 
-          // Keep the WebRTC connection alive for a few seconds after completion.
-          // The receiver may still be processing buffered SCTP chunks that haven't
-          // arrived yet. If we clean up Firebase/SSE immediately, the peer connection
-          // can be torn down before the receiver processes all data.
-          await new Promise(resolve => setTimeout(resolve, 3000))
+ // Keep the WebRTC connection alive for a few seconds after completion.
+ // The receiver may still be processing buffered SCTP chunks that haven't
+ // arrived yet. If we clean up Firebase/SSE immediately, the peer connection
+ // can be torn down before the receiver processes all data.
+ await new Promise(resolve => setTimeout(resolve, 3000))
 
-          // Removed aggressive POST /api/cleanup. Relying on TTL to prevent false-negatives.
-          
-          // cleanup called by user action or timeout
-        } catch (err) {
-          if (generationRef.current !== currentGeneration || isTerminalRef.current) return
-          isTerminalRef.current = true
-          const errorMessage = err instanceof Error ? err.message : ERROR_MESSAGES.TRANSFER_FAILED
+ // Removed aggressive POST /api/cleanup. Relying on TTL to prevent false-negatives.
+ 
+ // cleanup called by user action or timeout
+ } catch (err) {
+ if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+ isTerminalRef.current = true
+ const errorMessage = err instanceof Error ? err.message : ERROR_MESSAGES.TRANSFER_FAILED
 
-          // UI Protocol Mapping V4
-          if (connection.peerCancelReceived) {
-            addNotification('Receiver cancelled the transfer.', 'warning')
-            setError('Receiver cancelled the transfer.')
-            setState('error')
-          } else if (connection.isCancelled || errorMessage.toLowerCase().includes('cancelled')) {
-            // Already handled by local cancel() call via addNotification
-          } else if (errorMessage.toLowerCase().includes('disconnected') || errorMessage.toLowerCase().includes('closed')) {
-            addNotification('Peer disconnected.', 'error')
-            setError('Peer disconnected.')
-            setState('error')
-          } else {
-            addNotification(errorMessage || ERROR_MESSAGES.TRANSFER_FAILED, 'error')
-            setError(errorMessage || ERROR_MESSAGES.TRANSFER_FAILED)
-            setSafeState('error')
-          }
-          cleanup()
-        }
-      })
+ // UI Protocol Mapping V4
+ if (connection.peerCancelReceived) {
+ addNotification('Receiver cancelled the transfer.', 'warning')
+ setError('Receiver cancelled the transfer.')
+ setState('error')
+ } else if (connection.isCancelled || errorMessage.toLowerCase().includes('cancelled')) {
+ // Already handled by local cancel() call via addNotification
+ } else if (errorMessage.toLowerCase().includes('disconnected') || errorMessage.toLowerCase().includes('closed')) {
+ addNotification('Peer disconnected.', 'error')
+ setError('Peer disconnected.')
+ setState('error')
+ } else {
+ addNotification(errorMessage || ERROR_MESSAGES.TRANSFER_FAILED, 'error')
+ setError(errorMessage || ERROR_MESSAGES.TRANSFER_FAILED)
+ setSafeState('error')
+ }
+ cleanup()
+ }
+ })
 
-      // Set a timeout for connection establishment
-      channelTimeoutRef.current = setTimeout(() => {
-        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
-        if (connectionRef.current?.getConnectionState() !== 'connected') {
-          isTerminalRef.current = true
-          addNotification('Connection timed out.', 'error')
-          setError('Connection timed out — your firewall or NAT is blocking the peer connection. Try a different network.')
-          setSafeState('error')
-          cleanup()
-        }
-      }, 180000) // 3 minutes timeout
+ // Set a timeout for connection establishment
+ channelTimeoutRef.current = setTimeout(() => {
+ if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+ if (connectionRef.current?.getConnectionState() !== 'connected') {
+ isTerminalRef.current = true
+ addNotification('Connection timed out.', 'error')
+ setError('Connection timed out — your firewall or NAT is blocking the peer connection. Try a different network.')
+ setSafeState('error')
+ cleanup()
+ }
+ }, 180000) // 3 minutes timeout
 
-      connection.onChannelError((err: Error) => {
-        if (generationRef.current !== currentGeneration || isTerminalRef.current) return
-        isTerminalRef.current = true
-        addNotification(err.message, 'error')
-        setError(err.message)
-        setSafeState('error')
-      })
+ connection.onChannelError((err: Error) => {
+ if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+ isTerminalRef.current = true
+ addNotification(err.message, 'error')
+ setError(err.message)
+ setSafeState('error')
+ })
 
-    } catch (err) {
-      if (generationRef.current !== currentGeneration || isTerminalRef.current) return
-      isTerminalRef.current = true
-      const msg = (err as Error).message || ERROR_MESSAGES.CONNECTION_FAILED
-      addNotification(msg, 'error')
-      setError(msg)
-      setSafeState('error')
-      setIsGeneratingToken(false)
-    }
-  }, [file, addNotification, cleanup])
+ } catch (err) {
+ if (generationRef.current !== currentGeneration || isTerminalRef.current) return
+ isTerminalRef.current = true
+ const msg = (err as Error).message || ERROR_MESSAGES.CONNECTION_FAILED
+ addNotification(msg, 'error')
+ setError(msg)
+ setSafeState('error')
+ setIsGeneratingToken(false)
+ }
+ }, [file, addNotification, cleanup])
 
-  const removeFile = useCallback(() => {
-    setFile(null)
-    setError(null)
-  }, [])
+ const removeFile = useCallback(() => {
+ setFile(null)
+ setError(null)
+ }, [])
 
-  const cancel = useCallback(() => {
-    // Determine if we are actively cancelling a mid-flight transfer to toast
-    const currentState = stateRef.current
-    const isMidFlight = currentState === 'transferring' || currentState === 'waiting' || currentState === 'connecting'
+ const cancel = useCallback(() => {
+ // Determine if we are actively cancelling a mid-flight transfer to toast
+ const currentState = stateRef.current
+ const isMidFlight = currentState === 'transferring' || currentState === 'waiting' || currentState === 'connecting'
 
-    if (connectionRef.current && isMidFlight) {
-      try {
-        connectionRef.current.cancelTransfer()
-      } catch (err) { }
-      addNotification('You cancelled the transfer.', 'info')
-    }
+ if (connectionRef.current && isMidFlight) {
+ try {
+ connectionRef.current.cancelTransfer()
+ } catch (err) { }
+ addNotification('You cancelled the transfer.', 'info')
+ }
 
-    // Reset UI state atomically — progress first, then state
-    setProgress(null)
-    setError(null)
-    setIsGeneratingToken(false)
-    setCopySuccess(false)
-    setFile(null)
-    setToken(null)
+ // Reset UI state atomically — progress first, then state
+ setProgress(null)
+ setError(null)
+ setIsGeneratingToken(false)
+ setCopySuccess(false)
+ setFile(null)
+ setToken(null)
 
-    // Delay state reset to `idle` until after cancel message is sent + cleanup
-    setTimeout(() => {
-      cleanup()
-      setSafeState('idle')
-    }, 250)
-  }, [cleanup, addNotification, setSafeState])
+ // Delay state reset to `idle` until after cancel message is sent + cleanup
+ setTimeout(() => {
+ cleanup()
+ setSafeState('idle')
+ }, 250)
+ }, [cleanup, addNotification, setSafeState])
 
-  const handleCopyToken = useCallback(async (token: string) => {
-    try {
-      const success = await copyToClipboard(token)
-      if (success) {
-        setCopySuccess(true)
-        setTimeout(() => setCopySuccess(false), 2000)
-      }
-    } catch (err) {
-      // Silent fail
-    }
-  }, [])
+ const handleCopyToken = useCallback(async (token: string) => {
+ try {
+ const success = await copyToClipboard(token)
+ if (success) {
+ setCopySuccess(true)
+ setTimeout(() => setCopySuccess(false), 2000)
+ }
+ } catch (err) {
+ // Silent fail
+ }
+ }, [])
 
-  return {
-    state,
-    file,
-    token,
-    progress,
-    error,
-    isGeneratingToken,
-    copySuccess,
-    selectFile,
-    startSending,
-    cancel,
-    removeFile,
-    handleCopyToken,
-  }
+ return {
+ state,
+ file,
+ token,
+ progress,
+ error,
+ isGeneratingToken,
+ copySuccess,
+ selectFile,
+ startSending,
+ cancel,
+ removeFile,
+ handleCopyToken,
+ }
 }
