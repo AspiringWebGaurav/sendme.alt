@@ -46,7 +46,7 @@ export function TokenInput({ token, onChange, onSubmit, error, isLoading }: Toke
  </div>
 
  {error && (
- <p className="text-xs text-error mt-1 sm:mt-2 text-center px-4">{error}</p>
+ <p className="text-xs text-error mt-1 sm:mt-2 text-center px-4 break-words w-full">{error}</p>
  )}
  </div>
  )

@@ -50,7 +50,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
  {/* Toast Container */}
  <div
- className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"
+ className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-[9999] flex flex-col gap-2 pointer-events-none sm:items-end"
  role="status"
  aria-live="polite"
  >
@@ -98,10 +98,10 @@ function Toast({ notification, onClose }: { notification: Notification; onClose:
  initial={{ opacity: 0, y: -20, scale: 0.95 }}
  animate={{ opacity: 1, y: 0, scale: 1 }}
  exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
- className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-md shadow-2xl ${getColors(notification.type)} max-w-md w-max`}
+ className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-md shadow-2xl ${getColors(notification.type)} w-full sm:w-max sm:max-w-md`}
  >
  <div className="text-xl shrink-0">{getIcon(notification.type)}</div>
- <p className="text-sm font-medium leading-tight flex-1">
+ <p className="text-sm font-medium leading-tight flex-1 break-words">
  {notification.message}
  </p>
  <button

@@ -77,22 +77,22 @@ export function StatusIndicator({ mode, state }: StatusIndicatorProps) {
 
  return (
  <AnimatePresence mode="wait">
- <motion.div
- key={state}
- initial={{ opacity: 0, y: -4 }}
- animate={{ opacity: 1, y: 0 }}
- exit={{ opacity: 0, y: 4 }}
- transition={{ duration: 0.15 }}
- className={`flex items-center gap-2 px-3 py-1.5 rounded-full border backdrop-blur-md shadow-sm ${config.bgColor} ${config.borderColor}`}
- >
- <div className={`relative ${config.color}`}>
- <Icon className={`w-3.5 h-3.5 ${config.spin ? 'animate-spin' : ''}`} />
- {config.pulse && (
- <span className={`absolute inset-0 rounded-full ${config.color} animate-ping opacity-30`} />
- )}
- </div>
- <span className={`text-xs font-medium ${config.color}`}>{label}</span>
- </motion.div>
+  <motion.div
+  key={state}
+  initial={{ opacity: 0, y: -4 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, y: 4 }}
+  transition={{ duration: 0.15 }}
+  className={`flex items-center gap-2 px-3 py-1.5 rounded-full border backdrop-blur-md shadow-sm ${config.bgColor} ${config.borderColor} max-w-[calc(100vw-8rem)] sm:max-w-none shrink`}
+  >
+  <div className={`relative shrink-0 ${config.color}`}>
+  <Icon className={`w-3.5 h-3.5 ${config.spin ? 'animate-spin' : ''}`} />
+  {config.pulse && (
+  <span className={`absolute inset-0 rounded-full ${config.color} animate-ping opacity-30`} />
+  )}
+  </div>
+  <span className={`text-xs font-medium ${config.color} truncate`}>{label}</span>
+  </motion.div>
  </AnimatePresence>
  )
 }

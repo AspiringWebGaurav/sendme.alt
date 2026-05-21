@@ -108,7 +108,7 @@ export function DropZone({ file, onFileSelect, onFileRemove, error }: DropZonePr
  </div>
 
  {error && (
- <p className="text-xs text-error text-center mt-2">{error}</p>
+ <p className="text-xs text-error text-center mt-2 break-words px-2 sm:px-0 w-full">{error}</p>
  )}
  </div>
  )

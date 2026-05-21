@@ -31,14 +31,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
  if (this.props.fallback) return this.props.fallback
 
  return (
- <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4 p-8">
- <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center">
+ <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4 p-4 sm:p-8">
+ <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
  <span className="text-2xl">⚠️</span>
  </div>
- <h2 className="text-xl font-semibold text-text-primary">
+ <h2 className="text-xl font-semibold text-text-primary text-center">
  Something went wrong
  </h2>
- <p className="text-sm text-text-secondary text-center max-w-md">
+ <p className="text-sm text-text-secondary text-center max-w-md break-words px-4">
  An unexpected error occurred. Please try again.
  </p>
  <button
