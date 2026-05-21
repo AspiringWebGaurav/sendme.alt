@@ -100,7 +100,7 @@ body {
   overflow: hidden;
   height: 100dvh;
   /* Use dvh for mobile browser chrome */
-  width: 100vw;
+  width: 100%;
 }
 
 /* Safe-area insets for notched phones */

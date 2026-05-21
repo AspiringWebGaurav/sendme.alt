@@ -3,8 +3,8 @@ import { ArrowLeft } from 'lucide-react'
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
  return (
- <div className="min-h-screen bg-bg-primary text-text-secondary py-12 px-4 sm:px-6 lg:px-8 overflow-y-auto w-full absolute inset-0 transition-colors duration-300">
- <div className="max-w-5xl mx-auto">
+ <div className="min-h-screen bg-bg-primary text-text-secondary py-12 px-4 sm:px-6 lg:px-12 xl:px-24 overflow-y-auto w-full absolute inset-0 transition-colors duration-300">
+ <div className="max-w-[1400px] mx-auto w-full">
  <nav className="mb-12 flex items-center justify-between border-b border-border-subtle pb-6">
  <Link
  href="/"
@@ -19,7 +19,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
  <Link href="/legal/aup" className="hover:text-text-primary transition-colors">AUP</Link>
  </div>
  </nav>
- <main className="prose prose-zinc max-w-none">
+ <main className="w-full">
  {children}
  </main>
  <footer className="mt-20 border-t border-border-subtle pt-8 text-center text-xs text-text-muted">

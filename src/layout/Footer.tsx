@@ -3,11 +3,11 @@ import { Github, Globe } from 'lucide-react'
 
 export function Footer() {
  return (
- <footer className="w-full mt-auto border-t border-border-subtle py-4 sm:py-6 px-4 sm:px-8 text-xs text-text-secondary flex flex-col sm:flex-row items-center justify-between gap-4 z-10 relative bg-bg-surface/50 backdrop-blur-sm">
+ <footer className="w-full mt-auto border-t border-border-subtle pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:py-6 px-4 sm:px-8 text-xs text-text-secondary flex flex-col sm:flex-row items-center justify-between gap-4 z-10 relative bg-bg-surface/50 backdrop-blur-sm">
  <div className="flex items-center gap-1 text-[13px] text-text-muted text-text-muted ">
  <span>&copy; {new Date().getFullYear()} Sendme.alt.</span>
  <span className="hidden sm:inline">Secure P2P File Transfer.</span>
- <span className="hidden sm:inline"> · Made by <a href="https://www.gauravpatil.online" target="_blank" rel="noopener noreferrer" className="text-text-secondary text-text-secondary hover:text-accent-primary transition-colors">Gaurav Patil</a></span>
+ <span className="hidden sm:inline"> · Made by <a href="https://www.gauravpatil.online" target="_blank" rel="noopener noreferrer" className="relative font-semibold text-text-primary hover:text-transparent bg-clip-text bg-gradient-to-r from-color-primary to-color-accent transition-all duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-[1px] after:w-full after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:bg-gradient-to-r after:from-color-primary after:to-color-accent after:transition-transform after:duration-300 after:ease-in-out">Gaurav Patil</a></span>
  </div>
  <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6">
  <Link href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-text-muted font-medium hover:text-accent-primary transition-colors">Privacy</Link>

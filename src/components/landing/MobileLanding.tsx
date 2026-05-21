@@ -85,13 +85,13 @@ export function MobileLanding() {
  </main>
 
  {/* Footer */}
- <footer className="w-full flex flex-col items-center gap-3 px-5 py-5 shrink-0 border-t border-border-strong relative z-10 bg-bg-primary">
+ <footer className="w-full flex flex-col items-center gap-3 px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shrink-0 border-t border-border-strong relative z-10 bg-bg-primary">
  <div className="flex items-center justify-center gap-6">
  <Link href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-[11px] text-text-muted active:text-text-primary transition-colors">Privacy</Link>
  <Link href="/legal/terms" target="_blank" rel="noopener noreferrer" className="text-[11px] text-text-muted active:text-text-primary transition-colors">Terms</Link>
  <Link href="/legal/aup" target="_blank" rel="noopener noreferrer" className="text-[11px] text-text-muted active:text-text-primary transition-colors">Acceptable Use</Link>
  </div>
- <p className="text-[10px] text-text-muted">Made by <a href="https://www.gauravpatil.online" target="_blank" rel="noopener noreferrer" className="text-text-secondary active:text-text-primary transition-colors">Gaurav Patil</a> · <a href="https://github.com/AspiringWebGaurav" target="_blank" rel="noopener noreferrer" className="text-text-secondary active:text-text-primary transition-colors">GitHub</a></p>
+ <p className="text-[10px] text-text-muted">Made by <a href="https://www.gauravpatil.online" target="_blank" rel="noopener noreferrer" className="relative font-semibold text-text-primary hover:text-transparent bg-clip-text bg-gradient-to-r from-color-primary to-color-accent transition-all duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-[1px] after:w-full after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:bg-gradient-to-r after:from-color-primary after:to-color-accent after:transition-transform after:duration-300 after:ease-in-out">Gaurav Patil</a> · <a href="https://github.com/AspiringWebGaurav" target="_blank" rel="noopener noreferrer" className="text-text-secondary active:text-text-primary transition-colors">GitHub</a></p>
  </footer>
  </div>
  )

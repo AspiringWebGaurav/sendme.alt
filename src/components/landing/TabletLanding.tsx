@@ -92,7 +92,7 @@ export function TabletLanding() {
 
  {/* Footer */}
  <footer className="w-full flex flex-row items-center justify-between px-8 py-5 shrink-0 border-t border-border-strong relative z-10">
- <p className="text-xs text-text-secondary">© 2026 sendme.alt · Made by <a href="https://www.gauravpatil.online" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-text-primary transition-colors">Gaurav Patil</a></p>
+ <p className="text-xs text-text-secondary">© 2026 sendme.alt · Made by <a href="https://www.gauravpatil.online" target="_blank" rel="noopener noreferrer" className="relative font-semibold text-text-primary hover:text-transparent bg-clip-text bg-gradient-to-r from-color-primary to-color-accent transition-all duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-[1px] after:w-full after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:bg-gradient-to-r after:from-color-primary after:to-color-accent after:transition-transform after:duration-300 after:ease-in-out">Gaurav Patil</a></p>
  <div className="flex items-center gap-4">
  <Link href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-[11px] text-text-muted hover:text-text-primary transition-colors">Privacy</Link>
  <Link href="/legal/terms" target="_blank" rel="noopener noreferrer" className="text-[11px] text-text-muted hover:text-text-primary transition-colors">Terms</Link>

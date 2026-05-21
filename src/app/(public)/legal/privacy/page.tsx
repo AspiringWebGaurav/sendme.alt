@@ -1,71 +1,103 @@
+import { LegalPageLayout, LegalSection } from '../components';
+import { legalConfig } from '../config';
+
 export const metadata = {
- title: 'Privacy Policy | Sendme.alt',
- description: 'Privacy Policy and Zero-Knowledge architecture details for Sendme.alt.',
+  title: 'Privacy Policy | Sendme.alt',
+  description: 'Strict Zero-Knowledge architecture and data handling practices for Sendme.alt.',
 }
 
+const SECTIONS = [
+  { id: 'introduction', title: '1. Introduction & Zero-Knowledge Commitment' },
+  { id: 'data-collection', title: '2. Data Collection (What We Don\'t Collect)' },
+  { id: 'architecture', title: '3. How Your Data Moves (WebRTC)' },
+  { id: 'signaling-data', title: '4. Ephemeral Signaling Data' },
+  { id: 'infrastructure', title: '5. Infrastructure & Security Logging' },
+  { id: 'tracking', title: '6. Tracking & Third Parties' },
+  { id: 'policy-updates', title: '7. Policy Modifications' },
+];
+
 export default function PrivacyPolicy() {
- return (
- <div className="space-y-6">
- <h1 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight mb-8">Privacy Policy</h1>
- <p className="text-sm text-text-secondary">Last Updated: February 25, 2026</p>
+  return (
+    <LegalPageLayout title="Privacy Policy" sections={SECTIONS}>
+      <LegalSection id="introduction" title={SECTIONS[0].title}>
+        <p>
+          Welcome to <strong>{legalConfig.companyName}</strong>. Your privacy is not just a feature—it is the foundational premise of our architecture. 
+          We operate on a strict Zero-Knowledge, peer-to-peer (P2P) framework. This Privacy Policy details exactly how your data is treated when utilizing our service.
+        </p>
+      </LegalSection>
 
- <section className="mt-8 space-y-4">
- <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">1. Introduction</h2>
- <p>
- Welcome to Sendme.alt (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;). We respect your privacy and are committed to protecting it through our strict adherence to a Zero-Knowledge architecture. This Privacy Policy outlines our data handling practices.
- </p>
- </section>
+      <LegalSection id="data-collection" title={SECTIONS[1].title}>
+        <p className="mb-4">
+          By design, our infrastructure is incapable of accessing your data. We inherently <strong>do not</strong> collect, process, or store:
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl">
+            <h3 className="font-bold text-text-primary mb-2">Personal Data</h3>
+            <p className="text-sm">No names, email addresses, phone numbers, or account profiles are required or collected.</p>
+          </div>
+          <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl">
+            <h3 className="font-bold text-text-primary mb-2">File Contents</h3>
+            <p className="text-sm">We have absolutely no visibility into the files you transfer. All data remains strictly on your device until transmitted directly to the recipient.</p>
+          </div>
+          <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl">
+            <h3 className="font-bold text-text-primary mb-2">File Metadata</h3>
+            <p className="text-sm">We do not log filenames, file sizes, or file types.</p>
+          </div>
+          <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl">
+            <h3 className="font-bold text-text-primary mb-2">Transfer Histories</h3>
+            <p className="text-sm">No persistent logs of who you connect with or what you send are maintained.</p>
+          </div>
+        </div>
+      </LegalSection>
 
- <section className="mt-8 space-y-4">
- <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">2. Zero-Knowledge Architecture</h2>
- <p>
- Sendme.alt is designed from the ground up as a peer-to-peer (P2P) file transfer service utilizing WebRTC.
- </p>
- <ul className="list-disc pl-5 mt-2 space-y-2">
- <li><strong>No Server Transit:</strong> Your files are transferred directly between the sender&apos;s and receiver&apos;s devices. At no point do your files pass through, reside on, or get cached by our servers.</li>
- <li><strong>End-to-End Encryption:</strong> All transfers are secured using WebRTC&apos;s mandatory built-in encryption protocols (DTLS and SRTP). We do not have access to the cryptographic keys used to secure your transfer.</li>
- <li><strong>No Data Retention:</strong> Our backend strictly functions as a highly ephemeral signaling server to establish the initial connection. All signaling data, including session tokens and IP metadata used for establishing paths, is instantly destroyed via an atomic cleanup process the moment the connection completes, fails, or is cancelled.</li>
- </ul>
- </section>
+      <LegalSection id="architecture" title={SECTIONS[2].title}>
+        <p className="mb-4">
+          {legalConfig.companyName} uses WebRTC to establish a direct connection between the sender and receiver.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl border-l-4 border-l-color-primary">
+            <h3 className="font-bold text-text-primary mb-2">End-to-End Encryption (E2EE)</h3>
+            <p className="text-sm">All file transfers are secured via WebRTC&apos;s mandatory DTLS/SRTP encryption. We do not hold the cryptographic keys.</p>
+          </div>
+          <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl border-l-4 border-l-color-primary">
+            <h3 className="font-bold text-text-primary mb-2">No Server Transit</h3>
+            <p className="text-sm">Your files never pass through our backend databases, servers, or cloud storage. They go directly from device A to device B.</p>
+          </div>
+        </div>
+      </LegalSection>
 
- <section className="mt-8 space-y-4">
- <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">3. Information We Do Not Collect</h2>
- <p>Because of our operational model, we inherently <strong>do not</strong> collect, track, or store:</p>
- <ul className="list-disc pl-5 mt-2 space-y-2">
- <li>Personal Identifiable Information (Names, Emails, Phone numbers)</li>
- <li>The contents, filenames, or metadata of the files you transfer</li>
- <li>User accounts or authentication profiles (as we require no sign-up)</li>
- <li>Persistent logs of transfer activity</li>
- </ul>
- </section>
+      <LegalSection id="signaling-data" title={SECTIONS[3].title}>
+        <p>
+          To broker the peer-to-peer connection, our backend functions solely as a temporary signaling server.
+        </p>
+        <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl mt-4">
+          <p className="text-sm">
+            During the initial connection phase, we temporarily process routing metadata (such as IP addresses and WebRTC session descriptions). 
+            <strong className="text-text-primary"> This data is highly ephemeral.</strong> It exists only in volatile memory for the brief seconds required to establish the connection and is atomically destroyed the moment the transfer begins, fails, or is cancelled.
+          </p>
+        </div>
+      </LegalSection>
 
- <section className="mt-8 space-y-4">
- <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">4. Information Collected Automatically</h2>
- <p>
- To maintain the operational security and stability of our signaling infrastructure, our hosting providers may temporarily collect minimal diagnostic data (such as anonymized IP addresses and request headers) strictly for DDoS prevention, rate limiting, and incident response. This data is not linked to your file transfers and is routinely purged.
- </p>
- </section>
+      <LegalSection id="infrastructure" title={SECTIONS[4].title}>
+        <p>
+          To protect our signaling servers against abuse (e.g., DDoS attacks) and ensure service availability, our hosting providers may automatically collect standard web server logs.
+        </p>
+        <p className="mt-4">
+          This may include anonymized IP addresses, rate-limiting counters, and HTTP request headers. This data is strictly used for security, diagnostic, and performance purposes, is isolated from the file transfer process, and is routinely purged.
+        </p>
+      </LegalSection>
 
- <section className="mt-8 space-y-4">
- <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">5. Cookies and Tracking</h2>
- <p>
- Sendme.alt does not use cookies, pixels, or any cross-site tracking technologies.
- </p>
- </section>
+      <LegalSection id="tracking" title={SECTIONS[5].title}>
+        <p>
+          We do not use advertising trackers, marketing cookies, or invasive analytics. We do not sell, rent, or share any of your information with third-party marketers or data brokers under any circumstances.
+        </p>
+      </LegalSection>
 
- <section className="mt-8 space-y-4">
- <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">6. Changes to this Policy</h2>
- <p>
- We may update this Privacy Policy occasionally to reflect changes in our operational or legal obligations. We reserve the right to modify this document freely, and continued use of the service constitutes acceptance of these changes.
- </p>
- </section>
-
- <section className="mt-8 space-y-4">
- <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">7. Contact</h2>
- <p>
- For privacy inquiries or compliance reporting, please contact us through the appropriate channels linked on our main application interface or GitHub repository.
- </p>
- </section>
- </div>
- )
+      <LegalSection id="policy-updates" title={SECTIONS[6].title}>
+        <p>
+          As our platform evolves, we may update this Privacy Policy. We reserve the right to modify these practices to comply with legal requirements or technical advancements. Continued use of the platform following any modifications constitutes acceptance of the updated policy.
+        </p>
+      </LegalSection>
+    </LegalPageLayout>
+  )
 }

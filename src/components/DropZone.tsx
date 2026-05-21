@@ -58,7 +58,7 @@ export function DropZone({ file, onFileSelect, onFileRemove, error }: DropZonePr
  <div className="relative w-full h-32 sm:h-40 lg:h-48 rounded-2xl border border-border-subtle bg-bg-surface shadow-light-elevated flex flex-col items-center justify-center p-4 sm:p-6 text-center group transition-all">
  <button
  onClick={onFileRemove}
- className="absolute top-3 right-3 sm:top-4 sm:right-4 p-1.5 rounded-full bg-bg-surface hover:bg-bg-elevated text-text-secondary hover:text-text-primary transition-colors"
+ className="absolute top-2 right-2 sm:top-4 sm:right-4 p-3 sm:p-1.5 rounded-full bg-bg-surface hover:bg-bg-elevated text-text-secondary hover:text-text-primary transition-colors"
  >
  <X className="w-4 h-4" />
  </button>

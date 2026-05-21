@@ -27,7 +27,7 @@ export function SendPanel() {
  } = useSend()
 
  return (
- <div className="h-full w-full flex flex-col items-center justify-center p-4 sm:p-8 lg:p-12 relative overflow-y-auto">
+ <div className="h-full w-full flex flex-col items-center justify-center p-4 sm:p-8 lg:p-12 relative overflow-y-auto overflow-x-hidden">
  <div className="absolute top-3 sm:top-6 left-3 sm:left-6 right-3 sm:right-6 flex justify-between items-start z-10">
  <StatusIndicator mode="send" state={state} />
  {(state === 'connecting' || state === 'waiting') && (
@@ -48,7 +48,7 @@ export function SendPanel() {
  <button
  onClick={startSending}
  disabled={isGeneratingToken}
- className="w-full max-w-[200px] py-3 rounded-xl bg-accent-primary hover:bg-accent-hover focus:ring-4 focus:ring-accent-primary/20 :bg-primary-dark text-text-primary font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(108,71,255,0.2)] _0_20px_rgba(139,92,246,0.2)]"
+ className="w-full sm:max-w-[200px] py-3.5 sm:py-3 min-h-[48px] sm:min-h-0 rounded-xl bg-accent-primary hover:bg-accent-hover focus:ring-4 focus:ring-accent-primary/20 :bg-primary-dark text-text-primary font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(108,71,255,0.2)] _0_20px_rgba(139,92,246,0.2)]"
  >
  {isGeneratingToken ? 'Generating Token...' : 'Start Transfer'}
  </button>
@@ -92,7 +92,7 @@ export function SendPanel() {
  />
  <button
  onClick={cancel}
- className="w-full mt-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-400 rounded-xl font-medium transition-colors border border-red-500/20 flex items-center justify-center gap-2 group"
+ className="w-full mt-4 py-3.5 sm:py-3 min-h-[48px] sm:min-h-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-400 rounded-xl font-medium transition-colors border border-red-500/20 flex items-center justify-center gap-2 group"
  >
  <XCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
  Cancel Transfer

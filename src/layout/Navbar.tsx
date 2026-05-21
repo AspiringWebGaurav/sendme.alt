@@ -11,9 +11,9 @@ interface NavbarProps {
 
 export function Navbar({ variant = "app" }: NavbarProps) {
  return (
- <header className={`w-full shrink-0 sticky top-0 z-50 flex items-center justify-between backdrop-blur-md bg-bg-surface/80 ${variant === "landing"
- ? "px-5 py-4 sm:px-8 sm:py-5 lg:px-12 lg:py-6 border-b border-border-strong"
- : "h-12 sm:h-16 px-4 sm:px-6 border-b border-border-subtle"
+ <header className={`w-full shrink-0 sticky top-0 z-50 flex items-center justify-between backdrop-blur-md bg-bg-surface/80 pt-[max(env(safe-area-inset-top),0px)] ${variant === "landing"
+ ? "px-5 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] sm:px-8 sm:py-5 lg:px-12 lg:py-6 border-b border-border-strong"
+ : "h-[calc(3.5rem+env(safe-area-inset-top))] sm:h-16 px-4 sm:px-6 border-b border-border-subtle"
  }`}>
  <Logo size="lg" withLink={variant === "app"} />
 

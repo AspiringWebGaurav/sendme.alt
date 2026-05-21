@@ -81,7 +81,7 @@ export default function RootLayout({
 }) {
  return (
  <html lang="en" suppressHydrationWarning>
- <body className={`${inter.className} bg-bg-primary text-text-primary overflow-hidden h-[100dvh] w-screen m-0 p-0`}>
+ <body className={`${inter.className} bg-bg-primary text-text-primary overflow-hidden h-[100dvh] w-full m-0 p-0`}>
  <ThemeProvider
  attribute="class"
  defaultTheme="dark"

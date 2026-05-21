@@ -1,58 +1,89 @@
+import { LegalPageLayout, LegalSection } from '../components';
+import { legalConfig } from '../config';
+
 export const metadata = {
- title: 'Acceptable Use Policy | Sendme.alt',
- description: 'Acceptable Use Policy (AUP) establishing rules against abuse for Sendme.alt.',
+  title: 'Acceptable Use Policy | Sendme.alt',
+  description: 'Strict Acceptable Use Policy (AUP) establishing zero-tolerance rules against abuse.',
 }
 
+const SECTIONS = [
+  { id: 'purpose', title: '1. Purpose & Enforcement Scope' },
+  { id: 'zero-tolerance-content', title: '2. Zero-Tolerance Content' },
+  { id: 'network-abuse', title: '3. System & Network Abuse' },
+  { id: 'spam', title: '4. Spam & Unauthorized Sharing' },
+  { id: 'reporting', title: '5. Incident Reporting & Law Enforcement' },
+];
+
 export default function AcceptableUsePolicy() {
- return (
- <div className="space-y-6">
- <h1 className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight mb-8">Acceptable Use Policy (AUP)</h1>
- <p className="text-sm text-text-secondary">Last Updated: February 25, 2026</p>
+  return (
+    <LegalPageLayout title="Acceptable Use Policy (AUP)" sections={SECTIONS}>
+      <LegalSection id="purpose" title={SECTIONS[0].title}>
+        <p>
+          This Acceptable Use Policy (&quot;Policy&quot;) establishes a zero-tolerance framework for the use of <strong>{legalConfig.companyName}</strong>. By utilizing our signaling infrastructure, you agree to comply entirely with these strict constraints.
+        </p>
+        <p className="mt-4">
+          While our Zero-Knowledge architecture prevents us from directly auditing the contents of the physical files you transfer, we heavily monitor our signaling endpoints. We possess the capability and the sovereign right to permanently ban network access for any entity identified as abusing the platform.
+        </p>
+      </LegalSection>
 
- <section className="mt-8 space-y-4">
- <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">1. Purpose</h2>
- <p>
- This Acceptable Use Policy (&quot;Policy&quot;) outlines the acceptable use of Sendme.alt (the &quot;Service&quot;). This Policy is designed to protect us, our users, and the Internet community from irresponsible, abusive, or illegal activities.
- </p>
- </section>
+      <LegalSection id="zero-tolerance-content" title={SECTIONS[1].title}>
+        <p className="mb-4">
+          You are unequivocally prohibited from utilizing our Service to broker the transfer of the following materials. Violation will result in immediate termination of access:
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl border-l-4 border-l-color-error">
+            <h3 className="font-bold text-text-primary mb-2">Illegal Content</h3>
+            <p className="text-sm">Any materials that violate local, state, federal, or international law, including the promotion of terrorism, illegal arms, or illicit narcotics.</p>
+          </div>
+          <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl border-l-4 border-l-color-error">
+            <h3 className="font-bold text-text-primary mb-2">Malware & System Exploits</h3>
+            <p className="text-sm">Distributing viruses, trojans, ransomware, logic bombs, or any malicious code engineered to compromise hardware, software, or network security.</p>
+          </div>
+          <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl border-l-4 border-l-color-error">
+            <h3 className="font-bold text-text-primary mb-2">Exploitative & Extreme Material</h3>
+            <p className="text-sm">Any content depicting the exploitation of minors, non-consensual explicit media, or extreme real-world violence.</p>
+          </div>
+          <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl border-l-4 border-l-color-error">
+            <h3 className="font-bold text-text-primary mb-2">Piracy & Copyright Abuse</h3>
+            <p className="text-sm">Engaging in the unauthorized distribution of copyrighted works, proprietary software (warez), trade secrets, or stolen databases.</p>
+          </div>
+        </div>
+      </LegalSection>
 
- <section className="mt-8 space-y-4">
- <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">2. Prohibited Content</h2>
- <p>You are strictly prohibited from utilizing the Service&apos;s signaling infrastructure to broker the transfer of the following types of content:</p>
- <ul className="list-disc pl-5 mt-2 space-y-2">
- <li><strong>Illegal Content:</strong> Any materials that are unlawful, illicit, or promote illegal activities under any applicable laws.</li>
- <li><strong>Malware and Exploits:</strong> Viruses, trojans, worms, logic bombs, ransomware, or any other material which is malicious or technologically harmful.</li>
- <li><strong>Copyright Infringement:</strong> Unauthorized distribution of copyrighted material, trade secrets, software, or proprietary information.</li>
- <li><strong>Exploitative Material:</strong> Content depicting the exploitation of minors, non-consensual explicit media, or any abusive imagery.</li>
- </ul>
- </section>
+      <LegalSection id="network-abuse" title={SECTIONS[2].title}>
+        <p className="mb-4">
+          Our infrastructure exists to facilitate peer-to-peer handshakes. You agree not to degrade or weaponize this infrastructure. The following actions are strictly banned:
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl border-l-4 border-l-color-warning">
+            <h3 className="font-bold text-text-primary mb-2">Denial of Service (DoS/DDoS)</h3>
+            <p className="text-sm">Intentionally overloading, flooding, or executing volumetric attacks against our signaling APIs or WebRTC STUN/TURN servers.</p>
+          </div>
+          <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl border-l-4 border-l-color-warning">
+            <h3 className="font-bold text-text-primary mb-2">Automated Exploitation</h3>
+            <p className="text-sm">Utilizing scripts, bots, or scrapers to rapidly generate transfer tokens, spam WebRTC offers, or harvest connection metadata.</p>
+          </div>
+          <div className="bg-bg-surface border border-border-subtle p-5 rounded-xl border-l-4 border-l-color-warning">
+            <h3 className="font-bold text-text-primary mb-2">Platform Weaponization</h3>
+            <p className="text-sm">Using the Service as a command-and-control (C2) channel or attempting to reverse-engineer our endpoints to bypass rate limits.</p>
+          </div>
+        </div>
+      </LegalSection>
 
- <section className="mt-8 space-y-4">
- <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">3. Network Abuse</h2>
- <p>We maintain strict rate limits to ensure fair availability of the Service. You agree not to engage in the following activities:</p>
- <ul className="list-disc pl-5 mt-2 space-y-2">
- <li><strong>Denial of Service:</strong> Intentionally overloading, flooding, or executing DDoS attacks against our signaling APIs or database endpoints.</li>
- <li><strong>Automated Abuse:</strong> Rapidly generating transferring tokens, spamming WebRTC offers, or scraping the API via automated bots or scripts without explicit permission.</li>
- <li><strong>Reverse Engineering:</strong> Attempting to probe, scan, or test the vulnerability of the system or network or to breach security or authentication measures.</li>
- </ul>
- </section>
+      <LegalSection id="spam" title={SECTIONS[3].title}>
+        <p>
+          {legalConfig.companyName} is built for intentional, consent-driven file sharing. You may not use the Service to distribute unsolicited mass messages, spam files, or trick unaware users into accepting unwanted payloads.
+        </p>
+      </LegalSection>
 
- <section className="mt-8 space-y-4">
- <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">4. Enforcement</h2>
- <p>
- Because of our strict Zero-Knowledge architecture, we cannot technically monitor or audit the physical files passing peer-to-peer. Our enforcement of this Policy is therefore limited to the *signaling metadata*.
- </p>
- <p>
- However, we maintain the sovereign right to permanently IP-ban or block access to the Service for any user discovered willfully violating this Acceptable Use Policy, engaging in network abuse, or threatening the operational continuity of our signaling servers.
- </p>
- </section>
-
- <section className="mt-8 space-y-4">
- <h2 className="text-xl sm:text-2xl font-semibold text-text-primary">5. Reporting Abuse</h2>
- <p>
- Given our decentralized approach, if you receive harmful or illegal files, please discard them and report the sender to your local cybercrime authorities. If you identify a network vulnerability or abuse of our signaling endpoints, please contact the developer via our GitHub repository.
- </p>
- </section>
- </div>
- )
+      <LegalSection id="reporting" title={SECTIONS[4].title}>
+        <p>
+          Because we do not host user data, we cannot comply with takedown requests for specific files. However, we aggressively enforce IP-level bans against abusers of our signaling network.
+        </p>
+        <p className="mt-4">
+          If you receive dangerous files, immediately discard them and report the sender to your local cybersecurity authorities. To report critical network abuse or API exploitation, please alert our security team via our official GitHub repository. We cooperate fully with law enforcement regarding systemic network attacks.
+        </p>
+      </LegalSection>
+    </LegalPageLayout>
+  )
 }
