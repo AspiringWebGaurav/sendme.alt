@@ -1,9 +1,19 @@
+import { Metadata } from 'next';
 import { LegalPageLayout, LegalSection } from '../components';
 import { legalConfig } from '../config';
+import { APP_URLS } from '@/core/urls';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Acceptable Use Policy | Sendme.alt',
   description: 'Strict Acceptable Use Policy (AUP) establishing zero-tolerance rules against abuse.',
+  alternates: {
+    canonical: `${APP_URLS.BASE_URL}/legal/aup`,
+  },
+  openGraph: {
+    title: 'Acceptable Use Policy | Sendme.alt',
+    description: 'Strict Acceptable Use Policy (AUP) establishing zero-tolerance rules against abuse.',
+    url: `${APP_URLS.BASE_URL}/legal/aup`,
+  },
 }
 
 const SECTIONS = [

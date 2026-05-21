@@ -49,3 +49,8 @@ playwright-report/
 deep-qa.mjs
 e2e-stress.mjs
 scripts/
+
+# IDE and tool specific
+/.antigravitycli/
+/.kilo/
+lighthouse-report.json

@@ -23,6 +23,7 @@ export interface ProgressInfo {
  speed: number // bytes per second
  eta: number // seconds remaining
  statusMessage?: string // "Optimizing speed…", "Network slow…", etc.
+ connectionType?: 'Direct P2P' | 'STUN' | 'TURN'
 }
 
 // Session Data (stored in Firebase)

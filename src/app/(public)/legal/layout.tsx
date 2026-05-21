@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { ScrollIndicator } from './ScrollIndicator'
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
  return (
- <div className="min-h-screen bg-bg-primary text-text-secondary py-12 px-4 sm:px-6 lg:px-12 xl:px-24 overflow-y-auto w-full absolute inset-0 transition-colors duration-300">
+ <div id="legal-scroll-container" className="min-h-screen bg-bg-primary text-text-secondary py-12 px-4 sm:px-6 lg:px-12 xl:px-24 overflow-y-auto scrollbar-hide w-full absolute inset-0 transition-colors duration-300">
+ <ScrollIndicator />
  <div className="max-w-[1400px] mx-auto w-full">
  <nav className="mb-12 flex items-center justify-between border-b border-border-subtle pb-6">
  <Link

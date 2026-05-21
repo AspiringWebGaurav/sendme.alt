@@ -241,18 +241,32 @@ export function useSend() {
  }
  }
  }
- } else if (message.type === 'expired') {
- // Passive signaling mode guard
- if (isTerminalRef.current || isPassiveModeRef.current || sseRef.current !== eventSource) {
- return
- }
- isTerminalRef.current = true
- addNotification('Signaling token expired.', 'warning')
- setError(ERROR_MESSAGES.TOKEN_EXPIRED)
- setSafeState('error')
- cleanup()
- }
- }
+ } else if (message.type === 'cancel') {
+        // Out-Of-Band Cancellation received from peer
+        if (isTerminalRef.current) return
+        isTerminalRef.current = true
+
+        addNotification('Receiver cancelled the transfer.', 'error')
+        try { connection.abortTransfer('Receiver cancelled the transfer.') } catch (e) {}
+        
+        cleanup()
+        setProgress(null)
+        setError(null)
+        setFile(null)
+        setToken(null)
+        setSafeState('idle')
+      } else if (message.type === 'expired') {
+        // Passive signaling mode guard
+        if (isTerminalRef.current || isPassiveModeRef.current || sseRef.current !== eventSource) {
+          return
+        }
+        isTerminalRef.current = true
+        addNotification('Signaling token expired.', 'warning')
+        setError(ERROR_MESSAGES.TOKEN_EXPIRED)
+        setSafeState('error')
+        cleanup()
+      }
+    }
 
  // Wait for channel to open
  connection.onChannelOpen(async () => {
@@ -356,26 +370,36 @@ export function useSend() {
  const currentState = stateRef.current
  const isMidFlight = currentState === 'transferring' || currentState === 'waiting' || currentState === 'connecting'
 
- if (connectionRef.current && isMidFlight) {
- try {
- connectionRef.current.cancelTransfer()
- } catch (err) { }
- addNotification('You cancelled the transfer.', 'info')
- }
+    if (connectionRef.current && isMidFlight) {
+      try {
+        connectionRef.current.cancelTransfer()
+      } catch (err) { }
+      addNotification('You cancelled the transfer.', 'info')
+    }
 
- // Reset UI state atomically — progress first, then state
- setProgress(null)
- setError(null)
- setIsGeneratingToken(false)
- setCopySuccess(false)
- setFile(null)
- setToken(null)
+    // Out-Of-Band cancellation via Firebase
+    if (activeTokenRef.current) {
+      fetch('/api/signal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: activeTokenRef.current, type: 'cancel', role: 'sender' })
+      }).catch(() => {})
+    }
 
- // Delay state reset to `idle` until after cancel message is sent + cleanup
- setTimeout(() => {
- cleanup()
- setSafeState('idle')
- }, 250)
+    // Reset UI state atomically — progress first, then state
+    setProgress(null)
+    setError(null)
+    setIsGeneratingToken(false)
+    setCopySuccess(false)
+    setFile(null)
+    setToken(null)
+
+    // Delay state reset to `idle` until after cancel message is sent + cleanup
+    // Increased to 1000ms to ensure Firebase SSE dispatch completes before session destruction
+    setTimeout(() => {
+      cleanup()
+      setSafeState('idle')
+    }, 1000)
  }, [cleanup, addNotification, setSafeState])
 
  const handleCopyToken = useCallback(async (token: string) => {

@@ -48,7 +48,7 @@ export function SendPanel() {
  <button
  onClick={startSending}
  disabled={isGeneratingToken}
- className="w-full sm:max-w-[200px] py-3.5 sm:py-3 min-h-[48px] sm:min-h-0 rounded-xl bg-accent-primary hover:bg-accent-hover focus:ring-4 focus:ring-accent-primary/20 :bg-primary-dark text-text-primary font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(108,71,255,0.2)] _0_20px_rgba(139,92,246,0.2)]"
+ className={`w-full sm:max-w-[200px] py-3.5 sm:py-3 min-h-[48px] sm:min-h-0 rounded-xl bg-accent-primary hover:bg-accent-hover focus:ring-4 focus:ring-accent-primary/20 dark:bg-primary-dark text-text-primary font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${!isGeneratingToken ? 'btn-action-glow' : ''}`}
  >
  {isGeneratingToken ? 'Generating Token...' : 'Start Transfer'}
  </button>
@@ -89,6 +89,7 @@ export function SendPanel() {
  speed={progress.speed}
  transferred={progress.bytesTransferred}
  total={file?.size || 0}
+ connectionType={progress.connectionType}
  />
  <button
  onClick={cancel}

@@ -34,8 +34,8 @@
   --border-strong: rgba(255, 255, 255, 0.2);
   
   --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
+  --text-secondary: #d4d4d8;
+  --text-muted: #a1a1aa;
   --text-inverse: #09090b;
 
   --success-bg: rgba(16, 185, 129, 0.1);
@@ -116,4 +116,53 @@ body {
 .scroll-container {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* 
+ * Premium Glowing Button Effect
+ * Adaptive for Light and Dark modes
+ */
+.btn-action-glow {
+  animation: pulse-glow-light 2.5s ease-in-out infinite;
+  /* Smooth transition when disabled/enabled */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .btn-action-glow {
+  animation: pulse-glow-dark 2.5s ease-in-out infinite;
+}
+
+/* Light mode glow: softer, cleaner */
+@keyframes pulse-glow-light {
+  0%, 100% {
+    box-shadow: 0 0 10px 0px rgba(139, 92, 246, 0.2), 0 0 5px 0px rgba(139, 92, 246, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px rgba(139, 92, 246, 0.4), 0 0 10px 2px rgba(139, 92, 246, 0.2);
+  }
+}
+
+/* Dark mode glow: deeper, richer purple */
+@keyframes pulse-glow-dark {
+  0%, 100% {
+    box-shadow: 0 0 15px 2px rgba(139, 92, 246, 0.3), 0 0 8px 1px rgba(139, 92, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px 6px rgba(139, 92, 246, 0.6), 0 0 15px 4px rgba(139, 92, 246, 0.3);
+  }
+}
+
+/* Disable glow when button is disabled */
+.btn-action-glow:disabled {
+  animation: none !important;
+  box-shadow: none !important;
 }

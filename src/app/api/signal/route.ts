@@ -41,21 +41,27 @@ export async function POST(request: Request) {
  return NextResponse.json({ success: true })
  }
 
- if (type === 'answer') {
- // Receiver sending answer
- await sessionRef.child('receiver').update({
- answer: data,
- candidates: [],
- })
- await sessionRef.update({ status: 'connected' })
- } else if (type === 'ice') {
- // Add ICE candidate
- const candidatesRef = role === 'sender'
- ? sessionRef.child('sender/candidates')
- : sessionRef.child('receiver/candidates')
+    if (type === 'answer') {
+      // Receiver sending answer
+      await sessionRef.child('receiver').update({
+        answer: data,
+        candidates: [],
+      })
+      await sessionRef.update({ status: 'connected' })
+    } else if (type === 'cancel') {
+      // Out-Of-Band Cancellation
+      await sessionRef.update({ 
+        status: 'cancelled',
+        cancelRole: role 
+      })
+    } else if (type === 'ice') {
+      // Add ICE candidate
+      const candidatesRef = role === 'sender'
+        ? sessionRef.child('sender/candidates')
+        : sessionRef.child('receiver/candidates')
 
- await candidatesRef.push(data)
- }
+      await candidatesRef.push(data)
+    }
 
  return NextResponse.json({ success: true })
  } catch (error) {

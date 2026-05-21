@@ -1,9 +1,19 @@
+import { Metadata } from 'next';
 import { LegalPageLayout, LegalSection } from '../components';
 import { legalConfig } from '../config';
+import { APP_URLS } from '@/core/urls';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Privacy Policy | Sendme.alt',
   description: 'Strict Zero-Knowledge architecture and data handling practices for Sendme.alt.',
+  alternates: {
+    canonical: `${APP_URLS.BASE_URL}/legal/privacy`,
+  },
+  openGraph: {
+    title: 'Privacy Policy | Sendme.alt',
+    description: 'Strict Zero-Knowledge architecture and data handling practices for Sendme.alt.',
+    url: `${APP_URLS.BASE_URL}/legal/privacy`,
+  },
 }
 
 const SECTIONS = [

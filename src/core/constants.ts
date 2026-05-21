@@ -12,13 +12,13 @@ export const APP_CONFIG = {
  MAX_FILE_SIZE: parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE || '10737418240'), // 10GB default
  TOKEN_EXPIRY_MINUTES: parseInt(process.env.NEXT_PUBLIC_TOKEN_EXPIRY_MINUTES || '10'),
  // Adaptive chunk sizing (ThroughputController auto-tunes within these bounds)
- CHUNK_SIZE_INITIAL: 256 * 1024, // 256KB — start at SCTP max for fast ramp-up
+ CHUNK_SIZE_INITIAL: 64 * 1024, // 64KB — optimal for WebRTC SCTP
  CHUNK_SIZE_MIN: 16 * 1024, // 16KB — floor for very slow connections
- CHUNK_SIZE_MAX: 256 * 1024, // 256KB — SCTP ceiling
+ CHUNK_SIZE_MAX: 64 * 1024, // 64KB — optimal ceiling
  // Adaptive buffer threshold (auto-tuned by drain rate)
- BUFFER_THRESHOLD_INITIAL: 1 * 1024 * 1024, // 1MB — low start to minimize backpressure waits
- BUFFER_THRESHOLD_MIN: 256 * 1024, // 256KB — floor
- BUFFER_THRESHOLD_MAX: 16 * 1024 * 1024, // 16MB — ceiling
+ BUFFER_THRESHOLD_INITIAL: 4 * 1024 * 1024, // 4MB — enough to saturate initial connection
+ BUFFER_THRESHOLD_MIN: 512 * 1024, // 512KB — floor
+ BUFFER_THRESHOLD_MAX: 12 * 1024 * 1024, // 12MB — high ceiling for broadband max speed
  // Stall detection
  STALL_DETECT_MS: 3000, // 3s no drain → "Network slow" feedback
  STALL_FATAL_MS: 10000, // 10s no drain → recoverable error

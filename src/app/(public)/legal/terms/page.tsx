@@ -1,9 +1,19 @@
+import { Metadata } from 'next';
 import { LegalPageLayout, LegalSection } from '../components';
 import { legalConfig } from '../config';
+import { APP_URLS } from '@/core/urls';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Terms of Service | Sendme.alt',
   description: 'Strict Terms of Service and Limitation of Liability for Sendme.alt.',
+  alternates: {
+    canonical: `${APP_URLS.BASE_URL}/legal/terms`,
+  },
+  openGraph: {
+    title: 'Terms of Service | Sendme.alt',
+    description: 'Strict Terms of Service and Limitation of Liability for Sendme.alt.',
+    url: `${APP_URLS.BASE_URL}/legal/terms`,
+  },
 }
 
 const SECTIONS = [

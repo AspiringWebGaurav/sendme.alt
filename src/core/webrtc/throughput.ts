@@ -31,7 +31,9 @@ export class ThroughputController {
  this.chunksSinceLastTune++
  this.bytesInWindow += bytesSent
 
- if (this.chunksSinceLastTune >= APP_CONFIG.ADAPTIVE_WINDOW) {
+ const elapsed = Date.now() - this.windowStartTime
+ // Tune every 1000ms instead of every N chunks for more stable measurements
+ if (elapsed >= 1000) {
  this.tune()
  }
  }
@@ -84,26 +86,11 @@ export class ThroughputController {
  }
 
  /** Auto-tune chunk size and buffer threshold based on measured throughput */
- private tune() {
- const elapsed = (Date.now() - this.windowStartTime) / 1000
- if (elapsed <= 0) return
-
- const throughput = this.bytesInWindow / elapsed
-
- if (throughput > 5 * 1024 * 1024) {
- this.chunkSize = Math.min(APP_CONFIG.CHUNK_SIZE_MAX, this.chunkSize * 2)
- this.bufferThreshold = Math.min(APP_CONFIG.BUFFER_THRESHOLD_MAX, this.bufferThreshold * 2)
- this._statusMessage = ''
- } else if (throughput < 500 * 1024) {
- this.chunkSize = Math.max(APP_CONFIG.CHUNK_SIZE_MIN, Math.floor(this.chunkSize / 2))
- this.bufferThreshold = Math.max(APP_CONFIG.BUFFER_THRESHOLD_MIN, Math.floor(this.bufferThreshold / 2))
- this._statusMessage = 'Network slow — optimizing…'
- } else {
- this._statusMessage = ''
- }
-
- this.chunksSinceLastTune = 0
- this.bytesInWindow = 0
- this.windowStartTime = Date.now()
- }
+  public tune() {
+    // Note: Removed adaptive chunk sizing and buffer threshold tuning.
+    // WebRTC SCTP natively handles congestion control and sliding windows.
+    // Artificially scaling down chunk sizes down to 16KB was causing event-loop
+    // clamping (4ms minimum per tick), artificially capping transfers at ~4MB/s.
+    // We now rely on static 256KB chunks and 12MB buffer limits for maximum throughput.
+  }
 }

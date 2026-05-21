@@ -184,17 +184,33 @@ export function useReceive() {
  }
  }
  }
- } else if (message.type === 'expired') {
- // Passive signaling mode guard
- if (isTerminalRef.current || isPassiveModeRef.current || sseRef.current !== eventSource) {
- return
- }
- isTerminalRef.current = true
- addNotification('Signaling token expired.', 'warning')
- setError(ERROR_MESSAGES.TOKEN_EXPIRED)
- setSafeState('error')
- cleanup()
- }
+ } else if (message.type === 'cancel') {
+      // Out-Of-Band Cancellation received from peer
+      if (isTerminalRef.current) return
+      isTerminalRef.current = true
+
+      addNotification('Sender cancelled the transfer.', 'error')
+      try { connection.abortTransfer('Sender cancelled the transfer.') } catch (e) {}
+
+      cleanup()
+      setProgress(null)
+      setError(null)
+      setFileInfo(null)
+      setReceivedFileName('')
+      setReceivedBlob(null)
+      setToken('')
+      setSafeState('idle')
+    } else if (message.type === 'expired') {
+      // Passive signaling mode guard
+      if (isTerminalRef.current || isPassiveModeRef.current || sseRef.current !== eventSource) {
+        return
+      }
+      isTerminalRef.current = true
+      addNotification('Signaling token expired.', 'warning')
+      setError(ERROR_MESSAGES.TOKEN_EXPIRED)
+      setSafeState('error')
+      cleanup()
+    }
  }
 
  // Register channel open handler BEFORE creating the answer.
@@ -313,32 +329,41 @@ export function useReceive() {
  }
  }, [token, addNotification, cleanup])
 
- const cancel = useCallback(() => {
- // Determine if we are actively cancelling a mid-flight transfer to toast
- const currentState = stateRef.current
- const isMidFlight = currentState === 'transferring' || currentState === 'connecting'
+  const cancel = useCallback(() => {
+    // Determine if we are actively cancelling a mid-flight transfer to toast
+    const currentState = stateRef.current
+    const isMidFlight = currentState === 'transferring' || currentState === 'connecting'
 
- if (connectionRef.current && isMidFlight) {
- try {
- connectionRef.current.cancelTransfer()
- } catch { }
- addNotification('You cancelled the transfer.', 'info')
- }
+    if (connectionRef.current && isMidFlight) {
+      try {
+        connectionRef.current.cancelTransfer()
+      } catch { }
+      addNotification('You cancelled the transfer.', 'info')
+    }
 
- // Reset UI state atomically — progress first, then state
- setProgress(null)
- setError(null)
- setFileInfo(null)
- setReceivedFileName('')
- setReceivedBlob(null)
- setToken('')
+    // Out-Of-Band cancellation via Firebase
+    if (token) {
+      fetch('/api/signal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token.trim().toLowerCase(), type: 'cancel', role: 'receiver' })
+      }).catch(() => {})
+    }
 
- // Delay state reset to `idle` until after cancel message is sent + cleanup
- setTimeout(() => {
- cleanup()
- setSafeState('idle')
- }, 250)
- }, [cleanup, addNotification, setSafeState])
+    // Reset UI state atomically — progress first, then state
+    setProgress(null)
+    setError(null)
+    setFileInfo(null)
+    setReceivedFileName('')
+    setReceivedBlob(null)
+    setToken('')
+
+    // Delay state reset to `idle` until after cancel message is sent + cleanup
+    setTimeout(() => {
+      cleanup()
+      setSafeState('idle')
+    }, 1000)
+  }, [token, cleanup, addNotification, setSafeState])
 
  return {
  state,

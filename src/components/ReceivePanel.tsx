@@ -73,6 +73,7 @@ export function ReceivePanel() {
  speed={progress.speed}
  transferred={progress.bytesTransferred}
  total={fileInfo.size}
+ connectionType={progress.connectionType}
  />
  <button
  onClick={cancel}

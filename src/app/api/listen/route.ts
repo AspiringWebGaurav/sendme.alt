@@ -75,6 +75,17 @@ export async function GET(request: Request) {
  return
  }
 
+ // Check for Out-Of-Band Cancellation
+ if (session.status === 'cancelled') {
+ // Send cancellation event to the peer, noting who cancelled
+ controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'cancel', role: session.cancelRole })}\n\n`))
+ // Only one side needs to delete the session, but we can do it here safely since 
+ // Firebase remove() is idempotent.
+ sessionRef.remove()
+ cleanup()
+ return
+ }
+
  // Send update based on role
  if (role === 'sender') {
  // Sender needs answer and receiver's ICE candidates

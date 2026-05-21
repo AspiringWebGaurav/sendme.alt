@@ -252,26 +252,47 @@ export class P2PConnection {
 
  public isCancelled = false
 
- /**
- * Cancel current transfer and notify peer
- */
- cancelTransfer() {
- this.isCancelled = true
- if (this.channel && this.channel.readyState === 'open') {
- try {
- // Send structured cancel with reason so peer knows it was intentional
- this.channel.send(JSON.stringify({ type: 'cancel', reason: 'user' }))
- } catch {
- // Ignore send error if channel is closing
- }
- this.channel.close()
- }
- setTimeout(() => {
- this.pc.close()
- this.iceCandidateBuffer = []
- this.isRemoteDescriptionSet = false
- }, 100)
- }
+  /**
+   * Cancel current transfer and notify peer
+   */
+  cancelTransfer() {
+    this.isCancelled = true
+    this.iceCandidateBuffer = []
+    
+    if (this.channel && this.channel.readyState === 'open') {
+      try {
+        // Send structured cancel with reason so peer knows it was intentional
+        // Note: if buffer is full, this may be delayed. We rely on OOB Firebase signaling for instant kill.
+        this.channel.send(JSON.stringify({ type: 'cancel', reason: 'user' }))
+      } catch {
+        // Ignore send error if channel is closing
+      }
+      this.channel.close()
+    }
+    setTimeout(() => {
+      this.pc.close()
+      this.isRemoteDescriptionSet = false
+    }, 100)
+  }
+
+  /**
+   * Instantly abort transfer due to OOB signal or fatal error
+   */
+  abortTransfer(reason: string) {
+    this.isCancelled = true
+    this.peerCancelReceived = true
+    this.iceCandidateBuffer = []
+    
+    if (this.channel) {
+      this.channel.onmessage = null // Stop processing chunks
+      try { this.channel.close() } catch {}
+    }
+    
+    setTimeout(() => {
+      this.pc.close()
+      this.isRemoteDescriptionSet = false
+    }, 10)
+  }
 
  /**
  * Send file over data channel
@@ -315,6 +336,9 @@ export class P2PConnection {
  let speedStartTime = 0
  let lastProgressTime = 0
  let offset = 0
+ // Connection diagnostics
+ let connectionType: 'Direct P2P' | 'STUN' | 'TURN' | undefined
+ this.getConnectionDiagnostics().then(type => { connectionType = type })
 
  // Adaptive send loop — chunk size changes dynamically
  while (offset < file.size) {
@@ -329,74 +353,86 @@ export class P2PConnection {
  const chunkSize = controller.currentChunkSize
  const bufferThreshold = controller.currentBufferThreshold
 
- // Configure event-driven backpressure with adaptive threshold
- this.channel.bufferedAmountLowThreshold = Math.floor(chunkSize * 4)
+        // Configure event-driven backpressure with adaptive threshold
+        const newLowThreshold = Math.max(Math.floor(chunkSize * 4), Math.floor(bufferThreshold / 2))
+        if (this.channel.bufferedAmountLowThreshold !== newLowThreshold) {
+          this.channel.bufferedAmountLowThreshold = newLowThreshold
+        }
+        // Event-driven backpressure: wait for buffer to drain
+        if (this.channel.bufferedAmount > bufferThreshold) {
+          await new Promise<void>((resolve, reject) => {
+            const stallCheckInterval = setInterval(() => {
+              if (!this.channel || this.isCancelled || this.channel.readyState !== 'open') {
+                clearInterval(stallCheckInterval)
+                reject(new Error('Transfer cancelled or connection lost'))
+                return
+              }
+              const stallResult = controller.checkStall(this.channel.bufferedAmount)
+              if (stallResult === 'fatal') {
+                clearInterval(stallCheckInterval)
+                reject(new Error('Transfer stalled — connection lost. Try again on a stable network.'))
+              }
+            }, 1000)
 
- // Event-driven backpressure: wait for buffer to drain
- if (this.channel.bufferedAmount > bufferThreshold) {
- // Check for stall
- const stallResult = controller.checkStall(this.channel.bufferedAmount)
- if (stallResult === 'fatal') {
- throw new Error('Transfer stalled — connection lost. Try again on a stable network.')
- }
+            this.channel!.onbufferedamountlow = () => {
+              clearInterval(stallCheckInterval)
+              if (this.channel) {
+                this.channel.onbufferedamountlow = null
+                controller.checkStall(this.channel.bufferedAmount) // clear stall
+              }
+              resolve()
+            }
+          })
+        }
 
- await new Promise<void>((resolve, reject) => {
- const fallback = setTimeout(() => {
- if (this.channel) this.channel.onbufferedamountlow = null
- if (this.isCancelled) {
- reject(new Error('Transfer cancelled'))
- } else {
- resolve()
- }
- }, 50)
- this.channel!.onbufferedamountlow = () => {
- clearTimeout(fallback)
- if (this.channel) this.channel.onbufferedamountlow = null
- resolve()
- }
- })
- } else {
- // Buffer is draining — clear stall
- controller.checkStall(this.channel.bufferedAmount)
- }
+        // Read a larger block to minimize await/event-loop overhead
+        const readBlockSize = 4 * 1024 * 1024 // 4MB reads
+        const blockEnd = Math.min(offset + readBlockSize, file.size)
+        const blockBlob = file.slice(offset, blockEnd)
+        const blockBuffer = await blockBlob.arrayBuffer()
 
- // Read chunk directly from file Blob
- const end = Math.min(offset + chunkSize, file.size)
- const blobChunk = file.slice(offset, end)
- const arrayBuffer = await blobChunk.arrayBuffer()
+        // Synchronously slice and send SCTP chunks
+        let blockOffset = 0
+        while (blockOffset < blockBuffer.byteLength) {
+          const chunkEnd = Math.min(blockOffset + chunkSize, blockBuffer.byteLength)
+          const arrayBuffer = blockBuffer.slice(blockOffset, chunkEnd)
 
- // Send with retry on buffer-full (Chromium throws TypeError if SCTP overflows)
- let sendAttempts = 0
- while (true) {
- try {
- this.channel.send(arrayBuffer)
- break
- } catch {
- sendAttempts++
- if (sendAttempts > 50 || this.isCancelled || this.channel.readyState !== 'open') {
- throw new Error('Transfer failed — send buffer overflow. Try a smaller file or better network.')
- }
- await new Promise<void>(resolve => {
- const t = setTimeout(resolve, 50)
- if (this.channel) {
- this.channel.onbufferedamountlow = () => {
- clearTimeout(t)
- if (this.channel) this.channel.onbufferedamountlow = null
- resolve()
- }
- }
- })
- }
- }
+          // Send with retry on buffer-full (Chromium throws TypeError if SCTP overflows)
+          let sendAttempts = 0
+          while (true) {
+            try {
+              this.channel.send(arrayBuffer)
+              break
+            } catch (e) {
+              console.error('[P2P] Send failed:', e)
+              sendAttempts++
+              if (sendAttempts > 50 || this.isCancelled || this.channel.readyState !== 'open') {
+                throw new Error('Transfer failed — send buffer overflow. Try a smaller file or better network.')
+              }
+              await new Promise<void>(resolve => {
+                const t = setTimeout(resolve, 50)
+                if (this.channel) {
+                  this.channel.onbufferedamountlow = () => {
+                    clearTimeout(t)
+                    if (this.channel) this.channel.onbufferedamountlow = null
+                    resolve()
+                  }
+                }
+              })
+            }
+          }
 
- // Record chunk for adaptive tuning
- controller.recordChunk(arrayBuffer.byteLength)
+          // Record chunk for adaptive tuning
+          controller.recordChunk(arrayBuffer.byteLength)
 
- // Start speed timer after first chunk is sent
- if (speedStartTime === 0) speedStartTime = Date.now()
+          // Start speed timer after first chunk is sent
+          if (speedStartTime === 0) speedStartTime = Date.now()
 
- offset += chunkSize
- const bytesTransferred = Math.min(offset, file.size)
+          blockOffset += chunkSize
+        }
+
+        offset += blockBuffer.byteLength
+        const bytesTransferred = Math.min(offset, file.size)
 
  // Throttle progress updates
  const now = Date.now()
@@ -415,6 +451,7 @@ export class P2PConnection {
  speed,
  eta,
  statusMessage: controller.statusMessage || undefined,
+ connectionType,
  })
  }
  }
@@ -450,7 +487,10 @@ export class P2PConnection {
  this.isCancelled = false
 
  return new Promise((resolve, reject) => {
- const chunks: ArrayBuffer[] = []
+ const blobs: Blob[] = []
+ let currentChunks: ArrayBuffer[] = []
+ let currentChunksSize = 0
+ const FLUSH_THRESHOLD = 50 * 1024 * 1024 // 50MB
  let metadata: { name: string; size: number; type: string; totalChunks: number } | null = null
  let bytesReceived = 0
  const startTime = Date.now()
@@ -461,6 +501,9 @@ export class P2PConnection {
 
  let isComplete = false
  let timeoutId: NodeJS.Timeout | null = null
+ let connectionType: 'Direct P2P' | 'STUN' | 'TURN' | undefined
+      
+ this.getConnectionDiagnostics().then(type => { connectionType = type })
 
  // Set timeout
  timeoutId = setTimeout(() => {
@@ -477,7 +520,13 @@ export class P2PConnection {
  if (isComplete || this.isCancelled) return
  isComplete = true
 
- const blob = new Blob(chunks, { type: metadata?.type || 'application/octet-stream' })
+ if (currentChunks.length > 0) {
+ blobs.push(new Blob(currentChunks, { type: metadata?.type || 'application/octet-stream' }))
+ currentChunks = []
+ currentChunksSize = 0
+ }
+      
+ const blob = new Blob(blobs, { type: metadata?.type || 'application/octet-stream' })
 
  if (metadata && blob.size !== metadata.size) {
  console.warn(`[P2P] Size mismatch. Expected: ${metadata.size}, Received: ${blob.size}`)
@@ -522,8 +571,15 @@ export class P2PConnection {
  // Binary data (file chunk)
  if (isComplete || this.isCancelled) return
 
- chunks.push(event.data)
+ currentChunks.push(event.data)
+ currentChunksSize += event.data.byteLength
  bytesReceived += event.data.byteLength
+
+ if (currentChunksSize >= FLUSH_THRESHOLD) {
+ blobs.push(new Blob(currentChunks, { type: metadata?.type || 'application/octet-stream' }))
+ currentChunks = []
+ currentChunksSize = 0
+ }
 
  if (metadata) {
  // Throttle progress updates to 10/sec
@@ -554,6 +610,7 @@ export class P2PConnection {
  percentage: Math.min((bytesReceived / metadata.size) * 100, 100),
  speed,
  eta,
+ connectionType,
  })
  }
 
@@ -637,5 +694,37 @@ export class P2PConnection {
  */
  getConnectionState(): RTCPeerConnectionState {
  return this.pc.connectionState
+ }
+
+ /**
+ * Determine connection routing type based on active ICE candidate pair
+ */
+ async getConnectionDiagnostics(): Promise<'Direct P2P' | 'STUN' | 'TURN' | undefined> {
+ if (!this.pc) return undefined
+ try {
+ const stats = await this.pc.getStats()
+ let activeCandidatePair: any = null
+
+ stats.forEach(report => {
+ if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+ // If there are multiple succeeded pairs, use the nominated one or highest priority
+ if (!activeCandidatePair || report.nominated) {
+ activeCandidatePair = report
+ }
+ }
+ })
+
+ if (activeCandidatePair) {
+ const remoteCandidate = stats.get(activeCandidatePair.remoteCandidateId)
+ if (remoteCandidate) {
+ if (remoteCandidate.candidateType === 'relay') return 'TURN'
+ if (remoteCandidate.candidateType === 'srflx') return 'STUN'
+ if (remoteCandidate.candidateType === 'host' || remoteCandidate.candidateType === 'prflx') return 'Direct P2P'
+ }
+ }
+ } catch {
+ // Ignore errors
+ }
+ return undefined
  }
 }
