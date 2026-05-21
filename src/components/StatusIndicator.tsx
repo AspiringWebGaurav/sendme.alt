@@ -79,10 +79,10 @@ export function StatusIndicator({ mode, state }: StatusIndicatorProps) {
  <AnimatePresence mode="wait">
   <motion.div
   key={state}
-  initial={{ opacity: 0, y: -4 }}
-  animate={{ opacity: 1, y: 0 }}
-  exit={{ opacity: 0, y: 4 }}
-  transition={{ duration: 0.15 }}
+  initial={{ opacity: 0, scale: 0.9, y: -8 }}
+  animate={{ opacity: 1, scale: 1, y: 0 }}
+  exit={{ opacity: 0, scale: 0.9, y: 4 }}
+  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
   className={`flex items-center gap-2 px-3 py-1.5 rounded-full border backdrop-blur-md shadow-sm ${config.bgColor} ${config.borderColor} max-w-[calc(100vw-8rem)] sm:max-w-none shrink`}
   >
   <div className={`relative shrink-0 ${config.color}`}>

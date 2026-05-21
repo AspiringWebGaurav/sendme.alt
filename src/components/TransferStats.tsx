@@ -7,14 +7,15 @@ interface TransferStatsProps {
   connectionType?: 'Direct P2P' | 'STUN' | 'TURN'
 }
 
+
 export function TransferStats({ speed, transferred, total, connectionType }: TransferStatsProps) {
   const percent = total > 0 ? (transferred / total) * 100 : 0
 
   return (
     <div className="flex items-center justify-between text-xs text-text-secondary font-mono w-full px-1">
       <div className="flex flex-col">
-        <span>{formatBytes(transferred)} / {formatBytes(total)}</span>
-        <span className="text-text-muted mt-0.5">{percent.toFixed(1)}%</span>
+        <span className="font-semibold text-text-primary">{formatBytes(transferred)} / {formatBytes(total)}</span>
+        <span className="text-[11px] text-text-muted mt-0.5">{percent.toFixed(1)}%</span>
       </div>
       
       {connectionType && (
@@ -30,8 +31,8 @@ export function TransferStats({ speed, transferred, total, connectionType }: Tra
       )}
 
       <div className="flex flex-col text-right">
-        <span className="text-accent">{formatBytes(speed)}/s</span>
-        <span className="text-text-muted mt-0.5">Speed</span>
+        <span className="font-semibold text-accent">{formatBytes(speed)}/s</span>
+        <span className="text-[11px] text-text-muted mt-0.5">Speed</span>
       </div>
     </div>
   )

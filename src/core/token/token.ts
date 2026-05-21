@@ -61,13 +61,16 @@ const WORDS = [
 ]
 
 /**
- * Generate a single-word token by combining two words
- * Example: "oceanriver", "happycloud", "quietmoon"
+ * Generate a 4-letter token
+ * Example: "abcd"
  */
 export function generateToken(): string {
- const word1 = WORDS[Math.floor(Math.random() * WORDS.length)]
- const word2 = WORDS[Math.floor(Math.random() * WORDS.length)]
- return `${word1}${word2}`
+ const chars = 'abcdefghijklmnopqrstuvwxyz'
+ let token = ''
+ for (let i = 0; i < 4; i++) {
+  token += chars.charAt(Math.floor(Math.random() * chars.length))
+ }
+ return token
 }
 
 /**
@@ -82,8 +85,7 @@ export function tokenToFirebaseKey(token: string): string {
  * Validate token format
  */
 export function isValidToken(token: string): boolean {
- // Token should be 6-30 characters, lowercase letters only (two words combined)
- // Minimum: 3+3=6 chars, Maximum: ~15+15=30 chars
+ // Token should be exactly 4 lowercase letters
  const normalized = token.toLowerCase().trim()
- return /^[a-z]{6,30}$/.test(normalized)
+ return /^[a-z]{4}$/.test(normalized)
 }

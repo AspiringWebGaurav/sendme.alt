@@ -20,11 +20,11 @@ export function TokenDisplay({ token, isGenerating, onCopy, copySuccess }: Token
  return (
  <div className="w-full flex flex-col items-center gap-3 sm:gap-4">
  <p className="text-xs sm:text-sm font-medium text-text-secondary">Share this code with receiver</p>
- <div className="w-full flex items-center justify-between bg-bg-surface border border-primary/30 p-2 pl-4 sm:pl-6 rounded-2xl shadow-[0_0_20px_rgba(139,92,246,0.1)]">
- <span className="text-xl sm:text-2xl lg:text-3xl font-mono tracking-widest text-text-primary font-medium">{token}</span>
+ <div className="w-full flex items-center justify-between glass-panel border border-primary/30 p-2 pl-4 sm:pl-6 rounded-2xl shadow-[0_0_20px_rgba(139,92,246,0.1)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(139,92,246,0.2)]">
+ <span className="text-3xl sm:text-4xl font-mono tracking-[0.25em] text-text-primary font-medium uppercase ml-2">{token}</span>
  <button
  onClick={onCopy}
- className={`p-3 sm:p-4 rounded-xl transition-all shrink-0 ${copySuccess
+ className={`p-3 sm:p-4 rounded-xl transition-all duration-300 hover-lift shrink-0 ${copySuccess
  ? 'bg-success/20 text-success'
  : 'bg-primary hover:bg-primary-dark text-text-primary'
  }`}

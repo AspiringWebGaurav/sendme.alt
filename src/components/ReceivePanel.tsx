@@ -1,5 +1,7 @@
 'use client'
 
+import { motion } from 'framer-motion'
+
 import { useReceive } from '@/hooks/useReceive'
 import { TokenInput } from './TokenInput'
 import { TransferProgress } from './TransferProgress'
@@ -37,6 +39,16 @@ export function ReceivePanel() {
 
  <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center gap-4 sm:gap-8 mt-10 sm:mt-8">
  {state === 'idle' || state === 'error' ? (
+ <motion.div
+ className="w-full"
+ initial="hidden"
+ animate="visible"
+ variants={{
+ hidden: { opacity: 0 },
+ visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
+ }}
+ >
+ <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } } }}>
  <TokenInput
  token={token}
  onChange={setToken}
@@ -44,6 +56,8 @@ export function ReceivePanel() {
  error={error}
  isLoading={isConnecting}
  />
+ </motion.div>
+ </motion.div>
  ) : state === 'complete' ? (
  <SuccessView
  mode="receive"
@@ -55,12 +69,12 @@ export function ReceivePanel() {
  ) : (
  <div className="w-full flex flex-col items-center gap-4 sm:gap-6">
  {fileInfo && (
- <div className="w-full bg-bg-surface/50 border border-border-subtle p-3 sm:p-4 rounded-xl flex items-center gap-3 sm:gap-4 shadow-sm">
+ <div className="w-full glass-panel p-3 sm:p-4 rounded-xl flex items-center gap-3 sm:gap-4 shadow-sm hover-lift cursor-default animate-fade-in">
  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-accent/20 flex items-center justify-center text-accent shrink-0">
  📄
  </div>
- <div className="overflow-hidden min-w-0">
- <p className="text-sm font-medium truncate">{receivedFileName || fileInfo.name}</p>
+ <div className="overflow-hidden min-w-0 flex-1">
+ <p className="text-sm font-medium truncate" title={receivedFileName || fileInfo.name}>{receivedFileName || fileInfo.name}</p>
  <p className="text-xs text-text-secondary">{(fileInfo.size / 1024 / 1024).toFixed(2)} MB</p>
  </div>
  </div>

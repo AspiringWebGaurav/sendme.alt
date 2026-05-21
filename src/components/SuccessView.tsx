@@ -61,7 +61,7 @@ export function SuccessView({ mode, fileName, fileSize, onReset, receivedBlob }:
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.5 }}
  onClick={onReset}
- className="w-full sm:w-auto px-8 py-3.5 bg-bg-surface hover:bg-bg-elevated text-text-primary rounded-full font-medium transition-colors shadow-sm relative z-10"
+ className="w-full sm:w-auto px-8 py-3.5 bg-bg-surface hover:bg-bg-elevated text-text-primary rounded-full font-medium transition-all duration-300 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md relative z-10"
  >
  {isSend ? 'Send Another File' : 'Receive Another File'}
  </motion.button>
@@ -72,7 +72,7 @@ export function SuccessView({ mode, fileName, fileSize, onReset, receivedBlob }:
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.35 }}
  onClick={handleSave}
- className="w-full sm:w-auto px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-text-primary rounded-full font-medium transition-colors shadow-sm relative z-10 mb-3"
+ className="w-full sm:w-auto px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-text-primary rounded-full font-medium transition-all duration-300 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md relative z-10 mb-3"
  >
  Save File
  </motion.button>

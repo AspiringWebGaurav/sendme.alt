@@ -17,15 +17,15 @@ export function MainEngine({ initialMode = 'send' }: { initialMode?: AppMode }) 
  <ModeToggle mode={mode} onChange={setMode} />
  </div>
 
- <div className="relative w-full flex-1 min-h-0 rounded-2xl bg-bg-surface bg-bg-surface/50 border border-border-subtle overflow-hidden backdrop-blur-xl shadow-light-card ">
+ <div className="relative w-full flex-1 min-h-0 rounded-2xl glass-panel overflow-hidden shadow-light-card dark:shadow-dark-card transition-shadow duration-300">
  <AnimatePresence mode="wait">
  {mode === 'send' ? (
  <motion.div
  key="send"
- initial={{ opacity: 0, scale: 0.98 }}
- animate={{ opacity: 1, scale: 1 }}
- exit={{ opacity: 0, scale: 1.02 }}
- transition={{ duration: 0.2, ease: 'easeOut' }}
+ initial={{ opacity: 0, scale: 0.95, y: 10 }}
+ animate={{ opacity: 1, scale: 1, y: 0 }}
+ exit={{ opacity: 0, scale: 1.02, y: -10 }}
+ transition={{ type: 'spring', stiffness: 300, damping: 25 }}
  className="absolute inset-0"
  >
  <SendPanel />
@@ -33,10 +33,10 @@ export function MainEngine({ initialMode = 'send' }: { initialMode?: AppMode }) 
  ) : (
  <motion.div
  key="receive"
- initial={{ opacity: 0, scale: 0.98 }}
- animate={{ opacity: 1, scale: 1 }}
- exit={{ opacity: 0, scale: 1.02 }}
- transition={{ duration: 0.2, ease: 'easeOut' }}
+ initial={{ opacity: 0, scale: 0.95, y: -10 }}
+ animate={{ opacity: 1, scale: 1, y: 0 }}
+ exit={{ opacity: 0, scale: 1.02, y: 10 }}
+ transition={{ type: 'spring', stiffness: 300, damping: 25 }}
  className="absolute inset-0"
  >
  <ReceivePanel />

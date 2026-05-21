@@ -22,9 +22,9 @@ export function TokenInput({ token, onChange, onSubmit, error, isLoading }: Toke
  type="text"
  value={token}
  onChange={(e) => onChange(e.target.value.toLowerCase())}
- placeholder="E.g. happycloud"
- className="w-full bg-bg-surface border border-border-subtle rounded-2xl py-3 sm:py-4 pl-4 sm:pl-6 pr-14 sm:pr-16 text-xl sm:text-2xl font-mono tracking-widest text-center text-text-primary focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all shadow-sm placeholder:text-text-secondary"
- maxLength={30}
+ placeholder="E.g. abcd"
+ className="w-full bg-bg-surface border border-border-subtle rounded-2xl py-3 sm:py-4 pl-4 sm:pl-6 pr-14 sm:pr-16 text-3xl sm:text-4xl font-mono tracking-[0.25em] text-center text-text-primary focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 focus:scale-[1.01] transition-all duration-300 shadow-sm placeholder:text-text-secondary/40 focus:shadow-[0_0_20px_rgba(6,182,212,0.15)] uppercase"
+ maxLength={4}
  onKeyDown={(e) => {
  if (e.key === 'Enter' && token.trim().length > 0) {
  onSubmit()

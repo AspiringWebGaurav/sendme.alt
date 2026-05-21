@@ -21,14 +21,14 @@ export function Navbar({ variant = "app" }: NavbarProps) {
  <div className="flex items-center justify-end">
  {variant === "landing" ? (
  <div className="flex items-center gap-3 sm:gap-4">
- <a href="https://github.com/AspiringWebGaurav" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-text-primary transition-colors" title="GitHub">
+ <a href="https://github.com/AspiringWebGaurav" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-text-primary transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-95 duration-200" title="GitHub">
  <Github className="w-4 h-4" />
  </a>
- <a href="https://www.gauravpatil.online" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-text-primary transition-colors" title="Portfolio">
+ <a href="https://www.gauravpatil.online" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-text-primary transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-95 duration-200" title="Portfolio">
  <Globe className="w-4 h-4" />
  </a>
- <Link href="/transfer?mode=receive" className="hidden sm:inline-block px-5 py-2 sm:py-2.5 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">Receive</Link>
- <Link href="/transfer?mode=send" className="px-5 py-2 sm:py-2.5 text-sm font-medium bg-bg-surface text-text-primary border border-border-strong hover:bg-bg-elevated rounded-full transition-colors hidden sm:block">Start Sending</Link>
+ <Link href="/transfer?mode=receive" className="hidden sm:inline-block px-5 py-2 sm:py-2.5 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-elevated rounded-full transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-95 duration-200">Receive</Link>
+ <Link href="/transfer?mode=send" className="px-5 py-2 sm:py-2.5 text-sm font-medium bg-bg-surface text-text-primary border border-border-strong hover:bg-bg-elevated hover:shadow-md rounded-full transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-95 duration-200 hidden sm:block">Start Sending</Link>
  <div className="h-5 w-px bg-border-strong hidden sm:block" />
  <ThemeToggle />
  </div>

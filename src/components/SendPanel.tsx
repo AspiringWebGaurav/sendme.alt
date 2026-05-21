@@ -1,5 +1,7 @@
 'use client'
 
+import { motion } from 'framer-motion'
+
 import { useSend } from '@/hooks/useSend'
 import { DropZone } from './DropZone'
 import { TokenDisplay } from './TokenDisplay'
@@ -37,23 +39,35 @@ export function SendPanel() {
 
  <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center gap-4 sm:gap-8 mt-10 sm:mt-8">
  {state === 'idle' || state === 'error' ? (
- <div className="w-full flex flex-col items-center gap-4 sm:gap-6">
+ <motion.div 
+ className="w-full flex flex-col items-center gap-4 sm:gap-6"
+ initial="hidden"
+ animate="visible"
+ variants={{
+ hidden: { opacity: 0 },
+ visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
+ }}
+ >
+ <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } } }} className="w-full">
  <DropZone
  file={file}
  onFileSelect={selectFile}
  onFileRemove={removeFile}
  error={error}
  />
+ </motion.div>
  {file && (
+ <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } } }} className="w-full flex justify-center">
  <button
  onClick={startSending}
  disabled={isGeneratingToken}
- className={`w-full sm:max-w-[200px] py-3.5 sm:py-3 min-h-[48px] sm:min-h-0 rounded-xl bg-accent-primary hover:bg-accent-hover focus:ring-4 focus:ring-accent-primary/20 dark:bg-primary-dark text-text-primary font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${!isGeneratingToken ? 'btn-action-glow' : ''}`}
+ className={`w-full sm:max-w-[200px] py-3.5 sm:py-3 min-h-[48px] sm:min-h-0 rounded-xl bg-accent-primary hover:bg-accent-hover focus:ring-4 focus:ring-accent-primary/20 dark:bg-primary-dark text-text-primary font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-none ${!isGeneratingToken ? 'btn-action-glow' : ''}`}
  >
  {isGeneratingToken ? 'Generating Token...' : 'Start Transfer'}
  </button>
+ </motion.div>
  )}
- </div>
+ </motion.div>
  ) : state === 'complete' ? (
  <SuccessView
  mode="send"
@@ -63,12 +77,12 @@ export function SendPanel() {
  />
  ) : (
  <div className="w-full flex flex-col items-center gap-4 sm:gap-6">
- <div className="w-full bg-bg-surface bg-bg-surface/50 border border-border-subtle p-3 sm:p-4 rounded-xl flex items-center gap-3 sm:gap-4 shadow-sm">
+ <div className="w-full glass-panel p-3 sm:p-4 rounded-xl flex items-center gap-3 sm:gap-4 shadow-sm hover-lift cursor-default animate-fade-in">
  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/20 flex items-center justify-center text-primary shrink-0">
  📄
  </div>
- <div className="overflow-hidden min-w-0">
- <p className="text-[15px] font-medium text-text-primary truncate">{file?.name}</p>
+ <div className="overflow-hidden min-w-0 flex-1">
+ <p className="text-[15px] font-medium text-text-primary truncate" title={file?.name}>{file?.name}</p>
  <p className="text-[13px] text-text-muted text-text-secondary">{file ? (file.size / 1024 / 1024).toFixed(2) : 0} MB</p>
  </div>
  </div>
