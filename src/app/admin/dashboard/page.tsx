@@ -21,12 +21,13 @@ import {
   Sun,
   Moon,
   Copy,
-  Settings
+  Settings,
+  MessageSquare
 } from 'lucide-react';
 
 const ADMIN_EMAIL = 'gauravpatil9262@gmail.com';
 
-type Tab = 'stats' | 'access' | 'broadcast';
+type Tab = 'stats' | 'access' | 'broadcast' | 'appeals';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -46,6 +47,7 @@ export default function AdminDashboard() {
   // Stats State
   const [stats, setStats] = useState({ total: 0, win11: 0, win10: 0, active: 0, banned: 0, hold: 0 });
   const [nodesList, setNodesList] = useState<any[]>([]);
+  const [appealsList, setAppealsList] = useState<any[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -67,6 +69,26 @@ export default function AdminDashboard() {
     const unsub = onValue(sysRef, (snapshot) => {
       if (snapshot.exists()) {
         setBroadcastData(snapshot.val());
+      }
+    });
+    return () => unsub();
+  }, [isLoading]);
+
+  // Load Appeals
+  useEffect(() => {
+    if (isLoading) return;
+    const appealsRef = ref(database, 'appeals');
+    const unsub = onValue(appealsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const list: any[] = [];
+        Object.entries(snapshot.val()).forEach(([hwid, appeal]: [string, any]) => {
+          if (appeal.status === 'pending') {
+            list.push({ hwid, ...appeal });
+          }
+        });
+        setAppealsList(list.sort((a, b) => b.timestamp - a.timestamp));
+      } else {
+        setAppealsList([]);
       }
     });
     return () => unsub();
@@ -164,6 +186,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleResolveAppeal = async (hwid: string, action: 'unban' | 'reject') => {
+    try {
+      if (action === 'unban') {
+        await handleUpdateNodeStatus('active', hwid);
+      }
+      await set(ref(database, `appeals/${hwid}/status`), action === 'unban' ? 'approved' : 'rejected');
+      setUpdateStatus(`Appeal for ${hwid.substring(0, 6)}... ${action === 'unban' ? 'APPROVED' : 'REJECTED'}`);
+      setTimeout(() => setUpdateStatus(''), 3000);
+    } catch (e) {
+      console.error(e);
+      setUpdateStatus('Error resolving appeal');
+    }
+  };
+
   const handleLogout = async () => {
     await auth.signOut();
     router.push('/admin');
@@ -222,6 +258,19 @@ export default function AdminDashboard() {
             title="System Broadcast"
           >
             <Radio className="w-5 h-5 md:w-4 md:h-4 shrink-0" /> <span className="hidden md:inline">System Broadcast</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('appeals')}
+            className={`w-full flex items-center justify-center md:justify-start gap-3 p-3 md:px-4 md:py-3 rounded-md text-sm transition-all ${activeTab === 'appeals' ? 'bg-bg-elevated text-text-primary border border-border-subtle shadow-sm' : 'text-text-muted hover:bg-bg-elevated/50 hover:text-text-primary'}`}
+            title="Ban Appeals"
+          >
+            <MessageSquare className="w-5 h-5 md:w-4 md:h-4 shrink-0" /> 
+            <span className="hidden md:inline flex items-center">
+              Ban Appeals
+              {appealsList.length > 0 && (
+                <span className="ml-2 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full">{appealsList.length}</span>
+              )}
+            </span>
           </button>
         </div>
 
@@ -538,6 +587,62 @@ export default function AdminDashboard() {
                 </div>
 
               </div>
+            </div>
+          )}
+
+          {/* TAB 4: APPEALS */}
+          {activeTab === 'appeals' && (
+            <div className="max-w-4xl mx-auto animate-in fade-in duration-300">
+              <h2 className="text-xl font-bold mb-6 pb-2 border-b border-border-subtle flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-primary" /> Ban Appeals
+              </h2>
+              
+              {updateStatus && (
+                <div className="mb-6 p-3 bg-primary/10 text-primary border border-primary/20 rounded text-sm text-center font-medium animate-fade-in">
+                  {updateStatus}
+                </div>
+              )}
+
+              {appealsList.length === 0 ? (
+                <div className="glass-panel p-12 text-center rounded-lg border border-border-subtle text-text-muted">
+                  <CheckCircle2 className="w-12 h-12 mx-auto mb-4 opacity-50 text-success-text" />
+                  <p className="text-lg font-medium text-text-primary">All caught up!</p>
+                  <p className="text-sm mt-2">There are no pending ban appeals to review.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {appealsList.map((appeal) => (
+                    <div key={appeal.hwid} className="glass-panel p-6 rounded-lg border border-border-subtle">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <div className="text-xs text-text-muted font-semibold uppercase tracking-wider mb-1">Hardware ID</div>
+                          <code className="text-sm bg-bg-surface px-2 py-1 rounded border border-border-subtle">{appeal.hwid}</code>
+                        </div>
+                        <div className="text-xs text-text-muted">
+                          {new Date(appeal.timestamp).toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="bg-bg-surface/50 p-4 rounded-md border border-border-subtle mb-6">
+                        <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">{appeal.message}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => handleResolveAppeal(appeal.hwid, 'unban')}
+                          className="px-4 py-2 bg-success-bg text-success-text border border-success-text/30 rounded hover:bg-success-text/20 transition-colors flex items-center gap-2 font-medium text-sm shadow-sm"
+                        >
+                          <CheckCircle2 className="w-4 h-4" /> Approve & Unban
+                        </button>
+                        <button 
+                          onClick={() => handleResolveAppeal(appeal.hwid, 'reject')}
+                          className="px-4 py-2 bg-bg-surface text-text-muted border border-border-strong rounded hover:bg-error-bg hover:text-error-text transition-colors flex items-center gap-2 font-medium text-sm shadow-sm"
+                        >
+                          <Ban className="w-4 h-4" /> Reject Appeal
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
