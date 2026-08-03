@@ -128,17 +128,23 @@ export default function AdminDashboard() {
     alert('Copied to clipboard!');
   };
 
-  const handleUpdateNodeStatus = async (status: string) => {
-    if (!hwidSearch.trim()) return;
+  const handleUpdateNodeStatus = async (status: string, targetHwid?: string) => {
+    const hwidToUpdate = targetHwid || hwidSearch;
+    if (!hwidToUpdate.trim()) return;
     try {
-      const nodeRef = ref(database, `nodes/${hwidSearch}`);
+      const nodeRef = ref(database, `nodes/${hwidToUpdate}`);
+      // Find the node data to preserve other fields (like OS)
+      const existingNode = nodesList.find(n => n.hwid === hwidToUpdate) || currentNodeState;
       await set(nodeRef, {
-        ...currentNodeState,
+        ...existingNode,
         status,
         updatedAt: Date.now()
       });
-      setCurrentNodeState(prev => prev ? { ...prev, status } : { status });
-      setUpdateStatus(`Successfully set to ${status.toUpperCase()}`);
+      // If we are currently viewing this node in the panel, update it there too
+      if (hwidToUpdate === hwidSearch) {
+        setCurrentNodeState(prev => prev ? { ...prev, status } : { status });
+      }
+      setUpdateStatus(`Successfully set ${hwidToUpdate.substring(0, 6)}... to ${status.toUpperCase()}`);
       setTimeout(() => setUpdateStatus(''), 3000);
     } catch (e) {
       console.error(e);
@@ -404,6 +410,76 @@ export default function AdminDashboard() {
                   {updateStatus}
                 </div>
               )}
+
+              <div className="mt-10">
+                <h3 className="text-lg font-semibold mb-4 text-text-secondary border-b border-border-subtle pb-2">Live Directory & Quick Actions</h3>
+                <div className="glass-panel rounded-lg overflow-hidden border border-border-subtle">
+                  <div className="max-h-[500px] overflow-y-auto scrollbar-hide">
+                    <table className="w-full text-sm text-left">
+                      <thead className="text-xs text-text-muted uppercase bg-bg-elevated sticky top-0 border-b border-border-subtle z-10">
+                        <tr>
+                          <th className="px-4 py-3">HWID</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {nodesList.length === 0 ? (
+                          <tr>
+                            <td colSpan={3} className="px-4 py-8 text-center text-text-muted">No nodes found.</td>
+                          </tr>
+                        ) : (
+                          nodesList.map((node) => (
+                            <tr key={node.hwid} className="border-b border-border-subtle hover:bg-bg-elevated/50 transition-colors">
+                              <td className="px-4 py-3 font-mono text-xs text-text-primary">{node.hwid}</td>
+                              <td className="px-4 py-3">
+                                <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
+                                  node.status === 'active' ? 'bg-success-bg text-success-text' :
+                                  node.status === 'banned' ? 'bg-error-bg text-error-text' :
+                                  'bg-warning/10 text-warning'
+                                }`}>
+                                  {node.status || 'Active'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 flex justify-end gap-1 sm:gap-2">
+                                <button 
+                                  onClick={() => handleUpdateNodeStatus('active', node.hwid)}
+                                  className="p-1.5 sm:p-2 bg-success-bg/50 border border-success-text/30 rounded hover:bg-success-bg text-success-text transition-colors"
+                                  title="Set Active"
+                                >
+                                  <CheckCircle2 className="w-4 h-4" />
+                                </button>
+                                <button 
+                                  onClick={() => handleUpdateNodeStatus('hold', node.hwid)}
+                                  className="p-1.5 sm:p-2 bg-warning/10 border border-warning/30 rounded hover:bg-warning/20 text-warning transition-colors"
+                                  title="Hold"
+                                >
+                                  <PauseCircle className="w-4 h-4" />
+                                </button>
+                                <button 
+                                  onClick={() => handleUpdateNodeStatus('banned', node.hwid)}
+                                  className="p-1.5 sm:p-2 bg-error-bg/50 border border-error-text/30 rounded hover:bg-error-bg text-error-text transition-colors"
+                                  title="Ban"
+                                >
+                                  <Ban className="w-4 h-4" />
+                                </button>
+                                <button 
+                                  onClick={() => copyToClipboard(node.hwid)}
+                                  className="p-1.5 sm:p-2 ml-2 bg-bg-surface border border-border-strong rounded hover:bg-bg-elevated text-text-muted transition-colors"
+                                  title="Copy HWID"
+                                >
+                                  <Copy className="w-4 h-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
             </div>
           )}
 
