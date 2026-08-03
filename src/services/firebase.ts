@@ -16,6 +16,7 @@ import {
  type Database,
  type DatabaseReference,
 } from 'firebase/database'
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth'
 
 // Validate required environment variables
 if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
@@ -36,5 +37,6 @@ const firebaseConfig = {
 // Initialize immediately - Firebase SDK handles SSR gracefully
 const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
 const database: Database = getDatabase(app)
+const auth = getAuth(app)
 
-export { database, ref, set, get, remove, onValue, type DatabaseReference }
+export { database, auth, ref, set, get, remove, onValue, GoogleAuthProvider, signInWithPopup, signOut, type DatabaseReference }
