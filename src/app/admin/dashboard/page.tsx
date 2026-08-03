@@ -22,12 +22,14 @@ import {
   Moon,
   Copy,
   Settings,
-  MessageSquare
+  MessageSquare,
+  ClipboardList,
+  Trash2
 } from 'lucide-react';
 
 const ADMIN_EMAIL = 'gauravpatil9262@gmail.com';
 
-type Tab = 'stats' | 'access' | 'broadcast' | 'appeals';
+type Tab = 'stats' | 'access' | 'broadcast' | 'appeals' | 'logs';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -48,6 +50,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({ total: 0, win11: 0, win10: 0, active: 0, banned: 0, hold: 0 });
   const [nodesList, setNodesList] = useState<any[]>([]);
   const [appealsList, setAppealsList] = useState<any[]>([]);
+  const [logsList, setLogsList] = useState<any[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -94,6 +97,24 @@ export default function AdminDashboard() {
     return () => unsub();
   }, [isLoading]);
 
+  // Load Audit Logs
+  useEffect(() => {
+    if (isLoading) return;
+    const logsRef = ref(database, 'logs');
+    const unsub = onValue(logsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const list: any[] = [];
+        Object.entries(snapshot.val()).forEach(([id, log]: [string, any]) => {
+          list.push({ id, ...log });
+        });
+        setLogsList(list.sort((a, b) => b.timestamp - a.timestamp));
+      } else {
+        setLogsList([]);
+      }
+    });
+    return () => unsub();
+  }, [isLoading]);
+
   // Load Stats and Nodes
   useEffect(() => {
     if (isLoading) return;
@@ -117,6 +138,9 @@ export default function AdminDashboard() {
 
         setStats({ total, win11, win10, active, banned, hold });
         setNodesList(list);
+      } else {
+        setStats({ total: 0, win11: 0, win10: 0, active: 0, banned: 0, hold: 0 });
+        setNodesList([]);
       }
     });
     return () => unsub();
@@ -200,6 +224,18 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleClearLogs = async () => {
+    if (!confirm('Are you sure you want to clear all audit logs? This action cannot be undone.')) return;
+    try {
+      await set(ref(database, 'logs'), null);
+      setUpdateStatus('Audit logs cleared successfully.');
+      setTimeout(() => setUpdateStatus(''), 3000);
+    } catch (e) {
+      console.error(e);
+      setUpdateStatus('Error clearing logs.');
+    }
+  };
+
   const handleLogout = async () => {
     await auth.signOut();
     router.push('/admin');
@@ -271,6 +307,14 @@ export default function AdminDashboard() {
                 <span className="ml-2 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full">{appealsList.length}</span>
               )}
             </span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('logs')}
+            className={`w-full flex items-center justify-center md:justify-start gap-3 p-3 md:px-4 md:py-3 rounded-md text-sm transition-all ${activeTab === 'logs' ? 'bg-bg-elevated text-text-primary border border-border-subtle shadow-sm' : 'text-text-muted hover:bg-bg-elevated/50 hover:text-text-primary'}`}
+            title="Audit Logs"
+          >
+            <ClipboardList className="w-5 h-5 md:w-4 md:h-4 shrink-0" /> 
+            <span className="hidden md:inline">Audit Logs</span>
           </button>
         </div>
 
@@ -643,6 +687,79 @@ export default function AdminDashboard() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* TAB 5: AUDIT LOGS */}
+          {activeTab === 'logs' && (
+            <div className="max-w-6xl mx-auto animate-in fade-in duration-300">
+              <div className="flex justify-between items-center mb-6 pb-2 border-b border-border-subtle">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-primary" /> Security Audit Logs
+                </h2>
+                <button 
+                  onClick={handleClearLogs}
+                  className="px-3 py-1.5 bg-error-bg/20 text-error-text border border-error-text/30 hover:bg-error-bg transition-colors rounded flex items-center gap-2 text-sm font-medium"
+                >
+                  <Trash2 className="w-4 h-4" /> Clear Logs
+                </button>
+              </div>
+              
+              {updateStatus && (
+                <div className="mb-6 p-3 bg-primary/10 text-primary border border-primary/20 rounded text-sm text-center font-medium animate-fade-in">
+                  {updateStatus}
+                </div>
+              )}
+
+              <div className="glass-panel rounded-lg overflow-hidden border border-border-subtle">
+                <div className="max-h-[70vh] overflow-y-auto scrollbar-hide">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-xs text-text-muted uppercase bg-bg-elevated sticky top-0 border-b border-border-subtle z-10">
+                      <tr>
+                        <th className="px-4 py-3 w-40">Timestamp</th>
+                        <th className="px-4 py-3 w-48">Node HWID</th>
+                        <th className="px-4 py-3 w-32">Event Type</th>
+                        <th className="px-4 py-3">Details</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {logsList.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="px-4 py-12 text-center text-text-muted">
+                            <ClipboardList className="w-8 h-8 mx-auto mb-3 opacity-20" />
+                            No audit logs recorded yet.
+                          </td>
+                        </tr>
+                      ) : (
+                        logsList.map((log) => (
+                          <tr key={log.id} className="border-b border-border-subtle hover:bg-bg-elevated/50 transition-colors">
+                            <td className="px-4 py-3 text-text-muted text-xs whitespace-nowrap">
+                              {new Date(log.timestamp).toLocaleString()}
+                            </td>
+                            <td className="px-4 py-3 font-mono text-xs text-text-secondary">
+                              {log.hwid}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
+                                log.type === 'TAMPER' ? 'bg-error-bg text-error-text' :
+                                log.type === 'SYSTEM' ? 'bg-primary/20 text-primary' :
+                                log.type === 'OFFLINE' ? 'bg-warning/10 text-warning' :
+                                log.type === 'REGISTRATION' ? 'bg-success-bg text-success-text' :
+                                'bg-bg-elevated text-text-muted'
+                              }`}>
+                                {log.type}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-text-primary text-sm max-w-lg">
+                              {log.message}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           )}
 
