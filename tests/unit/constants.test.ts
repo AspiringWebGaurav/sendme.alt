@@ -39,18 +39,18 @@ describe('constants — APP_CONFIG defaults', () => {
     expect(APP_CONFIG.TOKEN_EXPIRY_MINUTES).toBe(5)
   })
 
-  it('CHUNK_SIZE_INITIAL is 256KB', async () => {
+  it('CHUNK_SIZE_INITIAL is 64KB', async () => {
     vi.resetModules()
 
     const { APP_CONFIG } = await import('@/core/constants')
-    expect(APP_CONFIG.CHUNK_SIZE_INITIAL).toBe(256 * 1024)
+    expect(APP_CONFIG.CHUNK_SIZE_INITIAL).toBe(64 * 1024)
   })
 
-  it('BUFFER_THRESHOLD_INITIAL is 1MB', async () => {
+  it('BUFFER_THRESHOLD_INITIAL is 4MB', async () => {
     vi.resetModules()
 
     const { APP_CONFIG } = await import('@/core/constants')
-    expect(APP_CONFIG.BUFFER_THRESHOLD_INITIAL).toBe(1 * 1024 * 1024)
+    expect(APP_CONFIG.BUFFER_THRESHOLD_INITIAL).toBe(4 * 1024 * 1024)
   })
 })
 

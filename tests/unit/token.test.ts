@@ -2,24 +2,10 @@ import { describe, it, expect } from 'vitest'
 import { generateToken, isValidToken, tokenToFirebaseKey } from '@/core/token/token'
 
 describe('generateToken', () => {
-  it('returns a string of lowercase letters only', () => {
+  it('returns a string of exactly 4 lowercase letters', () => {
     for (let i = 0; i < 100; i++) {
       const token = generateToken()
-      expect(token).toMatch(/^[a-z]+$/)
-    }
-  })
-
-  it('returns a token of at least 6 characters (two words combined)', () => {
-    for (let i = 0; i < 100; i++) {
-      const token = generateToken()
-      expect(token.length).toBeGreaterThanOrEqual(6)
-    }
-  })
-
-  it('returns a token of at most 30 characters', () => {
-    for (let i = 0; i < 100; i++) {
-      const token = generateToken()
-      expect(token.length).toBeLessThanOrEqual(30)
+      expect(token).toMatch(/^[a-z]{4}$/)
     }
   })
 
@@ -28,39 +14,39 @@ describe('generateToken', () => {
     for (let i = 0; i < 50; i++) {
       tokens.add(generateToken())
     }
-    // With 250K combinations, 50 calls should produce mostly unique
+    // With 456976 (26^4) combinations, 50 calls should produce mostly unique
     expect(tokens.size).toBeGreaterThan(1)
   })
 })
 
 describe('isValidToken', () => {
-  it('accepts valid lowercase word-combo tokens', () => {
-    expect(isValidToken('happycloud')).toBe(true)
-    expect(isValidToken('oceanriver')).toBe(true)
-    expect(isValidToken('abcedfx')).toBe(true)
+  it('accepts exactly 4 lowercase letter tokens', () => {
+    expect(isValidToken('abcd')).toBe(true)
+    expect(isValidToken('zzzz')).toBe(true)
+    expect(isValidToken('qwrt')).toBe(true)
   })
 
   it('accepts tokens with surrounding whitespace', () => {
-    expect(isValidToken('  happycloud  ')).toBe(true)
+    expect(isValidToken('  abcd  ')).toBe(true)
   })
 
-  it('rejects tokens shorter than 6 characters', () => {
+  it('rejects tokens shorter than 4 characters', () => {
     expect(isValidToken('abc')).toBe(false)
     expect(isValidToken('ab')).toBe(false)
   })
 
-  it('rejects tokens longer than 30 characters', () => {
-    expect(isValidToken('a'.repeat(31))).toBe(false)
+  it('rejects tokens longer than 4 characters', () => {
+    expect(isValidToken('abcde')).toBe(false)
   })
 
-  it('rejects tokens with uppercase characters', () => {
-    expect(isValidToken('HappyCloud')).toBe(true) // toLowerCase normalizes
+  it('accepts tokens with uppercase characters by normalizing them', () => {
+    expect(isValidToken('AbCd')).toBe(true) // toLowerCase normalizes
   })
 
   it('rejects tokens with non-alpha characters', () => {
-    expect(isValidToken('happy123')).toBe(false)
-    expect(isValidToken('happy-cloud')).toBe(false)
-    expect(isValidToken('happy cloud')).toBe(false)
+    expect(isValidToken('ab12')).toBe(false)
+    expect(isValidToken('ab-d')).toBe(false)
+    expect(isValidToken('ab c')).toBe(false)
   })
 
   it('rejects empty string', () => {
@@ -71,11 +57,11 @@ describe('isValidToken', () => {
 
 describe('tokenToFirebaseKey', () => {
   it('lowercases the token', () => {
-    expect(tokenToFirebaseKey('HappyCloud')).toBe('happycloud')
+    expect(tokenToFirebaseKey('AbCd')).toBe('abcd')
   })
 
   it('preserves already-lowercase tokens', () => {
-    expect(tokenToFirebaseKey('oceanriver')).toBe('oceanriver')
+    expect(tokenToFirebaseKey('abcd')).toBe('abcd')
   })
 
   it('handles empty string', () => {

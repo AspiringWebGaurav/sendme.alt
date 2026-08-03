@@ -17,14 +17,14 @@ describe('ThroughputController', () => {
     ThroughputController = mod.ThroughputController
   })
 
-  it('starts with CHUNK_SIZE_INITIAL (256KB)', () => {
+  it('starts with CHUNK_SIZE_INITIAL (64KB)', () => {
     const tc = new ThroughputController()
-    expect(tc.currentChunkSize).toBe(256 * 1024)
+    expect(tc.currentChunkSize).toBe(64 * 1024)
   })
 
-  it('starts with BUFFER_THRESHOLD_INITIAL (1MB)', () => {
+  it('starts with BUFFER_THRESHOLD_INITIAL (4MB)', () => {
     const tc = new ThroughputController()
-    expect(tc.currentBufferThreshold).toBe(1 * 1024 * 1024)
+    expect(tc.currentBufferThreshold).toBe(4 * 1024 * 1024)
   })
 
   it('statusMessage is initially empty', () => {
@@ -62,12 +62,12 @@ describe('ThroughputController', () => {
       tc.recordChunk(100_000)
     }
     // Not yet tuned — less than ADAPTIVE_WINDOW (10) chunks
-    expect(tc.currentChunkSize).toBe(256 * 1024)
+    expect(tc.currentChunkSize).toBe(64 * 1024)
 
     // Record 1 more to hit the window threshold
     tc.recordChunk(100_000)
     // After tuning with high throughput, chunk stays at max (INITIAL === MAX)
-    expect(tc.currentChunkSize).toBe(256 * 1024)
+    expect(tc.currentChunkSize).toBe(64 * 1024)
   })
 
   it('checkStall detects draining buffer as ok', () => {
