@@ -13,23 +13,21 @@ if (!admin.apps.length) {
  ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
  : undefined
 
- if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !privateKey) {
- throw new Error('Missing required Firebase Admin environment variables. Please check your .env configuration.')
- }
-
- if (!process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL) {
- throw new Error('Missing NEXT_PUBLIC_FIREBASE_DATABASE_URL environment variable.')
- }
-
- admin.initializeApp({
- credential: admin.credential.cert({
- projectId: process.env.FIREBASE_PROJECT_ID,
- clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
- privateKey,
- }),
- databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
- })
+  if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !privateKey) {
+    console.warn('⚠️ Missing required Firebase Admin environment variables. Admin SDK skipped during build.')
+  } else if (!process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL) {
+    console.warn('⚠️ Missing NEXT_PUBLIC_FIREBASE_DATABASE_URL environment variable.')
+  } else {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey,
+      }),
+      databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+    })
+  }
 }
 
-export const adminDb = admin.database()
-export const adminAuth = admin.auth()
+export const adminDb = admin.apps.length ? admin.database() : null as unknown as admin.database.Database
+export const adminAuth = admin.apps.length ? admin.auth() : null as unknown as admin.auth.Auth
