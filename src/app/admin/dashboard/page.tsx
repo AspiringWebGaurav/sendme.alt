@@ -291,6 +291,16 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleResolveAutomatedBan = async (hwid: string) => {
+    try {
+      await handleUpdateNodeStatus('active', hwid);
+      showToast('Node UNBANNED');
+      await logAdminAction('Admin manually unbanned node from automated system', hwid);
+    } catch (e) {
+      showToast('Error unbanning node');
+    }
+  };
+
   const handleClearLogs = () => {
     setShowClearLogsConfirm(true);
   };
@@ -769,12 +779,23 @@ export default function AdminDashboard() {
                           &quot;{log.message}&quot;
                         </p>
                         <div className="flex gap-2 mt-2">
-                          <button 
-                            onClick={() => handleResolveAppeal(log.hwid, 'unban')}
-                            className="w-full bg-bg-elevated hover:bg-success-bg/20 text-text-primary hover:text-success-text border border-border-strong hover:border-success-text/50 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2"
-                          >
-                            <CheckCircle2 className="w-3 h-3" /> Manually Unban Node
-                          </button>
+                          {(() => {
+                            const nodeStatus = nodesList.find(n => n.hwid === log.hwid)?.status;
+                            const isUnbanned = nodeStatus === 'active';
+                            return (
+                              <button 
+                                onClick={() => handleResolveAutomatedBan(log.hwid)}
+                                disabled={isUnbanned}
+                                className={`w-full py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 border ${!isUnbanned ? 'bg-bg-elevated hover:bg-success-bg/20 text-text-primary hover:text-success-text border-border-strong hover:border-success-text/50' : 'bg-bg-elevated/50 text-text-muted border-border-subtle cursor-not-allowed opacity-70'}`}
+                              >
+                                {!isUnbanned ? (
+                                  <><CheckCircle2 className="w-3 h-3" /> Manually Unban Node</>
+                                ) : (
+                                  <><CheckCircle2 className="w-3 h-3" /> Node Unbanned</>
+                                )}
+                              </button>
+                            );
+                          })()}
                         </div>
                       </div>
                     ))}
