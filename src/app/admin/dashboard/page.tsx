@@ -61,6 +61,8 @@ export default function AdminDashboard() {
   const [managingNode, setManagingNode] = useState<any>(null);
   const [showClearLogsConfirm, setShowClearLogsConfirm] = useState(false);
   const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+  const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
+  const [maintenancePayload, setMaintenancePayload] = useState('');
   const [activeInfo, setActiveInfo] = useState<string | null>(null);
   const [updateStatus, setUpdateStatus] = useState<string>('');
   const [isFullScreenLogs, setIsFullScreenLogs] = useState(false);
@@ -235,6 +237,7 @@ export default function AdminDashboard() {
     setShowBroadcastModal(false);
     setIsPushingUpdate(true);
     try {
+      // When pushing from the main Broadcast button, we only push the Version (Maintenance is handled separately now)
       await set(ref(database, 'system/broadcast'), broadcastData);
       showToast('System broadcast updated');
       await logAdminAction(`Admin updated System Broadcast to v${broadcastData.version}`, 'GLOBAL');
@@ -242,6 +245,35 @@ export default function AdminDashboard() {
       showToast('Error updating broadcast');
     } finally {
       setTimeout(() => setIsPushingUpdate(false), 500);
+    }
+  };
+
+  const handleToggleMaintenance = () => {
+    if (broadcastData.maintenance) {
+      // Turn OFF immediately
+      const newBroadcast = { ...broadcastData, maintenance: false, message: '' };
+      set(ref(database, 'system/broadcast'), newBroadcast).then(() => {
+        setBroadcastData(newBroadcast);
+        showToast('Maintenance Mode DISABLED');
+        logAdminAction('Admin disabled Maintenance Mode globally', 'GLOBAL');
+      });
+    } else {
+      // Turn ON -> Show Modal
+      setMaintenancePayload(broadcastData.message || 'The network is currently undergoing scheduled maintenance. Please check back later.');
+      setShowMaintenanceModal(true);
+    }
+  };
+
+  const handleEnableMaintenance = async () => {
+    try {
+      const newBroadcast = { ...broadcastData, maintenance: true, message: maintenancePayload };
+      await set(ref(database, 'system/broadcast'), newBroadcast);
+      setBroadcastData(newBroadcast);
+      showToast('Maintenance Mode ENABLED');
+      await logAdminAction('Admin enabled Maintenance Mode globally', 'GLOBAL');
+      setShowMaintenanceModal(false);
+    } catch (e) {
+      showToast('Error enabling Maintenance Mode');
     }
   };
 
@@ -582,7 +614,7 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-6 align-top">
                         <label className="flex items-center gap-3 cursor-pointer w-fit">
-                          <div className={`w-12 h-6 rounded-full transition-colors relative flex items-center ${broadcastData.maintenance ? 'bg-primary' : 'bg-border-strong'}`}>
+                          <div className={`w-12 h-6 rounded-full transition-colors relative flex items-center ${broadcastData.maintenance ? 'bg-warning' : 'bg-border-strong'}`}>
                             <motion.div 
                               layout
                               className={`w-4 h-4 rounded-full bg-white shadow-sm absolute ${broadcastData.maintenance ? 'right-1' : 'left-1'}`}
@@ -591,43 +623,13 @@ export default function AdminDashboard() {
                           <input 
                             type="checkbox" 
                             checked={broadcastData.maintenance}
-                            onChange={(e) => setBroadcastData({...broadcastData, maintenance: e.target.checked})}
+                            onChange={handleToggleMaintenance}
                             className="hidden"
                           />
-                          <span className={`text-sm font-bold ${broadcastData.maintenance ? 'text-primary' : 'text-text-muted'}`}>
+                          <span className={`text-sm font-bold ${broadcastData.maintenance ? 'text-warning' : 'text-text-muted'}`}>
                             {broadcastData.maintenance ? 'ACTIVE' : 'OFF'}
                           </span>
                         </label>
-                      </td>
-                    </tr>
-
-                    <tr className="border-b border-border-subtle hover:bg-bg-elevated/20 transition-colors">
-                      <td className="px-6 py-6 align-top">
-                        <div className="font-bold text-text-primary mb-1 flex items-center gap-2">
-                          Transmission Payload
-                          <button onClick={() => setActiveInfo(activeInfo === 'payload' ? null : 'payload')} className="text-text-muted hover:text-primary transition-colors focus:outline-none">
-                            <HelpCircle className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <AnimatePresence>
-                          {activeInfo === 'payload' && (
-                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                              <div className="bg-primary/10 text-primary border border-primary/20 p-3 rounded-lg text-xs mt-2 mb-3">
-                                <strong>What this does:</strong><br/>
-                                This is the custom message that will be rendered directly on the users&apos; screens when they open the app during Maintenance Mode or when they are forced to update. Use this to communicate ETAs or specific instructions.
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                        <div className="text-xs text-text-muted">The message displayed to users when Maintenance Mode is active.</div>
-                      </td>
-                      <td className="px-6 py-6 align-top">
-                        <textarea 
-                          value={broadcastData.message}
-                          onChange={(e) => setBroadcastData({...broadcastData, message: e.target.value})}
-                          className="w-full max-w-2xl bg-bg-elevated border border-border-strong rounded-lg px-4 py-3 text-sm focus:border-primary transition-colors resize-none h-24 focus:outline-none"
-                          placeholder="Enter the transmission payload..."
-                        />
                       </td>
                     </tr>
                   </tbody>
@@ -934,6 +936,52 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
+      {/* MODAL: ENABLE MAINTENANCE MODE */}
+      <AnimatePresence>
+        {showMaintenanceModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowMaintenanceModal(false)}
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-bg-surface border border-border-subtle rounded-2xl p-6 w-full max-w-lg shadow-2xl relative z-10 flex flex-col items-center text-center"
+            >
+              <div className="w-16 h-16 bg-warning/10 rounded-full flex items-center justify-center mb-4 border border-warning/20 shadow-inner">
+                <AlertTriangle className="w-8 h-8 text-warning" />
+              </div>
+              <h3 className="text-2xl font-black mb-2 tracking-tight">Enable Maintenance Mode?</h3>
+              <p className="text-text-muted mb-6 px-4">
+                This will forcefully disconnect <strong>ALL non-admin nodes</strong> globally. Enter the message that users will see on their locked screens:
+              </p>
+              
+              <textarea 
+                value={maintenancePayload}
+                onChange={(e) => setMaintenancePayload(e.target.value)}
+                className="w-full bg-bg-elevated border border-border-strong rounded-lg px-4 py-3 text-sm focus:border-warning transition-colors resize-none h-32 focus:outline-none mb-8 shadow-inner"
+                placeholder="The network is currently undergoing scheduled maintenance..."
+              />
+              
+              <div className="flex gap-4 w-full">
+                <button 
+                  onClick={() => setShowMaintenanceModal(false)}
+                  className="flex-1 px-6 py-3 bg-bg-elevated hover:bg-border-subtle text-text-primary rounded-xl font-bold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleEnableMaintenance}
+                  className="flex-1 px-6 py-3 bg-warning hover:bg-warning/90 text-white rounded-xl font-bold transition-all shadow-lg shadow-warning/20 hover:shadow-warning/40"
+                >
+                  Enable Lockdown
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
