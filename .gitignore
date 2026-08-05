@@ -11,9 +11,8 @@
 # next.js
 /.next/
 /out/
-
-# production
-/build
+/dist/
+/build/
 
 # misc
 .DS_Store
@@ -26,8 +25,8 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # local env files
-# env files (strict secrecy)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -44,7 +43,7 @@ test-artifacts/
 test-results/
 playwright-report/
 
-# test files (not for production)
+# test files
 *.bin
 deep-qa.mjs
 e2e-stress.mjs
@@ -54,3 +53,10 @@ scripts/
 /.antigravitycli/
 /.kilo/
 lighthouse-report.json
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.cursor/
+.claude/
+.gemini/
