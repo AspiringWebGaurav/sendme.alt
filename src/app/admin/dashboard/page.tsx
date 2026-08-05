@@ -27,13 +27,14 @@ import {
   Maximize2,
   Minimize2,
   Download,
-  HelpCircle
+  HelpCircle,
+  ShieldAlert
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ADMIN_EMAIL = 'gauravpatil9262@gmail.com';
 
-type Tab = 'nodes' | 'broadcast' | 'appeals' | 'logs';
+type Tab = 'nodes' | 'broadcast' | 'appeals' | 'logs' | 'automated';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -436,6 +437,12 @@ export default function AdminDashboard() {
           >
             <ClipboardList className="w-5 h-5 md:w-4 md:h-4 shrink-0" /> <span className="hidden md:inline font-medium">Audit Logs</span>
           </button>
+          <button 
+            onClick={() => changeTab('automated')}
+            className={`w-full flex items-center justify-center md:justify-start gap-3 p-3 md:px-4 md:py-3 rounded-md text-sm transition-all ${activeTab === 'automated' ? 'bg-bg-elevated text-text-primary border border-border-subtle shadow-sm' : 'text-text-muted hover:bg-bg-elevated/50 hover:text-text-primary'}`}
+          >
+            <ShieldAlert className="w-5 h-5 md:w-4 md:h-4 shrink-0 text-error-text" /> <span className="hidden md:inline font-medium">Automated Abuse</span>
+          </button>
         </div>
 
         {/* CONTENT AREA */}
@@ -481,7 +488,9 @@ export default function AdminDashboard() {
                           <td className="px-6 py-4">
                             <span className={`px-2.5 py-1 rounded text-xs font-bold uppercase ${
                               node.status === 'active' ? 'bg-success-bg text-success-text' :
-                              node.status === 'banned' ? 'bg-error-bg text-error-text' : 'bg-warning/10 text-warning'
+                              node.status === 'banned' ? 'bg-error-bg text-error-text' : 
+                              node.status === 'uninstalled' ? 'bg-bg-elevated text-text-muted border border-border-strong' :
+                              'bg-warning/10 text-warning'
                             }`}>
                               {node.status || 'Active'}
                             </span>
@@ -489,7 +498,12 @@ export default function AdminDashboard() {
                           <td className="px-6 py-4 text-right">
                             <button 
                               onClick={() => setManagingNode(node)}
-                              className="px-4 py-2 bg-bg-surface border border-border-strong hover:border-primary hover:text-primary rounded-md text-xs font-bold transition-all shadow-sm"
+                              disabled={node.status === 'uninstalled'}
+                              className={`px-4 py-2 bg-bg-surface border border-border-strong rounded-md text-xs font-bold transition-all shadow-sm ${
+                                node.status === 'uninstalled' 
+                                ? 'opacity-50 cursor-not-allowed' 
+                                : 'hover:border-primary hover:text-primary'
+                              }`}
                             >
                               Manage
                             </button>
@@ -505,136 +519,110 @@ export default function AdminDashboard() {
 
           {/* TAB: SYSTEM BROADCAST */}
           {activeTab === 'broadcast' && (
-            <div className="flex-1 glass-panel flex flex-col min-h-0 rounded-xl border border-border-subtle overflow-hidden shadow-sm animate-in fade-in duration-200 w-full max-w-6xl mx-auto bg-bg-surface">
-              <div className="p-4 border-b border-border-subtle flex justify-between items-center bg-bg-surface/50 shrink-0">
-                <h2 className="font-bold flex items-center gap-2 text-lg"><Radio className="w-5 h-5 text-primary" /> System Broadcast</h2>
-                <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-4 w-full max-w-5xl mx-auto">
+              
+              {/* VERSION CONTROL PANEL */}
+              <div className="glass-panel rounded-xl border border-border-subtle overflow-hidden shadow-sm animate-in fade-in duration-200 bg-bg-surface flex-shrink-0">
+                <div className="p-3 border-b border-border-subtle flex justify-between items-center bg-bg-surface/50">
+                  <h2 className="font-bold flex items-center gap-2 text-base"><Radio className="w-4 h-4 text-primary" /> Client Version Control</h2>
                   <button
                     onClick={() => setShowBroadcastModal(true)}
                     disabled={isPushingUpdate}
-                    className="bg-primary hover:bg-primary-hover text-primary-foreground px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-lg shadow-primary/20"
+                    className="bg-primary hover:bg-primary-hover text-primary-foreground px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed shadow-sm hover:shadow shadow-primary/20"
                   >
                     {isPushingUpdate ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
+                        <div className="w-3 h-3 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
                         Pushing Live...
                       </>
                     ) : (
                       <>
-                        <Save className="w-4 h-4" />
-                        Push Update
+                        <Save className="w-3 h-3" />
+                        Push Version Update
                       </>
                     )}
                   </button>
                 </div>
+                
+                <div className="p-5 flex flex-col md:flex-row gap-6 items-start justify-between">
+                  <div className="max-w-lg">
+                    <div className="font-bold text-text-primary mb-1 text-base">Required Client Version</div>
+                    <div className="text-xs text-text-muted mb-3 leading-relaxed">
+                      Dictates the minimum allowed version for clients connecting to the network. Clients with a lower version are instantly blocked and forced to update.
+                    </div>
+                    <div className="bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-lg text-xs text-primary flex items-center gap-2 w-fit">
+                      Currently live: <span className="font-mono font-black text-sm">v{liveVersion}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="w-full max-w-sm bg-bg-elevated/30 p-4 rounded-xl border border-border-subtle">
+                    <div className="text-[10px] uppercase font-bold text-text-muted tracking-wider mb-2">Stage New Version</div>
+                    <input 
+                      type="text" 
+                      value={broadcastData.version}
+                      onChange={(e) => setBroadcastData({...broadcastData, version: e.target.value})}
+                      className="w-full bg-bg-surface border border-border-strong rounded-lg px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all focus:outline-none font-mono font-bold mb-3"
+                    />
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleBumpVersion('major')}
+                        className="flex-1 bg-secondary hover:bg-primary hover:text-primary-foreground text-secondary-foreground px-2 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap active:scale-[0.95]"
+                      >
+                        + 1.0.0
+                      </button>
+                      <button 
+                        onClick={() => handleBumpVersion('minor')}
+                        className="flex-1 bg-secondary hover:bg-primary hover:text-primary-foreground text-secondary-foreground px-2 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap active:scale-[0.95]"
+                      >
+                        + 0.1.0
+                      </button>
+                      <button 
+                        onClick={() => handleBumpVersion('patch')}
+                        className="flex-1 bg-secondary hover:bg-primary hover:text-primary-foreground text-secondary-foreground px-2 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap active:scale-[0.95]"
+                      >
+                        + 0.0.1
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1 overflow-y-auto scrollbar-hide">
-                <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-text-muted uppercase bg-bg-surface sticky top-0 border-b border-border-subtle z-10 shadow-sm">
-                    <tr>
-                      <th className="px-6 py-4 font-semibold tracking-wider w-1/3">Setting</th>
-                      <th className="px-6 py-4 font-semibold tracking-wider">Value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-border-subtle hover:bg-bg-elevated/20 transition-colors">
-                      <td className="px-6 py-6 align-top">
-                        <div className="font-bold text-text-primary mb-1 flex items-center gap-2">
-                          Required Client Version
-                          <button onClick={() => setActiveInfo(activeInfo === 'version' ? null : 'version')} className="text-text-muted hover:text-primary transition-colors focus:outline-none">
-                            <HelpCircle className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <AnimatePresence>
-                          {activeInfo === 'version' && (
-                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                              <div className="bg-primary/10 text-primary border border-primary/20 p-3 rounded-lg text-xs mt-2 mb-3">
-                                <strong>What this does:</strong><br/>
-                                This strictly dictates the minimum allowed version for clients connecting to the network. If a user opens a Desktop App with a lower version, they will be instantly blocked and forced to download the update before proceeding.
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                        <div className="text-xs text-text-muted mb-2">
-                          Currently live: <span className="font-mono text-primary font-bold">v{liveVersion}</span>
-                        </div>
-                        <div className="text-xs text-text-muted mb-3">The minimum version number required for clients to connect to the network.</div>
-                      </td>
-                      <td className="px-6 py-6 align-top">
-                        <div className="flex flex-col gap-2 max-w-md">
-                          <input 
-                            type="text" 
-                            value={broadcastData.version}
-                            onChange={(e) => setBroadcastData({...broadcastData, version: e.target.value})}
-                            className="w-full bg-bg-elevated border border-border-strong rounded-lg px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all focus:outline-none font-mono font-bold"
-                          />
-                          <div className="flex gap-2">
-                            <button 
-                              onClick={() => handleBumpVersion('major')}
-                              className="flex-1 bg-secondary hover:bg-primary hover:text-primary-foreground text-secondary-foreground px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap active:scale-[0.95]"
-                            >
-                              + 1.0.0
-                            </button>
-                            <button 
-                              onClick={() => handleBumpVersion('minor')}
-                              className="flex-1 bg-secondary hover:bg-primary hover:text-primary-foreground text-secondary-foreground px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap active:scale-[0.95]"
-                            >
-                              + 0.1.0
-                            </button>
-                            <button 
-                              onClick={() => handleBumpVersion('patch')}
-                              className="flex-1 bg-secondary hover:bg-primary hover:text-primary-foreground text-secondary-foreground px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap active:scale-[0.95]"
-                            >
-                              + 0.0.1
-                            </button>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    
-                    <tr className="border-b border-border-subtle hover:bg-bg-elevated/20 transition-colors">
-                      <td className="px-6 py-6 align-top">
-                        <div className="font-bold text-text-primary mb-1 flex items-center gap-2">
-                          Maintenance Mode
-                          <button onClick={() => setActiveInfo(activeInfo === 'maintenance' ? null : 'maintenance')} className="text-text-muted hover:text-primary transition-colors focus:outline-none">
-                            <HelpCircle className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <AnimatePresence>
-                          {activeInfo === 'maintenance' && (
-                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                              <div className="bg-warning/10 text-warning border border-warning/20 p-3 rounded-lg text-xs mt-2 mb-3">
-                                <strong>What this does:</strong><br/>
-                                Instantly disconnects and locks out all non-admin users globally. Any active transfers will be gracefully paused or interrupted. Use this during critical backend updates or when investigating an ongoing attack on the network.
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                        <div className="text-xs text-text-muted">Lock out all non-admin connections globally.</div>
-                      </td>
-                      <td className="px-6 py-6 align-top">
-                        <label className="flex items-center gap-3 cursor-pointer w-fit">
-                          <div className={`w-12 h-6 rounded-full transition-colors relative flex items-center ${broadcastData.maintenance ? 'bg-warning' : 'bg-border-strong'}`}>
-                            <motion.div 
-                              layout
-                              className={`w-4 h-4 rounded-full bg-white shadow-sm absolute ${broadcastData.maintenance ? 'right-1' : 'left-1'}`}
-                            />
-                          </div>
-                          <input 
-                            type="checkbox" 
-                            checked={broadcastData.maintenance}
-                            onChange={handleToggleMaintenance}
-                            className="hidden"
-                          />
-                          <span className={`text-sm font-bold ${broadcastData.maintenance ? 'text-warning' : 'text-text-muted'}`}>
-                            {broadcastData.maintenance ? 'ACTIVE' : 'OFF'}
-                          </span>
-                        </label>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+
+              {/* MAINTENANCE MODE PANEL */}
+              <div className="glass-panel rounded-xl border border-border-subtle overflow-hidden shadow-sm animate-in fade-in duration-200 bg-bg-surface flex-shrink-0">
+                <div className="p-3 border-b border-border-subtle flex justify-between items-center bg-bg-surface/50">
+                  <h2 className="font-bold flex items-center gap-2 text-base"><AlertTriangle className="w-4 h-4 text-warning" /> Global Maintenance Mode</h2>
+                </div>
+                
+                <div className="p-5 flex flex-col md:flex-row gap-6 items-center justify-between">
+                  <div className="max-w-lg">
+                    <div className="font-bold text-text-primary mb-1 text-base">Network Lockdown State</div>
+                    <div className="text-xs text-text-muted leading-relaxed">
+                      Instantly disconnects and locks out all non-admin users globally. Use this during critical backend updates or when investigating an ongoing attack.
+                    </div>
+                  </div>
+                  
+                  <div className="bg-bg-elevated/30 p-4 rounded-xl border border-border-subtle min-w-[200px] flex justify-center items-center">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <div className={`w-12 h-6 rounded-full transition-colors relative flex items-center ${broadcastData.maintenance ? 'bg-warning shadow shadow-warning/20' : 'bg-border-strong'}`}>
+                        <motion.div 
+                          layout
+                          className={`w-4 h-4 rounded-full bg-white shadow-sm absolute ${broadcastData.maintenance ? 'right-1' : 'left-1'}`}
+                        />
+                      </div>
+                      <input 
+                        type="checkbox" 
+                        checked={broadcastData.maintenance}
+                        onChange={handleToggleMaintenance}
+                        className="hidden"
+                      />
+                      <span className={`text-sm font-black tracking-widest ${broadcastData.maintenance ? 'text-warning' : 'text-text-muted'}`}>
+                        {broadcastData.maintenance ? 'ACTIVE' : 'OFF'}
+                      </span>
+                    </label>
+                  </div>
+                </div>
               </div>
+
             </div>
           )}
 
@@ -746,6 +734,51 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   ))
+                )}
+              </div>
+            </div>
+          )}
+          {/* TAB: AUTOMATED ABUSE SYSTEM */}
+          {activeTab === 'automated' && (
+            <div className="flex-1 glass-panel flex flex-col min-h-0 rounded-xl border border-border-subtle overflow-hidden shadow-sm animate-in fade-in duration-200 w-full max-w-6xl mx-auto bg-bg-surface">
+              <div className="p-4 border-b border-border-subtle flex justify-between items-center bg-bg-surface shrink-0">
+                <h2 className="font-bold flex items-center gap-2 text-lg"><ShieldAlert className="w-5 h-5 text-error-text" /> Automated Abuse System</h2>
+                <div className="bg-error-bg/20 text-error-text px-4 py-1.5 rounded-full font-bold text-sm border border-error-text/30">
+                  {logsList.filter(log => log.type === 'TAMPER' || log.type === 'OFFLINE').length} Automated Bans
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 bg-bg-primary/30 text-text-primary scrollbar-hide shadow-inner">
+                {logsList.filter(log => log.type === 'TAMPER' || log.type === 'OFFLINE').length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-text-muted opacity-60">
+                    <ShieldAlert className="w-16 h-16 mb-4 text-success-text opacity-70" />
+                    <p className="text-lg">No automated abuse actions recorded.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {logsList.filter(log => log.type === 'TAMPER' || log.type === 'OFFLINE').map((log) => (
+                      <div key={log.id} className="bg-bg-surface border-l-4 border-l-error-text border border-border-strong rounded-xl p-5 shadow-md flex flex-col gap-3 hover:border-error-text/50 transition-colors">
+                        <div className="flex justify-between items-start">
+                          <span className="font-mono text-xs bg-bg-elevated px-2 py-1 rounded text-text-muted font-bold tracking-widest">{log.hwid}</span>
+                          <span className="text-xs text-text-secondary opacity-80">{new Date(log.timestamp).toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <span className="bg-error-bg text-error-text px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">Automated Ban</span>
+                           <span className="text-sm font-bold text-text-primary">{log.type === 'TAMPER' ? 'Security Hash Mismatch' : 'Offline Rule Violation'}</span>
+                        </div>
+                        <p className="text-sm text-text-secondary leading-relaxed bg-bg-elevated p-3 rounded-lg border border-border-subtle italic">
+                          &quot;{log.message}&quot;
+                        </p>
+                        <div className="flex gap-2 mt-2">
+                          <button 
+                            onClick={() => handleResolveAppeal(log.hwid, 'unban')}
+                            className="w-full bg-bg-elevated hover:bg-success-bg/20 text-text-primary hover:text-success-text border border-border-strong hover:border-success-text/50 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2"
+                          >
+                            <CheckCircle2 className="w-3 h-3" /> Manually Unban Node
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
