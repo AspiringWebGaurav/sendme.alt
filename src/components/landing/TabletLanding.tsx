@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Lock, HardDrive, Zap, Trash2, Globe, Shield } from 'lucide-react'
+import { ArrowRight, Lock, HardDrive, Zap, Trash2, Globe, Shield, Download } from 'lucide-react'
 import Link from 'next/link'
 import { Github } from 'lucide-react'
 
@@ -59,6 +59,10 @@ export function TabletLanding() {
  <Link href="/transfer?mode=receive" className="flex items-center justify-center gap-2 px-8 py-3.5 bg-bg-surface border border-border-subtle hover:bg-bg-elevated text-text-primary rounded-full font-semibold transition-all w-48">
  Receive File
  </Link>
+ <a href="https://github.com/AspiringWebGaurav/send2me-rust-app/releases" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-8 py-3.5 bg-bg-surface border border-border-subtle hover:bg-bg-elevated text-text-primary rounded-full font-semibold transition-all group">
+ <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
+ Get Free PC App
+ </a>
  </motion.div>
  </div>
 

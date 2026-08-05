@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Lock, HardDrive, Zap, Trash2, Globe, Shield } from 'lucide-react'
+import { ArrowRight, Lock, HardDrive, Zap, Trash2, Globe, Shield, Download } from 'lucide-react'
 import { Github } from 'lucide-react'
 import Link from 'next/link'
 
@@ -17,7 +17,7 @@ export function DesktopLanding() {
  <main className="flex-1 w-full flex items-center justify-between px-12 lg:px-24 relative z-10 max-w-7xl mx-auto">
 
  {/* Left Side: Hero */}
- <div className="w-1/2 flex flex-col items-start justify-center pr-12">
+ <div className="w-[55%] flex flex-col items-start justify-center pr-8">
  <motion.div
  initial={{ opacity: 0, y: 20 }}
  animate={{ opacity: 1, y: 0 }}
@@ -50,7 +50,7 @@ export function DesktopLanding() {
  initial={{ opacity: 0, y: 20 }}
  animate={{ opacity: 1, y: 0 }}
  transition={{ duration: 0.6, delay: 0.3 }}
- className="flex items-center gap-4 w-full"
+ className="flex items-center gap-3 w-full flex-wrap xl:flex-nowrap"
  >
  <Link href="/transfer?mode=send" className="flex items-center justify-center gap-2 px-8 py-4 bg-text-primary hover:bg-text-secondary text-text-inverse rounded-full font-semibold transition-all group">
  Send File
@@ -59,11 +59,15 @@ export function DesktopLanding() {
  <Link href="/transfer?mode=receive" className="flex items-center justify-center gap-2 px-8 py-4 bg-bg-surface border border-border-subtle hover:bg-bg-elevated text-text-primary rounded-full font-semibold transition-all">
  Receive File
  </Link>
+ <a href="https://github.com/AspiringWebGaurav/send2me-rust-app/releases/latest" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-8 py-4 bg-bg-surface border border-border-subtle hover:bg-bg-elevated text-text-primary rounded-full font-semibold transition-all group whitespace-nowrap">
+ <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
+ Get Free PC App
+ </a>
  </motion.div>
  </div>
 
  {/* Right Side: Features Grid */}
- <div className="w-1/2 h-full flex items-center justify-end">
+ <div className="w-[45%] h-full flex items-center justify-end">
  <motion.div
  initial={{ opacity: 0, x: 20 }}
  animate={{ opacity: 1, x: 0 }}

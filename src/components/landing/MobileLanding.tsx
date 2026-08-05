@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Lock, HardDrive, Zap, Shield } from 'lucide-react'
+import { ArrowRight, Lock, HardDrive, Zap, Shield, Download } from 'lucide-react'
 import Link from 'next/link'
 
 import { Navbar } from '@/layout/Navbar'
@@ -56,6 +56,10 @@ export function MobileLanding() {
  <Link href="/transfer?mode=receive" className="flex items-center justify-center gap-2 px-6 py-3.5 bg-bg-surface border border-border-subtle active:bg-bg-elevated text-text-primary rounded-full font-semibold transition-colors w-full">
  Receive File
  </Link>
+ <a href="https://github.com/AspiringWebGaurav/send2me-rust-app/releases" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-6 py-3.5 bg-bg-surface border border-border-subtle active:bg-bg-elevated text-text-primary rounded-full font-semibold transition-colors w-full">
+ <Download className="w-4 h-4" />
+ Get Free PC App
+ </a>
  </motion.div>
  </div>
 
