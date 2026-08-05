@@ -19,7 +19,6 @@ import {
   Sun,
   Moon,
   Copy,
-  Settings,
   MessageSquare,
   Trash2,
   X,
@@ -28,7 +27,8 @@ import {
   Minimize2,
   Download,
   HelpCircle,
-  ShieldAlert
+  ShieldAlert,
+  Github
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -76,9 +76,26 @@ export default function AdminDashboard() {
   const [appealsList, setAppealsList] = useState<any[]>([]);
   const [logsList, setLogsList] = useState<any[]>([]);
   const [stats, setStats] = useState({ total: 0, active: 0, banned: 0, hold: 0 });
+  const [githubVersion, setGithubVersion] = useState<string | null>(null);
+  const [githubToken, setGithubToken] = useState<string>('');
 
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== 'undefined') {
+      const savedToken = localStorage.getItem('adminGithubToken');
+      if (savedToken) setGithubToken(savedToken);
+    }
+    
+    // Fetch live version from GitHub
+    fetch('https://api.github.com/repos/AspiringWebGaurav/send2me-rust-app/releases/latest')
+      .then(res => res.json())
+      .then(data => {
+        if (data.tag_name) {
+          setGithubVersion(data.tag_name.replace(/^v/, ''));
+        }
+      })
+      .catch(console.error);
+
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (!user || user.email !== ADMIN_EMAIL) {
         auth.signOut();
@@ -96,8 +113,15 @@ export default function AdminDashboard() {
     const unsub = onValue(ref(database, 'system/broadcast'), (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        setBroadcastData(data);
-        if (data.version) setLiveVersion(data.version);
+        setBroadcastData({
+          version: data.version || '0.0.1',
+          maintenance: !!data.maintenance,
+          message: data.message || ''
+        });
+        setLiveVersion(data.version || '0.0.1');
+      } else {
+        setBroadcastData({ version: '0.0.1', maintenance: false, message: '' });
+        setLiveVersion('0.0.1');
       }
     });
     return () => unsub();
@@ -209,28 +233,35 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleBumpVersion = (type: 'major' | 'minor' | 'patch') => {
+  const handleBumpVersion = (type: 'major' | 'minor' | 'patch' | 'dec-major' | 'dec-minor' | 'dec-patch') => {
     try {
-      const parts = broadcastData.version.split('.');
-      if (parts.length === 3) {
-        let major = parseInt(parts[0], 10);
-        let minor = parseInt(parts[1], 10);
-        let patch = parseInt(parts[2], 10);
-        
-        if (isNaN(major) || isNaN(minor) || isNaN(patch)) return;
+      const currentVersion = broadcastData?.version || '0.0.0';
+      const parts = currentVersion.split('.');
+      
+      let major = 0, minor = 0, patch = 0;
+      
+      if (parts.length >= 1) major = parseInt(parts[0], 10) || 0;
+      if (parts.length >= 2) minor = parseInt(parts[1], 10) || 0;
+      if (parts.length >= 3) patch = parseInt(parts[2], 10) || 0;
 
-        if (type === 'major') {
-          major += 1; minor = 0; patch = 0;
-        } else if (type === 'minor') {
-          minor += 1; patch = 0;
-        } else if (type === 'patch') {
-          patch += 1;
-        }
-        
-        setBroadcastData({ ...broadcastData, version: `${major}.${minor}.${patch}` });
+      if (type === 'major') {
+        major += 1; minor = 0; patch = 0;
+      } else if (type === 'minor') {
+        minor += 1; patch = 0;
+      } else if (type === 'patch') {
+        patch += 1;
+      } else if (type === 'dec-major') {
+        major = Math.max(0, major - 1); minor = 0; patch = 0;
+      } else if (type === 'dec-minor') {
+        minor = Math.max(0, minor - 1); patch = 0;
+      } else if (type === 'dec-patch') {
+        patch = Math.max(0, patch - 1);
       }
+      
+      setBroadcastData({ ...broadcastData, version: `${major}.${minor}.${patch}` });
     } catch (e) {
       console.error(e);
+      setBroadcastData({ ...broadcastData, version: type === 'major' ? '1.0.0' : type === 'minor' ? '0.1.0' : '0.0.1' });
     }
   };
 
@@ -238,10 +269,31 @@ export default function AdminDashboard() {
     setShowBroadcastModal(false);
     setIsPushingUpdate(true);
     try {
-      // When pushing from the main Broadcast button, we only push the Version (Maintenance is handled separately now)
-      await set(ref(database, 'system/broadcast'), broadcastData);
+      const versionToPush = broadcastData?.version || '0.0.1';
+      const updatedData = { ...broadcastData, version: versionToPush };
+      await set(ref(database, 'system/broadcast'), updatedData);
+      setLiveVersion(versionToPush);
       showToast('System broadcast updated');
-      await logAdminAction(`Admin updated System Broadcast to v${broadcastData.version}`, 'GLOBAL');
+      await logAdminAction(`Admin updated System Broadcast to v${versionToPush}`, 'GLOBAL');
+
+      if (githubToken) {
+        showToast('Triggering GitHub Release pipeline...');
+        fetch(`https://api.github.com/repos/AspiringWebGaurav/send2me-rust-app/dispatches`, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': `token ${githubToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            event_type: 'bump_version',
+            client_payload: { version: versionToPush }
+          })
+        }).then(res => {
+          if (!res.ok) console.error("GitHub dispatch failed");
+          else showToast('GitHub pipeline triggered successfully!');
+        }).catch(console.error);
+      }
     } catch (e) {
       showToast('Error updating broadcast');
     } finally {
@@ -364,6 +416,23 @@ export default function AdminDashboard() {
     await auth.signOut();
     router.push('/admin');
   };
+
+  const isVersionGreater = (v1: string, v2: string) => {
+    const p1 = v1.split('.').map(Number);
+    const p2 = v2.split('.').map(Number);
+    for (let i = 0; i < Math.max(p1.length, p2.length); i++) {
+      const num1 = p1[i] || 0;
+      const num2 = p2[i] || 0;
+      if (num1 > num2) return true;
+      if (num1 < num2) return false;
+    }
+    return false;
+  };
+
+  const maxNodeVersion = nodesList.reduce((max, node) => {
+    if (!node.version) return max;
+    return isVersionGreater(node.version, max) ? node.version : max;
+  }, '0.0.0');
 
   if (isLoading) {
     return <div className="min-h-screen bg-bg-primary flex items-center justify-center text-text-muted">Initializing Secure Console...</div>;
@@ -529,7 +598,7 @@ export default function AdminDashboard() {
 
           {/* TAB: SYSTEM BROADCAST */}
           {activeTab === 'broadcast' && (
-            <div className="flex flex-col gap-4 w-full max-w-5xl mx-auto">
+            <div className="flex flex-col gap-4 w-full max-w-5xl mx-auto h-full overflow-y-auto scrollbar-hide pb-10">
               
               {/* VERSION CONTROL PANEL */}
               <div className="glass-panel rounded-xl border border-border-subtle overflow-hidden shadow-sm animate-in fade-in duration-200 bg-bg-surface flex-shrink-0">
@@ -560,9 +629,46 @@ export default function AdminDashboard() {
                     <div className="text-xs text-text-muted mb-3 leading-relaxed">
                       Dictates the minimum allowed version for clients connecting to the network. Clients with a lower version are instantly blocked and forced to update.
                     </div>
-                    <div className="bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-lg text-xs text-primary flex items-center gap-2 w-fit">
+                    <div className="bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-lg text-xs text-primary flex items-center gap-2 w-fit mb-3">
                       Currently live: <span className="font-mono font-black text-sm">v{liveVersion}</span>
                     </div>
+
+                    {githubVersion && (
+                      <div className="bg-bg-elevated border border-border-subtle p-3 rounded-lg w-full mt-2">
+                        <div className="text-[10px] uppercase font-bold text-text-muted tracking-wider mb-2">Live GitHub Sync</div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold flex items-center gap-2 text-text-primary">
+                            <Github className="w-4 h-4" /> v{githubVersion}
+                          </span>
+                          <button 
+                            onClick={() => setBroadcastData({...broadcastData, version: githubVersion})}
+                            className="px-3 py-1 bg-primary hover:bg-primary-hover text-primary-foreground text-xs font-bold rounded shadow-sm transition-all active:scale-95"
+                          >
+                            Sync to Stage
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {maxNodeVersion !== '0.0.0' && (
+                      <div className="bg-bg-elevated border border-border-subtle p-3 rounded-lg w-full mt-2">
+                        <div className="text-[10px] uppercase font-bold text-text-muted tracking-wider mb-2">Live Network Sync</div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold flex items-center gap-2 text-text-primary">
+                            <Activity className="w-4 h-4 text-success-text" /> v{maxNodeVersion}
+                          </span>
+                          <button 
+                            onClick={() => setBroadcastData({...broadcastData, version: maxNodeVersion})}
+                            className="px-3 py-1 bg-success-bg hover:bg-success-bg/80 text-success-text border border-success-text/30 text-xs font-bold rounded shadow-sm transition-all active:scale-95"
+                          >
+                            Sync to Stage
+                          </button>
+                        </div>
+                        <div className="text-[9px] text-text-muted mt-2">
+                          Automatically fetched from the highest version node currently online.
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="w-full max-w-sm bg-bg-elevated/30 p-4 rounded-xl border border-border-subtle">
@@ -573,25 +679,47 @@ export default function AdminDashboard() {
                       onChange={(e) => setBroadcastData({...broadcastData, version: e.target.value})}
                       className="w-full bg-bg-surface border border-border-strong rounded-lg px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all focus:outline-none font-mono font-bold mb-3"
                     />
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => handleBumpVersion('major')}
-                        className="flex-1 bg-secondary hover:bg-primary hover:text-primary-foreground text-secondary-foreground px-2 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap active:scale-[0.95]"
-                      >
-                        + 1.0.0
-                      </button>
-                      <button 
-                        onClick={() => handleBumpVersion('minor')}
-                        className="flex-1 bg-secondary hover:bg-primary hover:text-primary-foreground text-secondary-foreground px-2 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap active:scale-[0.95]"
-                      >
-                        + 0.1.0
-                      </button>
-                      <button 
-                        onClick={() => handleBumpVersion('patch')}
-                        className="flex-1 bg-secondary hover:bg-primary hover:text-primary-foreground text-secondary-foreground px-2 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap active:scale-[0.95]"
-                      >
-                        + 0.0.1
-                      </button>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleBumpVersion('major')}
+                          className="flex-1 bg-secondary hover:bg-primary hover:text-primary-foreground text-secondary-foreground px-2 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap active:scale-[0.95]"
+                        >
+                          + 1.0.0
+                        </button>
+                        <button 
+                          onClick={() => handleBumpVersion('minor')}
+                          className="flex-1 bg-secondary hover:bg-primary hover:text-primary-foreground text-secondary-foreground px-2 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap active:scale-[0.95]"
+                        >
+                          + 0.1.0
+                        </button>
+                        <button 
+                          onClick={() => handleBumpVersion('patch')}
+                          className="flex-1 bg-secondary hover:bg-primary hover:text-primary-foreground text-secondary-foreground px-2 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap active:scale-[0.95]"
+                        >
+                          + 0.0.1
+                        </button>
+                      </div>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleBumpVersion('dec-major')}
+                          className="flex-1 bg-bg-surface hover:bg-error-bg/20 hover:text-error-text text-text-muted border border-border-strong hover:border-error-text/30 px-2 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap active:scale-[0.95]"
+                        >
+                          - 1.0.0
+                        </button>
+                        <button 
+                          onClick={() => handleBumpVersion('dec-minor')}
+                          className="flex-1 bg-bg-surface hover:bg-error-bg/20 hover:text-error-text text-text-muted border border-border-strong hover:border-error-text/30 px-2 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap active:scale-[0.95]"
+                        >
+                          - 0.1.0
+                        </button>
+                        <button 
+                          onClick={() => handleBumpVersion('dec-patch')}
+                          className="flex-1 bg-bg-surface hover:bg-error-bg/20 hover:text-error-text text-text-muted border border-border-strong hover:border-error-text/30 px-2 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap active:scale-[0.95]"
+                        >
+                          - 0.0.1
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -629,6 +757,38 @@ export default function AdminDashboard() {
                         {broadcastData.maintenance ? 'ACTIVE' : 'OFF'}
                       </span>
                     </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* GITHUB CI/CD PANEL */}
+              <div className="glass-panel rounded-xl border border-border-subtle overflow-hidden shadow-sm animate-in fade-in duration-200 bg-bg-surface flex-shrink-0">
+                <div className="p-3 border-b border-border-subtle flex justify-between items-center bg-bg-surface/50">
+                  <h2 className="font-bold flex items-center gap-2 text-base"><Github className="w-4 h-4 text-text-primary" /> GitHub CI/CD Integration</h2>
+                </div>
+                
+                <div className="p-5 flex flex-col md:flex-row gap-6 items-center justify-between">
+                  <div className="max-w-lg">
+                    <div className="font-bold text-text-primary mb-1 text-base">Absolute Truth Release Pipeline</div>
+                    <div className="text-xs text-text-muted leading-relaxed">
+                      Enter your GitHub Personal Access Token (repo scope) to automatically push codebase updates and publish releases when you push a version update.
+                    </div>
+                  </div>
+                  
+                  <div className="w-full max-w-sm bg-bg-elevated/30 p-4 rounded-xl border border-border-subtle">
+                    <input 
+                      type="password" 
+                      placeholder="ghp_xxxxxxxxxxxx"
+                      value={githubToken}
+                      onChange={(e) => {
+                        setGithubToken(e.target.value);
+                        localStorage.setItem('adminGithubToken', e.target.value);
+                      }}
+                      className="w-full bg-bg-surface border border-border-strong rounded-lg px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all focus:outline-none mb-2 font-mono text-text-muted"
+                    />
+                    <div className="text-[10px] text-success-text font-bold text-right flex items-center justify-end gap-1 min-h-[16px]">
+                      {githubToken ? <><CheckCircle2 className="w-3 h-3"/> Token Saved Securely</> : null}
+                    </div>
                   </div>
                 </div>
               </div>
