@@ -13,6 +13,7 @@ import {
  get, 
  remove, 
  onValue,
+ push,
  type Database,
  type DatabaseReference,
 } from 'firebase/database'
@@ -39,4 +40,4 @@ const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) 
 const database: Database = getDatabase(app)
 const auth = getAuth(app)
 
-export { database, auth, ref, set, get, remove, onValue, GoogleAuthProvider, signInWithPopup, signOut, type DatabaseReference }
+export { database, auth, ref, set, get, remove, onValue, push, GoogleAuthProvider, signInWithPopup, signOut, type DatabaseReference }
