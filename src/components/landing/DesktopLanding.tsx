@@ -133,8 +133,9 @@ export function DesktopLanding() {
       />
 
       {/* Footer */}
-      <footer className="w-full flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 border-t border-border-subtle/60 relative z-10 glass-panel bg-bg-surface/40">
-        <p className="text-xs text-text-secondary">
+      <footer className="w-full flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 sm:py-5 shrink-0 border-t border-border-subtle/30 relative z-10 bg-transparent backdrop-blur-md">
+        <p className="text-xs sm:text-sm text-text-secondary">
+
           © {new Date().getFullYear()} sendme.alt · Built by{' '}
           <a 
             href="https://www.gauravpatil.online" 

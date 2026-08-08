@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ShieldCheck, Cpu, Zap, Lock, HardDrive, Trash2, Globe, Shield, ArrowRight, CheckCircle2 } from 'lucide-react'
+import { X, ShieldCheck, Cpu, Zap, Lock, HardDrive, Trash2, Globe, Shield, CheckCircle2, Sparkles } from 'lucide-react'
 
 export interface FeatureDetail {
   id: string
@@ -168,7 +168,7 @@ export function FeatureDetailModal({ feature, onClose }: FeatureDetailModalProps
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -176,91 +176,97 @@ export function FeatureDetailModal({ feature, onClose }: FeatureDetailModalProps
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/60 backdrop-blur-md"
+          className="absolute inset-0 bg-black/60 dark:bg-black/75 backdrop-blur-xl"
         />
 
-        {/* Glass Card Overlay */}
+        {/* Compact Glass Card Overlay - Bounded to fit 100vh with zero scroll and no edge touching */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.92, y: 20 }}
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-          className="relative w-full max-w-2xl glass-panel p-6 sm:p-8 rounded-3xl border border-border-subtle shadow-2xl z-10 overflow-hidden text-left bg-bg-surface/95 dark:bg-bg-surface/90"
+          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          className="relative w-full max-w-xl max-h-[calc(100vh-3rem)] sm:max-h-[calc(100vh-4rem)] glass-panel p-5 sm:p-6 rounded-3xl border border-purple-500/25 shadow-2xl z-10 overflow-hidden text-left bg-bg-surface/95 dark:bg-[#12101a]/95 text-text-primary backdrop-blur-2xl flex flex-col justify-between my-auto"
         >
+          {/* Ambient Glowing Background Accents */}
+          <div className="absolute -top-20 -right-20 w-52 h-52 bg-purple-500/15 dark:bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 -left-20 w-52 h-52 bg-cyan-500/15 dark:bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
+
           {/* Header Bar */}
-          <div className="flex items-start justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3.5">
-              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feature.color} p-0.5 shadow-md shadow-purple-500/20 shrink-0`}>
-                <div className="w-full h-full bg-bg-surface rounded-[14px] flex items-center justify-center">
-                  <IconComp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+          <div className="flex items-center justify-between gap-3 mb-3.5 relative z-10">
+            <div className="flex items-center gap-3">
+              <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${feature.color} p-0.5 shadow-md shadow-purple-500/20 shrink-0`}>
+                <div className="w-full h-full bg-bg-surface dark:bg-[#181524] rounded-[14px] flex items-center justify-center">
+                  <IconComp className="w-5.5 h-5.5 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-text-primary">{feature.title}</h2>
-                <p className="text-xs sm:text-sm font-semibold text-text-secondary">{feature.subtitle}</p>
+                <h2 className="text-lg sm:text-xl font-extrabold text-text-primary tracking-tight">{feature.title}</h2>
+                <p className="text-xs font-semibold text-purple-600 dark:text-purple-400">{feature.subtitle}</p>
               </div>
             </div>
 
             <button
               onClick={onClose}
-              className="p-2 rounded-full glass-card hover:bg-bg-elevated text-text-muted hover:text-text-primary transition-colors border border-border-subtle"
+              className="p-2 rounded-full glass-card hover:bg-purple-500/15 text-text-muted hover:text-text-primary transition-all border border-border-subtle shadow-xs active:scale-95 shrink-0"
               title="Close (Esc)"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Tagline Pill */}
-          <div className="mb-6 p-3 rounded-xl bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/30 text-xs sm:text-sm font-semibold text-purple-700 dark:text-purple-300 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
-            <span>{feature.tagline}</span>
+          {/* Tagline Callout Banner */}
+          <div className="mb-3.5 p-3 rounded-2xl glass-card border border-purple-500/30 bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-cyan-500/10 text-xs font-semibold text-purple-900 dark:text-purple-200 flex items-center gap-2.5 shadow-xs relative z-10 shrink-0">
+            <Sparkles className="w-4 h-4 text-purple-500 shrink-0" />
+            <span className="leading-snug">{feature.tagline}</span>
           </div>
 
           {/* Metrics Grid */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="grid grid-cols-3 gap-2.5 mb-3.5 relative z-10 shrink-0">
             {feature.metrics.map((m, idx) => (
-              <div key={idx} className="p-3 rounded-xl glass-panel text-center border border-border-subtle bg-bg-surface/80 dark:bg-bg-elevated/40">
-                <p className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-0.5">{m.label}</p>
-                <p className="text-base sm:text-lg font-extrabold text-text-primary">{m.value}</p>
+              <div key={idx} className="p-3 rounded-2xl glass-card text-center border border-border-subtle hover:border-purple-500/30 transition-all bg-bg-surface/80 dark:bg-[#1a1728]/80 shadow-xs">
+                <p className="text-[9px] sm:text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider mb-0.5">{m.label}</p>
+                <p className="text-sm sm:text-base font-extrabold text-purple-600 dark:text-purple-400 font-mono tracking-tight">{m.value}</p>
               </div>
             ))}
           </div>
 
           {/* Description & Tech Details */}
-          <div className="space-y-4 mb-6">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary mb-1.5 flex items-center gap-1.5">
-                <Cpu className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> How It Works
+          <div className="space-y-2.5 mb-3.5 relative z-10 shrink-0">
+            <div className="glass-card p-3 rounded-2xl border border-border-subtle/80 bg-bg-surface/50 dark:bg-bg-elevated/30">
+              <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-text-primary mb-1 flex items-center gap-1.5">
+                <Cpu className="w-3.5 h-3.5 text-indigo-500" /> How It Works
               </h3>
-              <p className="text-xs sm:text-sm text-text-primary dark:text-text-secondary leading-relaxed font-normal">{feature.description}</p>
+              <p className="text-xs text-text-primary dark:text-text-secondary leading-relaxed font-normal">{feature.description}</p>
             </div>
 
-            <div className="p-3.5 rounded-xl glass-card border border-border-subtle bg-bg-elevated/60 dark:bg-bg-elevated/40">
-              <h4 className="text-xs font-bold text-text-primary mb-1 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Technical Under the Hood
+            <div className="p-3 rounded-2xl glass-card border border-emerald-500/25 bg-emerald-500/5">
+              <h4 className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Technical Under the Hood
               </h4>
-              <p className="text-xs text-text-secondary dark:text-text-muted leading-relaxed">{feature.techDetails}</p>
+              <p className="text-xs text-text-secondary dark:text-text-muted leading-relaxed font-normal">{feature.techDetails}</p>
             </div>
           </div>
 
           {/* Key Highlights */}
-          <div className="mb-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary mb-2.5">Key Highlights</h3>
+          <div className="mb-3.5 relative z-10 shrink-0">
+            <h3 className="text-[10px] font-mono font-bold uppercase tracking-wider text-text-muted mb-2">Key Highlights</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {feature.highlights.map((hl, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-xs text-text-primary dark:text-text-secondary">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
-                  <span>{hl}</span>
+                <div key={idx} className="flex items-center gap-2 glass-card p-2 px-2.5 rounded-xl border border-border-subtle text-xs font-medium text-text-primary dark:text-text-secondary">
+                  <div className="w-3.5 h-3.5 rounded-full bg-purple-500/15 border border-purple-500/30 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-2.5 h-2.5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <span className="truncate">{hl}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Footer Action */}
-          <div className="flex justify-end pt-4 border-t border-border-subtle/60">
+          <div className="flex justify-end pt-3 border-t border-border-subtle/60 relative z-10 shrink-0">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs transition-all shadow-md shadow-purple-500/20 active:scale-[0.98]"
+              className="btn-action-glow font-bold px-6 py-2 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs transition-all shadow-md shadow-purple-500/25 active:scale-95"
             >
               Got It
             </button>

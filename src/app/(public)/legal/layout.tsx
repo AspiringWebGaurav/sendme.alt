@@ -1,33 +1,22 @@
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+'use client'
+
+import { Navbar } from '@/layout/Navbar'
 import { ScrollIndicator } from './ScrollIndicator'
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
- return (
- <div id="legal-scroll-container" className="min-h-screen bg-bg-primary text-text-secondary py-12 px-4 sm:px-6 lg:px-12 xl:px-24 overflow-y-auto scrollbar-hide w-full absolute inset-0 transition-colors duration-300">
- <ScrollIndicator />
- <div className="max-w-[1400px] mx-auto w-full">
- <nav className="mb-12 flex items-center justify-between border-b border-border-subtle pb-6">
- <Link
- href="/"
- className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
- >
- <ArrowLeft className="w-4 h-4 mr-2" />
- Back to Transfer
- </Link>
- <div className="flex gap-4 sm:gap-6 text-sm">
- <Link href="/legal/privacy" className="hover:text-text-primary transition-colors">Privacy</Link>
- <Link href="/legal/terms" className="hover:text-text-primary transition-colors">Terms</Link>
- <Link href="/legal/aup" className="hover:text-text-primary transition-colors">AUP</Link>
- </div>
- </nav>
- <main className="w-full">
- {children}
- </main>
- <footer className="mt-20 border-t border-border-subtle pt-8 text-center text-xs text-text-muted">
- <p>&copy; {new Date().getFullYear()} Sendme.alt. All rights reserved.</p>
- </footer>
- </div>
- </div>
- )
+  return (
+    <div id="legal-scroll-container" className="h-[100dvh] w-full bg-bg-primary text-text-primary overflow-y-auto relative selection:bg-bg-elevated flex flex-col font-sans">
+      {/* Background Ambient Orbs */}
+      <div className="ambient-glow-1" />
+      <div className="ambient-glow-2" />
+
+      <ScrollIndicator />
+      <Navbar variant="landing" />
+
+      {/* Main Content Body */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 relative z-10 min-h-0">
+        {children}
+      </main>
+    </div>
+  )
 }
