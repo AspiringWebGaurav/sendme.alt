@@ -13,6 +13,13 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: Request) {
+  if (!adminDb) {
+    return NextResponse.json(
+      { valid: false, error: 'Database service unavailable' },
+      { status: 503 }
+    )
+  }
+
  try {
  const body = await request.json()
  const { token } = body

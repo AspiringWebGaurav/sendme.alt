@@ -43,8 +43,8 @@ export function middleware(request: NextRequest) {
  )
  }
 
- // Prune expired entries every 500 requests to avoid unbounded growth
- if (Math.random() < 0.002) pruneExpired()
+  // Prune expired entries if store grows large or probabilistically
+  if (rateLimitStore.size > 1000 || Math.random() < 0.01) pruneExpired()
 
  return NextResponse.next()
 }

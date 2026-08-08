@@ -210,6 +210,12 @@ export function useSend() {
  )
  sseRef.current = eventSource
 
+ eventSource.onerror = () => {
+   if (isTerminalRef.current || isPassiveModeRef.current || sseRef.current !== eventSource) {
+     eventSource.close()
+   }
+ }
+
  eventSource.onmessage = async (event) => {
  if (generationRef.current !== currentGeneration) return
 

@@ -194,12 +194,15 @@ export class P2PConnection {
  this.onChannelCloseCallback?.()
  }
 
- channel.onerror = (event: Event) => {
- const errorEvent = event as RTCErrorEvent
- const errorMsg = errorEvent.error?.message || 'Unknown error'
- console.error(`[P2P] Data channel error: ${errorMsg}`, event)
- this.onChannelErrorCallback?.(new Error('Data channel error'))
- }
+  channel.onerror = (event: Event) => {
+    const errorEvent = event as RTCErrorEvent
+    const errorMsg = errorEvent.error?.message || 'Unknown error'
+    if (this.isCancelled || errorMsg.includes('User-Initiated Abort') || errorMsg.includes('Close called')) {
+      return
+    }
+    console.error(`[P2P] Data channel error: ${errorMsg}`, event)
+    this.onChannelErrorCallback?.(new Error('Data channel error'))
+  }
  }
 
  /**
@@ -631,13 +634,17 @@ export class P2PConnection {
  }
  }
 
- this.channel!.onerror = (event: Event) => {
- const errorEvent = event as RTCErrorEvent
- const errorMsg = errorEvent.error?.message || 'Unknown error'
- console.error(`[P2P] Data channel error: ${errorMsg}`, event)
- if (timeoutId) clearTimeout(timeoutId)
- reject(new Error('Data channel error — transfer failed. Try again.'))
- }
+  this.channel!.onerror = (event: Event) => {
+    const errorEvent = event as RTCErrorEvent
+    const errorMsg = errorEvent.error?.message || 'Unknown error'
+    if (this.isCancelled || errorMsg.includes('User-Initiated Abort') || errorMsg.includes('Close called')) {
+      if (timeoutId) clearTimeout(timeoutId)
+      return
+    }
+    console.error(`[P2P] Data channel error: ${errorMsg}`, event)
+    if (timeoutId) clearTimeout(timeoutId)
+    reject(new Error('Data channel error — transfer failed. Try again.'))
+  }
 
  // Handle channel close unexpectedly
  this.channel!.onclose = () => {

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { CheckCircle2, XCircle, AlertTriangle, Info, X } from 'lucide-react'
 
 export type NotificationType = 'success' | 'warning' | 'error' | 'info'
 
@@ -69,52 +70,55 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 }
 
 function Toast({ notification, onClose }: { notification: Notification; onClose: () => void }) {
- const getColors = (type: NotificationType) => {
- switch (type) {
- case 'success':
- return 'bg-emerald-500/20 border-emerald-500/40 text-emerald-100'
- case 'error':
- return 'bg-rose-500/20 border-rose-500/40 text-rose-100'
- case 'warning':
- return 'bg-amber-500/20 border-amber-500/40 text-amber-100'
- case 'info':
- default:
- return 'bg-blue-500/20 border-blue-500/40 text-blue-100'
- }
- }
+  const getStyles = (type: NotificationType) => {
+    switch (type) {
+      case 'success':
+        return {
+          container: 'bg-emerald-50/95 border-emerald-300 text-emerald-950 shadow-lg shadow-emerald-950/5 dark:bg-emerald-950/90 dark:border-emerald-500/40 dark:text-emerald-50 dark:shadow-emerald-950/40',
+          icon: <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+        }
+      case 'error':
+        return {
+          container: 'bg-rose-50/95 border-rose-300 text-rose-950 shadow-lg shadow-rose-950/5 dark:bg-rose-950/90 dark:border-rose-500/40 dark:text-rose-50 dark:shadow-rose-950/40',
+          icon: <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
+        }
+      case 'warning':
+        return {
+          container: 'bg-amber-50/95 border-amber-300 text-amber-950 shadow-lg shadow-amber-950/5 dark:bg-amber-950/90 dark:border-amber-500/40 dark:text-amber-50 dark:shadow-amber-950/40',
+          icon: <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+        }
+      case 'info':
+      default:
+        return {
+          container: 'bg-sky-50/95 border-sky-300 text-sky-950 shadow-lg shadow-sky-950/5 dark:bg-sky-950/90 dark:border-sky-500/40 dark:text-sky-50 dark:shadow-sky-950/40',
+          icon: <Info className="w-5 h-5 text-sky-600 dark:text-sky-400 shrink-0" />
+        }
+    }
+  }
 
- const getIcon = (type: NotificationType) => {
- switch (type) {
- case 'success': return '✅'
- case 'error': return '❌'
- case 'warning': return '⚠️'
- case 'info': return 'ℹ️'
- }
- }
+  const { container, icon } = getStyles(notification.type)
 
- return (
- <motion.div
- layout
- initial={{ opacity: 0, y: -20, scale: 0.95 }}
- animate={{ opacity: 1, y: 0, scale: 1 }}
- exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
- className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-md shadow-2xl ${getColors(notification.type)} w-full sm:w-max sm:max-w-md`}
- >
- <div className="text-xl shrink-0">{getIcon(notification.type)}</div>
- <p className="text-sm font-medium leading-tight flex-1 break-words">
- {notification.message}
- </p>
- <button
- onClick={onClose}
- className="shrink-0 p-1.5 rounded-full hover:bg-white/10 transition-colors opacity-70 hover:opacity-100"
- aria-label="Close notification"
- >
- <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
- <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
- </svg>
- </button>
- </motion.div>
- )
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: -20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+      className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-md transition-colors ${container} w-full sm:w-max sm:max-w-md`}
+    >
+      {icon}
+      <p className="text-sm font-medium leading-tight flex-1 break-words">
+        {notification.message}
+      </p>
+      <button
+        onClick={onClose}
+        className="shrink-0 p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-current opacity-60 hover:opacity-100 transition-all"
+        aria-label="Close notification"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </motion.div>
+  )
 }
 
 export function useNotification() {

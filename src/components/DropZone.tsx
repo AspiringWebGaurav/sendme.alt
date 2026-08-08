@@ -77,6 +77,9 @@ export function DropZone({ file, onFileSelect, onFileRemove, error }: DropZonePr
  </div>
  <h3 className="text-sm font-medium text-text-primary truncate w-full max-w-[90%] px-2" title={file.name}>{file.name}</h3>
  <p className="text-xs text-text-secondary mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+ {file.size > 2 * 1024 * 1024 * 1024 && (
+   <p className="text-[11px] text-amber-500/90 mt-1 font-medium">⚠️ Large file ({(file.size / (1024 * 1024 * 1024)).toFixed(1)} GB) — ensure receiver device has sufficient browser RAM</p>
+ )}
  </div>
  </motion.div>
  ) : (

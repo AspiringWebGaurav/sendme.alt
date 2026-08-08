@@ -12,6 +12,10 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
+ if (!adminDb) {
+ return new Response('Database service unavailable', { status: 503 })
+ }
+
  const { searchParams } = new URL(request.url)
  const token = searchParams.get('token')
  const role = searchParams.get('role') as 'sender' | 'receiver'
@@ -29,8 +33,11 @@ export async function GET(request: Request) {
 
  const stream = new ReadableStream({
  async start(controller) {
- // Send initial connection event
+ try {
  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'connected' })}\n\n`))
+ } catch {
+ return
+ }
 
  let listener: ((snapshot: any) => void) | null = null
  let cleanedUp = false
