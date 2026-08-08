@@ -4,44 +4,46 @@ import { motion } from 'framer-motion'
 import { Upload, Download } from 'lucide-react'
 
 interface ModeToggleProps {
- mode: 'send' | 'receive'
- onChange: (mode: 'send' | 'receive') => void
+  mode: 'send' | 'receive'
+  onChange: (mode: 'send' | 'receive') => void
 }
 
 export function ModeToggle({ mode, onChange }: ModeToggleProps) {
- return (
- <div className="inline-flex items-center p-1 bg-bg-elevated border border-border-subtle rounded-full select-none">
- <button
- onClick={() => onChange('send')}
- className={`relative flex items-center gap-2 px-6 py-2 text-sm font-medium rounded-full transition-all duration-300 hover:scale-[1.02] active:scale-95 ${mode === 'send' ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'
- }`}
- >
- {mode === 'send' && (
- <motion.div
- layoutId="active-pill"
- className="absolute inset-0 bg-primary/20 border border-primary/30 rounded-full shadow-[inset_0_1px_4px_rgba(255,255,255,0.1),_0_0_10px_rgba(139,92,246,0.15)]"
- transition={{ type: 'spring', stiffness: 500, damping: 30, mass: 0.8 }}
- />
- )}
- <Upload className="w-4 h-4 relative z-10" />
- <span className="relative z-10">Send</span>
- </button>
+  return (
+    <div className="inline-flex items-center p-1.5 glass-panel rounded-full select-none shadow-sm border border-border-subtle/60 backdrop-blur-xl">
+      <button
+        onClick={() => onChange('send')}
+        className={`relative flex items-center justify-center gap-2 px-5 py-2 text-xs sm:text-sm font-semibold rounded-full transition-colors duration-200 ${
+          mode === 'send' ? 'text-text-primary' : 'text-text-muted hover:text-text-primary'
+        }`}
+      >
+        {mode === 'send' && (
+          <motion.div
+            layoutId="active-mode-pill"
+            className="absolute inset-0 bg-purple-600/20 dark:bg-purple-500/25 border border-purple-500/40 rounded-full shadow-[0_0_15px_rgba(168,85,247,0.25)]"
+            transition={{ type: 'spring', stiffness: 500, damping: 32 }}
+          />
+        )}
+        <Upload className={`w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 ${mode === 'send' ? 'text-purple-400' : ''}`} />
+        <span className="relative z-10">Send</span>
+      </button>
 
- <button
- onClick={() => onChange('receive')}
- className={`relative flex items-center gap-2 px-6 py-2 text-sm font-medium rounded-full transition-all duration-300 hover:scale-[1.02] active:scale-95 ${mode === 'receive' ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'
- }`}
- >
- {mode === 'receive' && (
- <motion.div
- layoutId="active-pill"
- className="absolute inset-0 bg-accent/20 border border-accent/30 rounded-full shadow-[inset_0_1px_4px_rgba(255,255,255,0.1),_0_0_10px_rgba(6,182,212,0.15)]"
- transition={{ type: 'spring', stiffness: 500, damping: 30, mass: 0.8 }}
- />
- )}
- <Download className="w-4 h-4 relative z-10" />
- <span className="relative z-10">Receive</span>
- </button>
- </div>
- )
+      <button
+        onClick={() => onChange('receive')}
+        className={`relative flex items-center justify-center gap-2 px-5 py-2 text-xs sm:text-sm font-semibold rounded-full transition-colors duration-200 ${
+          mode === 'receive' ? 'text-text-primary' : 'text-text-muted hover:text-text-primary'
+        }`}
+      >
+        {mode === 'receive' && (
+          <motion.div
+            layoutId="active-mode-pill"
+            className="absolute inset-0 bg-cyan-600/20 dark:bg-cyan-500/25 border border-cyan-500/40 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.25)]"
+            transition={{ type: 'spring', stiffness: 500, damping: 32 }}
+          />
+        )}
+        <Download className={`w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 ${mode === 'receive' ? 'text-cyan-400' : ''}`} />
+        <span className="relative z-10">Receive</span>
+      </button>
+    </div>
+  )
 }

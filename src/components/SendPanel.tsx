@@ -13,110 +13,110 @@ import { SuccessView } from './SuccessView'
 import { XCircle } from 'lucide-react'
 
 export function SendPanel() {
- const {
- state,
- file,
- token,
- progress,
- error,
- isGeneratingToken,
- copySuccess,
- selectFile,
- cancel,
- removeFile,
- handleCopyToken,
- startSending,
- } = useSend()
+  const {
+    state,
+    file,
+    token,
+    progress,
+    error,
+    isGeneratingToken,
+    copySuccess,
+    selectFile,
+    cancel,
+    removeFile,
+    handleCopyToken,
+    startSending,
+  } = useSend()
 
- return (
- <div className="h-full w-full flex flex-col items-center justify-center p-4 sm:p-8 lg:p-12 relative overflow-y-auto overflow-x-hidden">
- <div className="absolute top-3 sm:top-6 left-3 sm:left-6 right-3 sm:right-6 flex justify-between items-start z-10">
- <StatusIndicator mode="send" state={state} />
- {(state === 'connecting' || state === 'waiting') && (
- <CancelButton onCancel={cancel} label="Cancel Send" />
- )}
- </div>
+  return (
+    <div className="h-full w-full flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 relative overflow-hidden">
+      <div className="absolute top-2 sm:top-5 left-3 sm:left-6 right-3 sm:right-6 flex justify-between items-start z-10">
+        <StatusIndicator mode="send" state={state} />
+        {(state === 'connecting' || state === 'waiting') && (
+          <CancelButton onCancel={cancel} label="Cancel Send" />
+        )}
+      </div>
 
- <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center gap-4 sm:gap-8 mt-10 sm:mt-8">
- {state === 'idle' || state === 'error' ? (
- <motion.div 
- className="w-full flex flex-col items-center gap-4 sm:gap-6"
- initial="hidden"
- animate="visible"
- variants={{
- hidden: { opacity: 0 },
- visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
- }}
- >
- <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } } }} className="w-full">
- <DropZone
- file={file}
- onFileSelect={selectFile}
- onFileRemove={removeFile}
- error={error}
- />
- </motion.div>
- {file && (
- <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } } }} className="w-full flex justify-center">
- <button
- onClick={startSending}
- disabled={isGeneratingToken}
- className={`w-full sm:max-w-[200px] py-3.5 sm:py-3 min-h-[48px] sm:min-h-0 rounded-xl bg-accent-primary hover:bg-accent-hover focus:ring-4 focus:ring-accent-primary/20 dark:bg-primary-dark text-text-primary font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-none ${!isGeneratingToken ? 'btn-action-glow' : ''}`}
- >
- {isGeneratingToken ? 'Generating Token...' : 'Start Transfer'}
- </button>
- </motion.div>
- )}
- </motion.div>
- ) : state === 'complete' ? (
- <SuccessView
- mode="send"
- fileName={file?.name}
- fileSize={file?.size}
- onReset={cancel}
- />
- ) : (
- <div className="w-full flex flex-col items-center gap-4 sm:gap-6">
- <div className="w-full glass-panel p-3 sm:p-4 rounded-xl flex items-center gap-3 sm:gap-4 shadow-sm hover-lift cursor-default animate-fade-in">
- <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/20 flex items-center justify-center text-primary shrink-0">
- 📄
- </div>
- <div className="overflow-hidden min-w-0 flex-1">
- <p className="text-[15px] font-medium text-text-primary truncate" title={file?.name}>{file?.name}</p>
- <p className="text-[13px] text-text-muted text-text-secondary">{file ? (file.size / 1024 / 1024).toFixed(2) : 0} MB</p>
- </div>
- </div>
+      <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center gap-4 sm:gap-6 mt-8 sm:mt-6">
+        {state === 'idle' || state === 'error' ? (
+          <motion.div 
+            className="w-full flex flex-col items-center gap-4 sm:gap-6"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
+            }}
+          >
+            <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } } }} className="w-full">
+              <DropZone
+                file={file}
+                onFileSelect={selectFile}
+                onFileRemove={removeFile}
+                error={error}
+              />
+            </motion.div>
+            {file && (
+              <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } } }} className="w-full flex justify-center">
+                <button
+                  onClick={startSending}
+                  disabled={isGeneratingToken}
+                  className={`w-full sm:max-w-[220px] py-3.5 sm:py-3.5 min-h-[48px] rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-sm transition-all duration-300 shadow-md shadow-purple-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${!isGeneratingToken ? 'btn-action-glow' : ''}`}
+                >
+                  {isGeneratingToken ? 'Generating Token...' : 'Start Transfer'}
+                </button>
+              </motion.div>
+            )}
+          </motion.div>
+        ) : state === 'complete' ? (
+          <SuccessView
+            mode="send"
+            fileName={file?.name}
+            fileSize={file?.size}
+            onReset={cancel}
+          />
+        ) : (
+          <div className="w-full flex flex-col items-center gap-4 sm:gap-6">
+            <div className="w-full glass-panel p-3.5 rounded-2xl flex items-center gap-3.5 shadow-xs border border-purple-500/20">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center text-purple-400 shrink-0 font-bold">
+                📄
+              </div>
+              <div className="overflow-hidden min-w-0 flex-1 text-left">
+                <p className="text-sm font-semibold text-text-primary truncate" title={file?.name}>{file?.name}</p>
+                <p className="text-xs text-text-muted">{file ? (file.size / 1024 / 1024).toFixed(2) : 0} MB</p>
+              </div>
+            </div>
 
- {state === 'connecting' || state === 'waiting' ? (
- <TokenDisplay
- token={token}
- isGenerating={isGeneratingToken}
- onCopy={() => token && handleCopyToken(token)}
- copySuccess={copySuccess}
- />
- ) : null}
+            {state === 'connecting' || state === 'waiting' ? (
+              <TokenDisplay
+                token={token}
+                isGenerating={isGeneratingToken}
+                onCopy={() => token && handleCopyToken(token)}
+                copySuccess={copySuccess}
+              />
+            ) : null}
 
- {state === 'transferring' && progress ? (
- <div className="w-full space-y-3 sm:space-y-4">
- <TransferProgress progress={progress.percentage} />
- <TransferStats
- speed={progress.speed}
- transferred={progress.bytesTransferred}
- total={file?.size || 0}
- connectionType={progress.connectionType}
- />
- <button
- onClick={cancel}
- className="w-full mt-4 py-3.5 sm:py-3 min-h-[48px] sm:min-h-0 bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-400 rounded-xl font-medium transition-colors border border-red-500/20 flex items-center justify-center gap-2 group"
- >
- <XCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
- Cancel Transfer
- </button>
- </div>
- ) : null}
- </div>
- )}
- </div>
- </div>
- )
+            {state === 'transferring' && progress ? (
+              <div className="w-full space-y-3 sm:space-y-4">
+                <TransferProgress progress={progress.percentage} />
+                <TransferStats
+                  speed={progress.speed}
+                  transferred={progress.bytesTransferred}
+                  total={file?.size || 0}
+                  connectionType={progress.connectionType}
+                />
+                <button
+                  onClick={cancel}
+                  className="w-full mt-4 py-3 min-h-[44px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl font-semibold transition-colors border border-red-500/20 flex items-center justify-center gap-2 text-sm"
+                >
+                  <XCircle className="w-4 h-4" />
+                  Cancel Transfer
+                </button>
+              </div>
+            ) : null}
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
