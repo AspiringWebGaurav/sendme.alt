@@ -12,8 +12,9 @@ interface NavbarProps {
 export function Navbar({ variant = "app" }: NavbarProps) {
   return (
     <header className="w-full shrink-0 sticky top-0 z-50 backdrop-blur-xl bg-bg-surface/70 border-b border-border-subtle/60 pt-[env(safe-area-inset-top)]">
-      <div className="w-full h-14 sm:h-16 px-4 sm:px-8 lg:px-12 flex items-center justify-between max-w-7xl mx-auto">
+      <div className="w-full h-14 sm:h-16 px-4 sm:px-8 lg:px-12 xl:px-16 flex items-center justify-between">
         <Logo size="md" withLink={variant === "app"} />
+
 
         {/* Right side content */}
         <div className="flex items-center justify-end">

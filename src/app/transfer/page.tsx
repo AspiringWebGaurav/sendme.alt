@@ -20,7 +20,7 @@ export default async function Home({
       <div className="ambient-glow-2" />
 
       <Navbar variant="app" />
-      <main className="flex-1 min-h-0 flex items-center justify-center relative z-10 px-3 py-2 sm:px-6 sm:py-4 lg:p-6 w-full max-w-4xl mx-auto">
+      <main className="flex-1 min-h-0 flex items-center justify-center relative z-10 px-4 sm:px-8 lg:px-16 py-4 w-full">
         <ErrorBoundary>
           <MainEngine initialMode={initialMode} />
         </ErrorBoundary>

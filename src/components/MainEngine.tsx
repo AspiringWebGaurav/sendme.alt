@@ -12,7 +12,7 @@ export function MainEngine({ initialMode = 'send' }: { initialMode?: AppMode }) 
  const [mode, setMode] = useState<AppMode>(initialMode)
 
  return (
- <div className="w-full max-w-2xl mx-auto flex flex-col gap-3 sm:gap-6 h-full max-h-full">
+ <div className="w-full max-w-4xl mx-auto flex flex-col gap-3 sm:gap-6 h-full max-h-full">
  <div className="flex justify-center shrink-0">
  <ModeToggle mode={mode} onChange={setMode} />
  </div>

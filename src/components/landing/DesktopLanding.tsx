@@ -17,10 +17,10 @@ export function DesktopLanding() {
       {/* Nav */}
       <Navbar variant="landing" />
 
-      {/* Main Content */}
-      <main className="flex-1 w-full flex items-center justify-between px-8 lg:px-16 xl:px-24 relative z-10 max-w-7xl mx-auto min-h-0 py-6">
+      {/* Main Content — FULL EDGE TO EDGE */}
+      <main className="flex-1 w-full flex items-center justify-between px-6 sm:px-10 lg:px-16 xl:px-20 relative z-10 min-h-0 py-6 gap-8">
         {/* Left Side: Hero */}
-        <div className="w-[52%] flex flex-col items-start justify-center pr-6">
+        <div className="w-1/2 flex flex-col items-start justify-center pr-4 xl:pr-8">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -48,7 +48,7 @@ export function DesktopLanding() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-base lg:text-lg text-text-secondary mb-8 max-w-md leading-relaxed"
+            className="text-base lg:text-lg text-text-secondary mb-8 max-w-lg leading-relaxed"
           >
             No Signup. Zero Cloud Storage. Up to 10GB. Direct device-to-device tunneling ensures your data stays entirely your own.
           </motion.p>
@@ -86,13 +86,13 @@ export function DesktopLanding() {
           </motion.div>
         </div>
 
-        {/* Right Side: Features Grid */}
-        <div className="w-[48%] h-full flex items-center justify-end">
+        {/* Right Side: Features Grid — FULL EDGE-TO-EDGE GRID */}
+        <div className="w-1/2 h-full flex items-center justify-end">
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="grid grid-cols-2 gap-3.5 w-full max-w-md"
+            className="grid grid-cols-2 lg:grid-cols-3 gap-4 w-full"
           >
             {[
               { icon: Zap, title: "Up to 10GB", desc: "Instant direct local or global peer transfer." },
@@ -120,7 +120,7 @@ export function DesktopLanding() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full flex items-center justify-between px-8 lg:px-16 py-4 shrink-0 border-t border-border-subtle/60 relative z-10 glass-panel bg-bg-surface/40">
+      <footer className="w-full flex items-center justify-between px-6 sm:px-10 lg:px-16 xl:px-20 py-4 shrink-0 border-t border-border-subtle/60 relative z-10 glass-panel bg-bg-surface/40">
         <p className="text-xs text-text-secondary">
           © {new Date().getFullYear()} sendme.alt · Built by{' '}
           <a 

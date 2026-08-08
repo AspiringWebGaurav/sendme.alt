@@ -3,7 +3,7 @@ import { Github, Globe } from 'lucide-react'
 
 export function Footer() {
   return (
-    <footer className="w-full mt-auto border-t border-border-subtle/60 py-3 sm:py-4 px-4 sm:px-8 text-xs text-text-secondary flex flex-col sm:flex-row items-center justify-between gap-2.5 z-10 relative backdrop-blur-xl bg-bg-surface/50 shrink-0">
+    <footer className="w-full mt-auto border-t border-border-subtle/60 py-3 sm:py-4 px-4 sm:px-8 lg:px-12 xl:px-16 text-xs text-text-secondary flex flex-col sm:flex-row items-center justify-between gap-2.5 z-10 relative backdrop-blur-xl bg-bg-surface/50 shrink-0">
       <div className="flex items-center gap-1.5 text-[12px] sm:text-xs text-text-muted">
         <span>&copy; {new Date().getFullYear()} Sendme.alt.</span>
         <span className="hidden sm:inline">Secure P2P File Transfer.</span>
