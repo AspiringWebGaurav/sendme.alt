@@ -185,19 +185,19 @@ export function FeatureDetailModal({ feature, onClose }: FeatureDetailModalProps
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-          className="relative w-full max-w-2xl glass-panel p-6 sm:p-8 rounded-3xl border border-purple-500/30 shadow-2xl shadow-purple-500/10 z-10 overflow-hidden text-left bg-bg-surface/90"
+          className="relative w-full max-w-2xl glass-panel p-6 sm:p-8 rounded-3xl border border-border-subtle shadow-2xl z-10 overflow-hidden text-left bg-bg-surface/95 dark:bg-bg-surface/90"
         >
           {/* Header Bar */}
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="flex items-center gap-3.5">
               <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feature.color} p-0.5 shadow-md shadow-purple-500/20 shrink-0`}>
                 <div className="w-full h-full bg-bg-surface rounded-[14px] flex items-center justify-center">
-                  <IconComp className="w-6 h-6 text-purple-400" />
+                  <IconComp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-text-primary">{feature.title}</h2>
-                <p className="text-xs sm:text-sm font-medium text-text-muted">{feature.subtitle}</p>
+                <p className="text-xs sm:text-sm font-semibold text-text-secondary">{feature.subtitle}</p>
               </div>
             </div>
 
@@ -211,16 +211,16 @@ export function FeatureDetailModal({ feature, onClose }: FeatureDetailModalProps
           </div>
 
           {/* Tagline Pill */}
-          <div className="mb-6 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs sm:text-sm font-semibold text-purple-300 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-purple-400 shrink-0" />
+          <div className="mb-6 p-3 rounded-xl bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/30 text-xs sm:text-sm font-semibold text-purple-700 dark:text-purple-300 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
             <span>{feature.tagline}</span>
           </div>
 
           {/* Metrics Grid */}
           <div className="grid grid-cols-3 gap-3 mb-6">
             {feature.metrics.map((m, idx) => (
-              <div key={idx} className="p-3 rounded-xl glass-panel text-center border border-border-subtle/60">
-                <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-0.5">{m.label}</p>
+              <div key={idx} className="p-3 rounded-xl glass-panel text-center border border-border-subtle bg-bg-surface/80 dark:bg-bg-elevated/40">
+                <p className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-0.5">{m.label}</p>
                 <p className="text-base sm:text-lg font-extrabold text-text-primary">{m.value}</p>
               </div>
             ))}
@@ -229,27 +229,27 @@ export function FeatureDetailModal({ feature, onClose }: FeatureDetailModalProps
           {/* Description & Tech Details */}
           <div className="space-y-4 mb-6">
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-1.5 flex items-center gap-1.5">
-                <Cpu className="w-3.5 h-3.5 text-indigo-400" /> How It Works
+              <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary mb-1.5 flex items-center gap-1.5">
+                <Cpu className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> How It Works
               </h3>
-              <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">{feature.description}</p>
+              <p className="text-xs sm:text-sm text-text-primary dark:text-text-secondary leading-relaxed font-normal">{feature.description}</p>
             </div>
 
-            <div className="p-3.5 rounded-xl glass-card border border-border-subtle/80 bg-bg-elevated/40">
+            <div className="p-3.5 rounded-xl glass-card border border-border-subtle bg-bg-elevated/60 dark:bg-bg-elevated/40">
               <h4 className="text-xs font-bold text-text-primary mb-1 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Technical Under the Hood
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Technical Under the Hood
               </h4>
-              <p className="text-xs text-text-muted leading-relaxed">{feature.techDetails}</p>
+              <p className="text-xs text-text-secondary dark:text-text-muted leading-relaxed">{feature.techDetails}</p>
             </div>
           </div>
 
           {/* Key Highlights */}
           <div className="mb-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-2.5">Key Highlights</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary mb-2.5">Key Highlights</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {feature.highlights.map((hl, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-xs text-text-secondary">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                <div key={idx} className="flex items-center gap-2 text-xs text-text-primary dark:text-text-secondary">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
                   <span>{hl}</span>
                 </div>
               ))}
@@ -260,12 +260,13 @@ export function FeatureDetailModal({ feature, onClose }: FeatureDetailModalProps
           <div className="flex justify-end pt-4 border-t border-border-subtle/60">
             <button
               onClick={onClose}
-              className="px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs transition-all shadow-md shadow-purple-500/20 active:scale-[0.98]"
+              className="px-6 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs transition-all shadow-md shadow-purple-500/20 active:scale-[0.98]"
             >
               Got It
             </button>
           </div>
         </motion.div>
+
       </div>
     </AnimatePresence>
   )
