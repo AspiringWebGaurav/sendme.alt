@@ -1,13 +1,17 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, Lock, HardDrive, Zap, Trash2, Globe, Shield, Download, Sparkles } from 'lucide-react'
+import { ArrowRight, Lock, HardDrive, Zap, Trash2, Globe, Shield, Download, Sparkles, Info } from 'lucide-react'
 import { Github } from 'lucide-react'
 import Link from 'next/link'
 
 import { Navbar } from '@/layout/Navbar'
+import { FeatureDetailModal, FEATURE_DETAILS, FeatureDetail } from './FeatureDetailModal'
 
 export function DesktopLanding() {
+  const [selectedFeature, setSelectedFeature] = useState<FeatureDetail | null>(null)
+
   return (
     <div className="w-full h-[100dvh] flex flex-col bg-bg-primary text-text-primary overflow-hidden font-sans selection:bg-bg-elevated relative">
       {/* Background Ambient Orbs */}
@@ -86,7 +90,7 @@ export function DesktopLanding() {
           </motion.div>
         </div>
 
-        {/* Right Side: Features Grid */}
+        {/* Right Side: Features Grid — DYNAMIC INTERACTIVE CARDS */}
         <div className="w-1/2 h-full flex items-center justify-end">
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -94,30 +98,39 @@ export function DesktopLanding() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="grid grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 w-full"
           >
-            {[
-              { icon: Zap, title: "Up to 10GB", desc: "Instant direct local or global peer transfer." },
-              { icon: Lock, title: "End-to-End Encrypted", desc: "Mandatory WebRTC encryption protocols." },
-              { icon: HardDrive, title: "No Cloud Storage", desc: "Files fly straight between peers." },
-              { icon: Trash2, title: "Auto Cleanup", desc: "Tokens destroyed upon disconnect." },
-              { icon: Globe, title: "Cross Browser", desc: "Works on Chromium, Firefox, WebKit." },
-              { icon: Shield, title: "Direct Tunneling", desc: "No middleman server bottleneck." },
-            ].map((ft, idx) => (
-              <motion.div
-                key={idx}
-                whileHover={{ y: -3, scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className="flex flex-col p-4 rounded-2xl glass-panel hover-glass transition-all duration-300"
-              >
-                <div className="w-9 h-9 rounded-xl bg-purple-500/10 dark:bg-purple-400/10 border border-purple-500/20 flex items-center justify-center mb-3 shrink-0">
-                  <ft.icon className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                </div>
-                <h3 className="text-text-primary font-semibold text-sm mb-1">{ft.title}</h3>
-                <p className="text-xs text-text-muted leading-relaxed">{ft.desc}</p>
-              </motion.div>
-            ))}
+            {FEATURE_DETAILS.map((ft) => {
+              const IconComp = ft.icon
+              return (
+                <motion.div
+                  key={ft.id}
+                  onClick={() => setSelectedFeature(ft)}
+                  whileHover={{ y: -4, scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className="flex flex-col p-4 rounded-2xl glass-panel hover-glass border border-border-subtle/80 hover:border-purple-500/40 cursor-pointer transition-all duration-300 group relative overflow-hidden shadow-xs hover:shadow-lg hover:shadow-purple-500/10"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-9 h-9 rounded-xl bg-purple-500/10 dark:bg-purple-400/10 border border-purple-500/20 flex items-center justify-center shrink-0 group-hover:bg-purple-500/20 transition-colors">
+                      <IconComp className="w-4 h-4 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <span className="text-[10px] font-semibold text-purple-400/80 group-hover:text-purple-400 opacity-0 group-hover:opacity-100 transition-all flex items-center gap-1">
+                      Details <Info className="w-3 h-3" />
+                    </span>
+                  </div>
+                  <h3 className="text-text-primary font-semibold text-sm mb-1 group-hover:text-purple-300 transition-colors">{ft.title}</h3>
+                  <p className="text-xs text-text-muted leading-relaxed line-clamp-2">{ft.tagline}</p>
+                </motion.div>
+              )
+            })}
           </motion.div>
         </div>
       </main>
+
+      {/* Feature Detail Modal */}
+      <FeatureDetailModal
+        feature={selectedFeature}
+        onClose={() => setSelectedFeature(null)}
+      />
 
       {/* Footer */}
       <footer className="w-full flex items-center justify-between px-4 sm:px-6 py-4 shrink-0 border-t border-border-subtle/60 relative z-10 glass-panel bg-bg-surface/40">
@@ -144,4 +157,5 @@ export function DesktopLanding() {
     </div>
   )
 }
+
 
