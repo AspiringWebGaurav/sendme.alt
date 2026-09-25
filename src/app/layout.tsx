@@ -83,7 +83,7 @@ export default function RootLayout({
  <body className={`${inter.className} bg-bg-primary text-text-primary overflow-hidden h-[100dvh] w-full m-0 p-0`}>
  <ThemeProvider
  attribute="class"
- defaultTheme="dark"
+ defaultTheme="light"
  enableSystem={false}
  disableTransitionOnChange={false}
  >
