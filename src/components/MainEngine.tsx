@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ModeToggle } from './ModeToggle'
 import { SendPanel } from './SendPanel'
@@ -8,8 +9,17 @@ import { ReceivePanel } from './ReceivePanel'
 
 type AppMode = 'send' | 'receive'
 
-export function MainEngine({ initialMode = 'send' }: { initialMode?: AppMode }) {
- const [mode, setMode] = useState<AppMode>(initialMode)
+export function MainEngine({ initialMode }: { initialMode?: AppMode }) {
+ const searchParams = useSearchParams()
+ const modeParam = searchParams.get('mode')
+ const defaultMode: AppMode = initialMode || (modeParam === 'receive' ? 'receive' : 'send')
+ const [mode, setMode] = useState<AppMode>(defaultMode)
+
+ useEffect(() => {
+ if (modeParam === 'receive' || modeParam === 'send') {
+ setMode(modeParam)
+ }
+ }, [modeParam])
 
  return (
  <div className="w-full max-w-4xl mx-auto flex flex-col gap-3 sm:gap-6 h-full max-h-full">

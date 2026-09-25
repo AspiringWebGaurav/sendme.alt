@@ -21,7 +21,7 @@ export const APP_URLS = {
  * Main application base URL
  * Env: NEXT_PUBLIC_BASE_URL
  */
- BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || 'https://www.send2me.site',
+ BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || 'https://send2me.eu.cc',
  
  /**
  * App name for display purposes

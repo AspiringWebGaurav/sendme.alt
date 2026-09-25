@@ -91,18 +91,6 @@ export async function POST(request: Request) {
  expiresAt,
  }
 
- // Fire and forget background lazy cleanup (does not block response)
- const headers = new Headers(request.headers)
- if (process.env.CLEANUP_SECRET) {
- headers.set('authorization', `Bearer ${process.env.CLEANUP_SECRET}`)
- }
-
- fetch(new URL('/api/cleanup', request.url).toString(), {
- method: 'GET',
- headers
-
- }).catch(() => { }) // Silent fail
-
  return NextResponse.json(responsePayload)
  } catch (error) {
  // Log error server-side only (not in browser console)

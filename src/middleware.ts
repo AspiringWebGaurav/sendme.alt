@@ -17,10 +17,14 @@ function pruneExpired() {
 }
 
 export function middleware(request: NextRequest) {
- const path = request.nextUrl.pathname
- const limit = RATE_LIMITS[path]
+  if (request.method === 'OPTIONS') {
+    return NextResponse.next()
+  }
 
- if (!limit) return NextResponse.next()
+  const path = request.nextUrl.pathname
+  const limit = RATE_LIMITS[path]
+
+  if (!limit) return NextResponse.next()
 
  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
  || request.headers.get('x-real-ip')
