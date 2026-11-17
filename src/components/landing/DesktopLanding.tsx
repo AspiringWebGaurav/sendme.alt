@@ -78,15 +78,15 @@ export function DesktopLanding() {
               Receive File
             </Link>
 
-            <a 
-              href="https://github.com/AspiringWebGaurav/send2me-rust-app/releases/latest" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="flex items-center justify-center gap-2 px-6 py-3.5 glass-panel hover-glass text-text-secondary hover:text-text-primary rounded-full font-medium transition-all duration-300 whitespace-nowrap text-sm"
+            <div 
+              className="flex items-center justify-center gap-2 px-5 py-3.5 glass-panel text-text-muted rounded-full font-medium whitespace-nowrap text-sm border border-amber-500/30 bg-amber-500/5 cursor-not-allowed select-none relative shadow-sm"
+              title="PC App downloads are temporarily on hold for maintenance. Web P2P transfer is fully available."
             >
-              <Download className="w-4 h-4 text-purple-400" />
-              Get Free PC App
-            </a>
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+              <Download className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="text-text-secondary">PC App</span>
+              <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Maintenance</span>
+            </div>
           </motion.div>
         </div>
 

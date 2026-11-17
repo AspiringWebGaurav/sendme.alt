@@ -89,15 +89,15 @@ export function MobileLanding() {
               Receive File
             </Link>
 
-            <a 
-              href="https://github.com/AspiringWebGaurav/send2me-rust-app/releases" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="flex items-center justify-center gap-1.5 px-4 py-2 glass-card active:bg-bg-elevated text-text-muted active:text-text-primary text-[10px] rounded-full font-medium transition-colors w-full border border-border-subtle/60"
+            <div 
+              className="flex items-center justify-center gap-1.5 px-4 py-2 glass-card text-text-muted text-[10px] rounded-full font-medium w-full border border-amber-500/30 bg-amber-500/5 cursor-not-allowed select-none"
+              title="PC App downloads are temporarily on hold for maintenance."
             >
-              <Download className="w-3.5 h-3.5 text-purple-500" />
-              <span>Get Free PC App</span>
-            </a>
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
+              <Download className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="text-text-secondary">PC App</span>
+              <span className="text-[9px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Maintenance</span>
+            </div>
           </motion.div>
 
         </div>
